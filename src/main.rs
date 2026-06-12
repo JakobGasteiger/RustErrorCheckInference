@@ -121,6 +121,15 @@ impl<'a, 'tcx> rustc_hir::intravisit::Visitor<'tcx> for ExtFuncCallFinder<'a, 't
                             "Call to external function {:?} in {}",
                             self.tcx.def_path_str(callee_def_id), self.tcx.def_path_str(self.owner_def_id)
                         );
+
+                        // TODO have this function only find the calls, parents logic etc elsewhere?
+                        // check parent for assignment / binding
+                        let parent = self.tcx.hir_parent_iter(expr.hir_id).next();
+                        if let Some((_, rustc_hir::Node::LetStmt(let_stmt))) = parent {
+                            if let rustc_hir::PatKind::Binding(_, _, ident, _) = let_stmt.pat.kind {
+                                println!("-> bound to variable: {}", ident.name);
+                            }
+                        }
                     }
                 }
             }
