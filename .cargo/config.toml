@@ -1,0 +1,3 @@
+[build]
+rustflags = ["-C", "prefer-dynamic"]
+# rustc-wrapper = "./target/debug/rust-error-check-inference"

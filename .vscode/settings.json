@@ -1,0 +1,11 @@
+{
+  "rust-analyzer.rustc.source": "discover",
+  "rust-analyzer.cargo.extraEnv": {
+    "RUSTUP_TOOLCHAIN": "nightly"
+  },
+  "rust-analyzer.server.extraEnv": {
+    "RUSTUP_TOOLCHAIN": "nightly"
+  },
+  "rust-analyzer.cargo.extraArgs": ["--config", "build.rustflags=[\"-C\", \"prefer-dynamic\"]"],
+  "rust-analyzer.diagnostics.disabled": ["unresolved-extern-crate"]
+}
