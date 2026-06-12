@@ -115,11 +115,11 @@ impl<'a, 'tcx> rustc_hir::intravisit::Visitor<'tcx> for ExtFuncCallFinder<'a, 't
                 let resolution = typeck_results.qpath_res(qpath, func.hir_id);
 
                 // resolutes to a definition
-                if let rustc_hir::def::Res::Def(_, def_id) = resolution {
-                    if self.extern_function_ids.contains(&def_id) {
+                if let rustc_hir::def::Res::Def(_, callee_def_id) = resolution {
+                    if self.extern_function_ids.contains(&callee_def_id) {
                         println!(
-                            "Call to external function '{:?}' in {:?}",
-                            def_id, expr.span
+                            "Call to external function {:?} in {}",
+                            self.tcx.def_path_str(callee_def_id), self.tcx.def_path_str(self.owner_def_id)
                         );
                     }
                 }
