@@ -11,30 +11,26 @@ extern crate rustc_abi;
 use rustc_hir::intravisit::{self, Visitor};
 use std::collections::HashSet;
 
-struct ExternFuncCheckCallbacks;
 
-impl rustc_driver::Callbacks for ExternFuncCheckCallbacks {
-
-    fn after_analysis<'tcx>(
-        &mut self,
-        _compiler: &rustc_interface::interface::Compiler,
-        tcx: rustc_middle::ty::TyCtxt<'tcx>,
-    ) -> rustc_driver::Compilation {
-
-        // only analyze the primary crate (so not dependencies etc)
-        if std::env::var("CARGO_PRIMARY_PACKAGE").is_err() {
-            return rustc_driver::Compilation::Continue;
-        }
-
-        println!("Checker starting...");
-
-        let extern_function_ids: HashSet<_> = find_external_functions(tcx);
-
-        find_external_function_calls(tcx, &extern_function_ids);
-
-        rustc_driver::Compilation::Continue
-    }
+enum ReturnValueCheck {
+    None,
+    LesserZero,
+    GreaterZero,
+    NotEqZero,
+    LesEqZero,
+    GrEqZero,
+    EqualZero,
+    All,
+    Indeterminate
 }
+
+#[derive(PartialEq, Eq, Hash)]
+struct WrapperFunction {
+    wrapper_function_id: rustc_hir::def_id::DefId,
+    wrapped_function_id: rustc_hir::def_id::DefId,
+}
+
+
 
 fn main() {
     let mut args: Vec<String> = std::env::args().collect();
@@ -53,6 +49,7 @@ fn main() {
         return;
     }
 
+    // callback / after_analysis will hook in
     rustc_driver::run_compiler(&args, &mut ExternFuncCheckCallbacks);
 }
 
@@ -81,31 +78,90 @@ fn find_external_functions<'tcx>(tcx: rustc_middle::ty::TyCtxt<'tcx>) -> HashSet
     extern_function_ids
 }
 
-fn find_external_function_calls(tcx: rustc_middle::ty::TyCtxt<'_>, extern_function_ids: &HashSet<rustc_hir::def_id::DefId>) {
+fn find_wrapper_functions(tcx: rustc_middle::ty::TyCtxt<'_>, extern_function_ids: &HashSet<rustc_hir::def_id::DefId>) -> HashSet<WrapperFunction> {
+
+    let mut wrapper_functions: HashSet<WrapperFunction> = HashSet::new();
+
+    // go through all funtions, use visit_expr() to go through all expression and see if they are calls to an extern function
     for item in tcx.hir_free_items().map(|id| tcx.hir_item(id)) {
         if let rustc_hir::ItemKind::Fn { body: body_id, .. } = &item.kind {
             let body = tcx.hir_body(*body_id);
             let owner_def_id = item.owner_id.to_def_id();
 
-            let mut finder = ExtFuncCallFinder {
+            let mut finder = WrapperFuncFinder {
                 tcx,
                 extern_function_ids,
                 owner_def_id,
+                wrapper_functions: HashSet::new(),
             };
             finder.visit_body(body);
+            wrapper_functions.extend(finder.wrapper_functions);
         }
+    }
+    wrapper_functions
+}
+
+struct ExternFuncCheckCallbacks;
+
+impl rustc_driver::Callbacks for ExternFuncCheckCallbacks {
+
+    fn after_analysis<'tcx>(
+        &mut self,
+        _compiler: &rustc_interface::interface::Compiler,
+        tcx: rustc_middle::ty::TyCtxt<'tcx>,
+    ) -> rustc_driver::Compilation {
+
+        // only analyze the primary crate (so not dependencies etc)
+        if std::env::var("CARGO_PRIMARY_PACKAGE").is_err() {
+            return rustc_driver::Compilation::Continue;
+        }
+
+        println!("Checker starting...");
+
+        let extern_function_ids: HashSet<_> = find_external_functions(tcx);
+
+        let wrapper_functions = find_wrapper_functions(tcx, &extern_function_ids);
+
+        rustc_driver::Compilation::Continue
     }
 }
 
-struct ExtFuncCallFinder<'a, 'tcx> {
+// finds the checks on return values (=RV)
+// TODO check happes crossfunctionally, variable assignment (recursive); including borrowing?
+// TODO integrate with finder => only one run of visit_body()? maybe not
+struct RVCheckFinder<'tcx> {
+    tcx: rustc_middle::ty::TyCtxt<'tcx>,
+    wrapper_function: WrapperFunction,
+    extern_function_value_holder: rustc_hir::def_id::DefId,
+}
+
+impl<'tcx> rustc_hir::intravisit::Visitor<'tcx> for RVCheckFinder<'tcx> {
+    fn visit_expr(&mut self, expr: &'tcx rustc_hir::Expr<'tcx>) {
+        // TODO
+
+        // TODO integrate this code responsible for variable assignment finding
+        // check parent for assignment / binding
+        // let parent = self.tcx.hir_parent_iter(expr.hir_id).next();
+        // if let Some((_, rustc_hir::Node::LetStmt(let_stmt))) = parent {
+        //     if let rustc_hir::PatKind::Binding(_, _, ident, _) = let_stmt.pat.kind {
+        //         println!("-> bound to variable: {}", ident.name);
+        //     }
+        // }
+    }
+}
+
+struct WrapperFuncFinder<'a, 'tcx> {
     tcx: rustc_middle::ty::TyCtxt<'tcx>,
     extern_function_ids: &'a HashSet<rustc_hir::def_id::DefId>,
     owner_def_id: rustc_hir::def_id::DefId,
+    wrapper_functions: HashSet<WrapperFunction>,
 }
 
-impl<'a, 'tcx> rustc_hir::intravisit::Visitor<'tcx> for ExtFuncCallFinder<'a, 'tcx> {
+impl<'a, 'tcx> rustc_hir::intravisit::Visitor<'tcx> for WrapperFuncFinder<'a, 'tcx> {
 
     fn visit_expr(&mut self, expr: &'tcx rustc_hir::Expr<'tcx>) {
+
+        // function calls
         if let rustc_hir::ExprKind::Call(func, _args) = &expr.kind {
 
             // gets path to definition of function
@@ -117,19 +173,15 @@ impl<'a, 'tcx> rustc_hir::intravisit::Visitor<'tcx> for ExtFuncCallFinder<'a, 't
                 // resolutes to a definition
                 if let rustc_hir::def::Res::Def(_, callee_def_id) = resolution {
                     if self.extern_function_ids.contains(&callee_def_id) {
+
                         println!(
                             "Call to external function {:?} in {}",
                             self.tcx.def_path_str(callee_def_id), self.tcx.def_path_str(self.owner_def_id)
                         );
-
-                        // TODO have this function only find the calls, parents logic etc elsewhere?
-                        // check parent for assignment / binding
-                        let parent = self.tcx.hir_parent_iter(expr.hir_id).next();
-                        if let Some((_, rustc_hir::Node::LetStmt(let_stmt))) = parent {
-                            if let rustc_hir::PatKind::Binding(_, _, ident, _) = let_stmt.pat.kind {
-                                println!("-> bound to variable: {}", ident.name);
-                            }
-                        }
+                        self.wrapper_functions.insert(WrapperFunction {
+                            wrapper_function_id: callee_def_id,
+                            wrapped_function_id: self.owner_def_id
+                        });
                     }
                 }
             }
