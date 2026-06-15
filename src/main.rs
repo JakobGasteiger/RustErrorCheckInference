@@ -203,7 +203,7 @@ impl<'tcx> RVCheckFinder<'tcx> {
     fn check_use_site(&mut self, expr: &'tcx rustc_hir::Expr<'tcx>) {
         let parent = self.tcx.hir_parent_iter(expr.hir_id).next();
 
-        // TODO actually distinguish checks
+        // TODO support for rv borrowing?
         match parent.map(|(_, node)| node) {
             // let result = <tracked expr>: move holder to result's binding HirId
             Some(rustc_hir::Node::LetStmt(local)) => {
