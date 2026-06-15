@@ -8,10 +8,10 @@ extern crate rustc_middle;
 extern crate rustc_span;
 extern crate rustc_abi;
 
-use rustc_hir::intravisit::{self, Visitor};
+use rustc_hir::intravisit::Visitor;
 use std::collections::HashSet;
 
-
+#[derive(Debug)]
 enum ReturnValueCheck {
     None,
     LesserZero,
@@ -24,7 +24,7 @@ enum ReturnValueCheck {
     Indeterminate
 }
 
-#[derive(PartialEq, Eq, Hash)]
+#[derive(PartialEq, Eq, Hash, Clone)]
 struct WrapperFunction {
     wrapper_function_id: rustc_hir::def_id::DefId,
     wrapped_function_id: rustc_hir::def_id::DefId,
@@ -78,9 +78,9 @@ fn find_external_functions<'tcx>(tcx: rustc_middle::ty::TyCtxt<'tcx>) -> HashSet
     extern_function_ids
 }
 
-fn find_wrapper_functions(tcx: rustc_middle::ty::TyCtxt<'_>, extern_function_ids: &HashSet<rustc_hir::def_id::DefId>) -> HashSet<WrapperFunction> {
+fn find_wrapper_functions(tcx: rustc_middle::ty::TyCtxt<'_>, extern_function_ids: &HashSet<rustc_hir::def_id::DefId>) -> Vec<WrapperFunction> {
 
-    let mut wrapper_functions: HashSet<WrapperFunction> = HashSet::new();
+    let mut wrapper_functions: Vec<WrapperFunction> = Vec::new();
 
     // go through all funtions, use visit_expr() to go through all expression and see if they are calls to an extern function
     for item in tcx.hir_free_items().map(|id| tcx.hir_item(id)) {
@@ -99,6 +99,24 @@ fn find_wrapper_functions(tcx: rustc_middle::ty::TyCtxt<'_>, extern_function_ids
         }
     }
     wrapper_functions
+}
+
+#[allow(non_snake_case)]
+fn find_RV_checks(tcx: rustc_middle::ty::TyCtxt<'_>, wrapper_functions: Vec<WrapperFunction>) {
+    for wrapper_function in wrapper_functions {
+
+        println!("\nFor Wrapper Function {}", tcx.def_path_str(wrapper_function.wrapper_function_id));
+
+        let owner_local_def_id = wrapper_function.wrapper_function_id.expect_local();
+        let body = tcx.hir_body_owned_by(owner_local_def_id);
+
+        let mut finder = RVCheckFinder {
+            tcx,
+            wrapper_function: wrapper_function.clone(), 
+            wrapped_function_value_holder: None
+        };
+        finder.visit_body(body);
+    }
 }
 
 struct ExternFuncCheckCallbacks;
@@ -122,31 +140,102 @@ impl rustc_driver::Callbacks for ExternFuncCheckCallbacks {
 
         let wrapper_functions = find_wrapper_functions(tcx, &extern_function_ids);
 
+        find_RV_checks(tcx, wrapper_functions);
+
         rustc_driver::Compilation::Continue
     }
 }
 
 // finds the checks on return values (=RV)
-// TODO check happes crossfunctionally, variable assignment (recursive); including borrowing?
-// TODO integrate with finder => only one run of visit_body()? maybe not
 struct RVCheckFinder<'tcx> {
     tcx: rustc_middle::ty::TyCtxt<'tcx>,
     wrapper_function: WrapperFunction,
-    extern_function_value_holder: rustc_hir::def_id::DefId,
+    // the current holder of the return value of the external function;
+    // initially the extern call expression's own HirId
+    // after "let result = call()"": result's binding HirId
+    // after "let result2 = result": result2's binding HirId
+    // etc
+    wrapped_function_value_holder: Option<rustc_hir::HirId>,
 }
 
 impl<'tcx> rustc_hir::intravisit::Visitor<'tcx> for RVCheckFinder<'tcx> {
-    fn visit_expr(&mut self, expr: &'tcx rustc_hir::Expr<'tcx>) {
-        // TODO
 
-        // TODO integrate this code responsible for variable assignment finding
-        // check parent for assignment / binding
-        // let parent = self.tcx.hir_parent_iter(expr.hir_id).next();
-        // if let Some((_, rustc_hir::Node::LetStmt(let_stmt))) = parent {
-        //     if let rustc_hir::PatKind::Binding(_, _, ident, _) = let_stmt.pat.kind {
-        //         println!("-> bound to variable: {}", ident.name);
-        //     }
-        // }
+    // as we go through the expressions of the body, for each expr
+    // we check if it is the current holder of the return value, and if so, what happens to it ( via ehck_use_site() )
+    fn visit_expr(&mut self, expr: &'tcx rustc_hir::Expr<'tcx>) {
+        
+        let owner = self.wrapper_function.wrapper_function_id.expect_local();
+        let typeck_results = self.tcx.typeck(owner);
+
+        // does the current expr match what were tracking?
+        let matches_tracked: bool = 
+        match (&expr.kind, self.wrapped_function_value_holder) {
+            // not tracking yet: is this expr a call to the wrapped external func?
+            (rustc_hir::ExprKind::Call(func, _), None) => {
+                if let rustc_hir::ExprKind::Path(qpath) = &func.kind {
+                    let res = typeck_results.qpath_res(qpath, func.hir_id);
+                    matches!(res, rustc_hir::def::Res::Def(_, def_id) if def_id == self.wrapper_function.wrapped_function_id)
+                } else {
+                    false
+                }
+            }
+            // already tracking: is this expr a Path to the current holder?
+            (rustc_hir::ExprKind::Path(qpath), Some(holder)) => {
+                let res = typeck_results.qpath_res(qpath, expr.hir_id);
+                matches!(res, rustc_hir::def::Res::Local(hir_id) if hir_id == holder)
+            }
+            //otherwise
+            _ => false,
+        };
+
+        if matches_tracked {
+            if self.wrapped_function_value_holder.is_none() {
+                self.wrapped_function_value_holder = Some(expr.hir_id);
+            }
+            self.check_use_site(expr);
+        }
+
+        rustc_hir::intravisit::walk_expr(self, expr);
+    }
+}
+
+impl<'tcx> RVCheckFinder<'tcx> {
+    fn check_use_site(&mut self, expr: &'tcx rustc_hir::Expr<'tcx>) {
+        let parent = self.tcx.hir_parent_iter(expr.hir_id).next();
+
+        // TODO actually distinguish checks
+        match parent.map(|(_, node)| node) {
+            // let result = <tracked expr>: move holder to result's binding HirId
+            Some(rustc_hir::Node::LetStmt(local)) => {
+                if let rustc_hir::PatKind::Binding(_, hir_id, ident, _) = local.pat.kind {
+                    println!("RV identity moves to '{}'", ident.name);
+                    self.wrapped_function_value_holder = Some(hir_id);
+                }
+            }
+
+            Some(rustc_hir::Node::Expr(e)) if matches!(e.kind, rustc_hir::ExprKind::Match(..)) => {
+                println!("RV checked via match at {:?}", expr.span);
+            }
+
+            Some(rustc_hir::Node::Expr(e)) if let rustc_hir::ExprKind::Binary(bin_op, _, _) = e.kind => {
+                println!("RV checked via comparison at {:?}", expr.span);
+                println!("Binary Operation: {:?}", bin_op.node);
+            }
+
+            Some(rustc_hir::Node::Expr(e)) if matches!(e.kind, rustc_hir::ExprKind::MethodCall(..)) => {
+                if let rustc_hir::ExprKind::MethodCall(method, ..) = e.kind {
+                    println!("RV checked via method '{}' at {:?}", method.ident, expr.span);
+                }
+            }
+
+            Some(rustc_hir::Node::Expr(e)) if matches!(e.kind, rustc_hir::ExprKind::Call(..)) => {
+                println!("RV passed to another function at {:?}", expr.span);
+            }
+
+            _ => {
+                println!("RV use unclassified at {:?}", expr.span); // TODO no print at all here?
+            }
+        }
     }
 }
 
@@ -179,8 +268,8 @@ impl<'a, 'tcx> rustc_hir::intravisit::Visitor<'tcx> for WrapperFuncFinder<'a, 't
                             self.tcx.def_path_str(callee_def_id), self.tcx.def_path_str(self.owner_def_id)
                         );
                         self.wrapper_functions.insert(WrapperFunction {
-                            wrapper_function_id: callee_def_id,
-                            wrapped_function_id: self.owner_def_id
+                            wrapper_function_id: self.owner_def_id,
+                            wrapped_function_id: callee_def_id
                         });
                     }
                 }
