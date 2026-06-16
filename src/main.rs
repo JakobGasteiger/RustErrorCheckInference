@@ -11,9 +11,11 @@ extern crate rustc_abi;
 use rustc_hir::intravisit::Visitor;
 use std::collections::HashSet;
 
+use crate::ReturnValueCheck::*;
+
 #[derive(Debug)]
 enum ReturnValueCheck {
-    None,
+    Empty,
     LesserZero,
     GreaterZero,
     NotEqZero,
@@ -22,6 +24,22 @@ enum ReturnValueCheck {
     EqualZero,
     All,
     Indeterminate
+}
+
+impl ReturnValueCheck {
+    fn opposite(self) -> ReturnValueCheck{
+        match self {
+            Empty => All,
+            LesserZero => GrEqZero,
+            GreaterZero => LesEqZero,
+            NotEqZero => EqualZero,
+            LesEqZero => GreaterZero,
+            GrEqZero => LesserZero,
+            EqualZero => NotEqZero,
+            All => Empty,
+            _ => Indeterminate
+        }
+    }
 }
 
 #[derive(PartialEq, Eq, Hash, Clone)]
