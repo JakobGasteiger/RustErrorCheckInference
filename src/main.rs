@@ -169,8 +169,8 @@ enum ResultType {
     Err
 }
 
-// checks whether a block's tail expression is Ok()` or Err()
-fn branch_returns_result(block_expr: &rustc_hir::Expr<'_>) -> Option<ResultType> {
+// checks whether a blocks tail expression is Ok()` or Err()
+fn branch_result_type(block_expr: &rustc_hir::Expr<'_>) -> Option<ResultType> {
     if let rustc_hir::ExprKind::Block(block, _) = block_expr.kind {
         if let Some(tail) = block.expr {
             if let rustc_hir::ExprKind::Call(func, _) = &tail.kind {
@@ -265,7 +265,10 @@ impl<'tcx> rustc_hir::intravisit::Visitor<'tcx> for RVCheckFinder<'tcx> {
             if self.wrapped_function_value_holder.is_none() {
                 self.wrapped_function_value_holder = Some(expr.hir_id);
             }
-            self.check_use_site(expr);
+            let rv_check = self.check_use_site(expr);
+            if let Some(rv_check) = rv_check {
+                self.wrapper_function.return_value_check = rv_check; // TODO abort walk here?
+            }
         }
 
         rustc_hir::intravisit::walk_expr(self, expr);
@@ -273,7 +276,7 @@ impl<'tcx> rustc_hir::intravisit::Visitor<'tcx> for RVCheckFinder<'tcx> {
 }
 
 impl<'tcx> RVCheckFinder<'tcx> {
-    fn check_use_site(&mut self, expr: &'tcx rustc_hir::Expr<'tcx>) {
+    fn check_use_site(&mut self, expr: &'tcx rustc_hir::Expr<'tcx>) -> Option<ReturnValueCheck>{
 
         let parent = self.tcx.hir_parent_iter(expr.hir_id).next();
 
@@ -292,19 +295,32 @@ impl<'tcx> RVCheckFinder<'tcx> {
                 println!("RV checked via match at {:?}", expr.span);
             }
 
-            Some(rustc_hir::Node::Expr(e)) if let rustc_hir::ExprKind::Binary(bin_op, ex1, ex2) = e.kind => {
+            Some(rustc_hir::Node::Expr(e)) if let rustc_hir::ExprKind::Binary(bin_op, _ex1, ex2) = e.kind => {
                 let rv_check = ReturnValueCheck::parse_from_bin_op(&bin_op, &ex2);
                 // is this a comparison and part of an if stmt?
                 if let Some(rv_check) = rv_check 
                 && let Some((_, rustc_hir::Node::Expr(expr))) = self.tcx.hir_parent_iter(e.hir_id).next()
-                && let rustc_hir::ExprKind::If(cond, then_block, else_block) = expr.kind {
+                && let rustc_hir::ExprKind::If(cond, then_block, _else_block) = expr.kind {
 
                     // cond should always be our binary expression: confirm this
-                    if cond.hir_id != e.hir_id {return;}
+                    if cond.hir_id != e.hir_id {return None;}
 
-
+                    let then_result_type = branch_result_type(then_block);
                     println!("RV checked via comparison at {:?}", expr.span);
                     println!("Binary Operation: {:?}", bin_op.node);
+
+                    // if we are checking for an error (and returning as such), we found our rv check
+                    if let Some(ResultType::Err) = then_result_type  {
+                        println!("Error Condition is {:?}", rv_check);
+                        return Some(rv_check);
+                    //if we are checking for non-error (and thus returning ok), the opposite of the check is our error
+                    // TODO expand beyond simple either/or (allow for multiple different error checks) ?
+                    } else if let Some(ResultType::Ok) = then_result_type {
+                        println!("Error Condition is {:?}", rv_check.clone().opposite());
+                        return Some(rv_check.opposite());
+                    }
+
+                    println!("Neither Error nor Ok Block");
                 }
             }
 
@@ -322,6 +338,8 @@ impl<'tcx> RVCheckFinder<'tcx> {
                 println!("RV use unclassified at {:?}", expr.span); // TODO no print at all here?
             }
         }
+
+        None
     }
 }
 
