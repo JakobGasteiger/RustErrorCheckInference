@@ -13,7 +13,7 @@ use std::collections::HashSet;
 
 use crate::ReturnValueCheck::*;
 
-#[derive(Debug)]
+#[derive(PartialEq, Eq, Hash, Clone, Debug)]
 enum ReturnValueCheck {
     Empty,
     LesserZero,
@@ -22,12 +22,12 @@ enum ReturnValueCheck {
     LesEqZero,
     GrEqZero,
     EqualZero,
-    All,
+    All, // should never be used, since no function should always return an error
     Indeterminate
 }
 
 impl ReturnValueCheck {
-    fn opposite(self) -> ReturnValueCheck{
+    fn opposite(self) -> ReturnValueCheck {
         match self {
             Empty => All,
             LesserZero => GrEqZero,
@@ -40,12 +40,39 @@ impl ReturnValueCheck {
             _ => Indeterminate
         }
     }
+
+    fn parse_from_bin_op(bin_op: &rustc_hir::BinOp, comparand: &rustc_hir::Expr) -> Option<ReturnValueCheck> {
+        // is our comparand a literal?
+        if let rustc_hir::ExprKind::Lit(lit) = comparand.kind {
+            // an int literal?
+            if let rustc_ast::LitKind::Int(val, _) = lit.node {
+                // is it 0?
+                if val.get() != 0 {
+                    // if not, abort, we only support predicates relative to zero
+                    // TODO change this limitation?
+                    return Some(Self::Indeterminate);
+                }
+            }
+        }
+
+        // if coparand is 0, parse
+        match bin_op.node {
+            rustc_hir::BinOpKind::Eq => Some(Self::EqualZero),
+            rustc_hir::BinOpKind::Lt => Some(Self::LesserZero),
+            rustc_hir::BinOpKind::Le => Some(Self::LesEqZero),
+            rustc_hir::BinOpKind::Ne => Some(Self::NotEqZero),
+            rustc_hir::BinOpKind::Ge => Some(Self::GrEqZero),
+            rustc_hir::BinOpKind::Gt => Some(Self::GreaterZero),
+            _ => None
+        }
+    }
 }
 
-#[derive(PartialEq, Eq, Hash, Clone)]
+#[derive(PartialEq, Eq, Hash, Clone, Debug)]
 struct WrapperFunction {
     wrapper_function_id: rustc_hir::def_id::DefId,
     wrapped_function_id: rustc_hir::def_id::DefId,
+    return_value_check: ReturnValueCheck,
 }
 
 
@@ -130,11 +157,39 @@ fn find_RV_checks(tcx: rustc_middle::ty::TyCtxt<'_>, wrapper_functions: Vec<Wrap
 
         let mut finder = RVCheckFinder {
             tcx,
-            wrapper_function: wrapper_function.clone(), 
+            wrapper_function: wrapper_function.clone(), // TODO remove this clone
             wrapped_function_value_holder: None
         };
         finder.visit_body(body);
     }
+}
+
+enum ResultType {
+    Ok,
+    Err
+}
+
+// checks whether a block's tail expression is Ok()` or Err()
+fn branch_returns_result(block_expr: &rustc_hir::Expr<'_>) -> Option<ResultType> {
+    if let rustc_hir::ExprKind::Block(block, _) = block_expr.kind {
+        if let Some(tail) = block.expr {
+            if let rustc_hir::ExprKind::Call(func, _) = &tail.kind {
+                if let rustc_hir::ExprKind::Path(qpath) = &func.kind {
+                    if let rustc_hir::QPath::Resolved(_, path) = qpath {
+                        if let Some(seg) = path.segments.last() {
+                            if seg.ident.name.as_str() == "Ok" {
+                                return Some(ResultType::Ok);
+                            }
+                            if seg.ident.name.as_str() == "Err" {
+                                return Some(ResultType::Err);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    None
 }
 
 struct ExternFuncCheckCallbacks;
@@ -219,9 +274,11 @@ impl<'tcx> rustc_hir::intravisit::Visitor<'tcx> for RVCheckFinder<'tcx> {
 
 impl<'tcx> RVCheckFinder<'tcx> {
     fn check_use_site(&mut self, expr: &'tcx rustc_hir::Expr<'tcx>) {
+
         let parent = self.tcx.hir_parent_iter(expr.hir_id).next();
 
         // TODO support for rv borrowing?
+        // TODO full support for match, cross-function
         match parent.map(|(_, node)| node) {
             // let result = <tracked expr>: move holder to result's binding HirId
             Some(rustc_hir::Node::LetStmt(local)) => {
@@ -235,9 +292,20 @@ impl<'tcx> RVCheckFinder<'tcx> {
                 println!("RV checked via match at {:?}", expr.span);
             }
 
-            Some(rustc_hir::Node::Expr(e)) if let rustc_hir::ExprKind::Binary(bin_op, _, _) = e.kind => {
-                println!("RV checked via comparison at {:?}", expr.span);
-                println!("Binary Operation: {:?}", bin_op.node);
+            Some(rustc_hir::Node::Expr(e)) if let rustc_hir::ExprKind::Binary(bin_op, ex1, ex2) = e.kind => {
+                let rv_check = ReturnValueCheck::parse_from_bin_op(&bin_op, &ex2);
+                // is this a comparison and part of an if stmt?
+                if let Some(rv_check) = rv_check 
+                && let Some((_, rustc_hir::Node::Expr(expr))) = self.tcx.hir_parent_iter(e.hir_id).next()
+                && let rustc_hir::ExprKind::If(cond, then_block, else_block) = expr.kind {
+
+                    // cond should always be our binary expression: confirm this
+                    if cond.hir_id != e.hir_id {return;}
+
+
+                    println!("RV checked via comparison at {:?}", expr.span);
+                    println!("Binary Operation: {:?}", bin_op.node);
+                }
             }
 
             Some(rustc_hir::Node::Expr(e)) if matches!(e.kind, rustc_hir::ExprKind::MethodCall(..)) => {
@@ -287,7 +355,9 @@ impl<'a, 'tcx> rustc_hir::intravisit::Visitor<'tcx> for WrapperFuncFinder<'a, 't
                         );
                         self.wrapper_functions.insert(WrapperFunction {
                             wrapper_function_id: self.owner_def_id,
-                            wrapped_function_id: callee_def_id
+                            wrapped_function_id: callee_def_id,
+                            // until we find a specific check in the RV check finder step, we assume nothing is an error
+                            return_value_check: ReturnValueCheck::Empty 
                         });
                     }
                 }
