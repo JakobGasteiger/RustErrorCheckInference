@@ -101,34 +101,57 @@ fn main() {
 
 fn find_external_functions<'tcx>(
     tcx: rustc_middle::ty::TyCtxt<'tcx>,
-) -> HashSet<rustc_hir::def_id::DefId> {
-    let mut extern_function_ids = HashSet::new();
+    sys_crate: rustc_span::def_id::CrateNum
+) -> Vec<rustc_hir::def_id::DefId> {
+    // let mut extern_function_ids = HashSet::new();
 
-    // go through all free (that is, top-level) items
-    for item in tcx.hir_free_items().map(|id| tcx.hir_item(id)) {
-        // consider only extern blocks, ignore extern blocks that arent extern "C"
-        if let rustc_hir::ItemKind::ForeignMod { abi, items } = item.kind
-            && matches!(abi, rustc_abi::ExternAbi::C { .. })
-        {
-            let filename = tcx.sess.source_map().span_to_filename(item.span);
-            println!("Found extern C Block in {}", filename.short());
+    // // go through all free (that is, top-level) items
+    // for item in tcx.hir_free_items().map(|id| tcx.hir_item(id)) {
+    //     // consider only extern blocks, ignore extern blocks that arent extern "C"
+    //     if let rustc_hir::ItemKind::ForeignMod { abi, items } = item.kind
+    //         && matches!(abi, rustc_abi::ExternAbi::C { .. })
+    //     {
+    //         let filename = tcx.sess.source_map().span_to_filename(item.span);
+    //         println!("Found extern C Block in {}", filename.short());
+    //         // go through the foreign functions in this block
+    //         for foreign_item in items.iter().map(|id| tcx.hir_foreign_item(*id)) {
+    //             if let rustc_hir::ForeignItemKind::Fn(..) = foreign_item.kind {
+    //                 println!("Found a foreign function: {}", foreign_item.ident.name);
+    //                 extern_function_ids.insert(foreign_item.owner_id.to_def_id());
+    //             }
+    //         }
+    //     }
+    // }
+    // extern_function_ids
 
-            // go through the foreign functions in this block
-            for foreign_item in items.iter().map(|id| tcx.hir_foreign_item(*id)) {
-                if let rustc_hir::ForeignItemKind::Fn(..) = foreign_item.kind {
-                    println!("Found a foreign function: {}", foreign_item.ident.name);
-                    extern_function_ids.insert(foreign_item.owner_id.to_def_id());
-                }
-            }
+    let external_functions = tcx
+        .foreign_modules(sys_crate)
+        .values()
+        .flat_map(|foreign_mod| foreign_mod.foreign_items.iter().copied())
+        .filter(|did| matches!(tcx.def_kind(*did), rustc_hir::def::DefKind::Fn));
+
+    Vec::from_iter(external_functions)
+}
+
+fn find_sys_crate<'tcx>(tcx: rustc_middle::ty::TyCtxt<'tcx>) -> rustc_span::def_id::CrateNum {
+
+    for cnum in tcx.crates(()) {
+        let name = tcx.crate_name(*cnum);
+        println!("Checking crate: {}", name.as_str());
+        if name.as_str().ends_with("sys") {
+            println!("Found *-sys crate: {}", name.as_str());
+            return cnum.clone();
         }
     }
 
-    extern_function_ids
+    // if no *-sys crate found, return own crate (actually quite useful for simplified testing)
+    println!("No *-sys crate found, returning local");
+    rustc_hir::def_id::LOCAL_CRATE
 }
 
 fn find_wrapper_functions(
     tcx: rustc_middle::ty::TyCtxt<'_>,
-    extern_function_ids: &HashSet<rustc_hir::def_id::DefId>,
+    extern_function_ids: &Vec<rustc_hir::def_id::DefId>,
 ) -> Vec<WrapperFunction> {
     let mut wrapper_functions: Vec<WrapperFunction> = Vec::new();
 
@@ -200,6 +223,7 @@ fn branch_result_type(block_expr: &rustc_hir::Expr<'_>) -> Option<ResultType> {
 struct ExternFuncCheckCallbacks;
 
 impl rustc_driver::Callbacks for ExternFuncCheckCallbacks {
+
     fn after_analysis<'tcx>(
         &mut self,
         _compiler: &rustc_interface::interface::Compiler,
@@ -212,7 +236,9 @@ impl rustc_driver::Callbacks for ExternFuncCheckCallbacks {
 
         println!("Checker starting...");
 
-        let extern_function_ids: HashSet<_> = find_external_functions(tcx);
+        let sys_crate = find_sys_crate(tcx);
+
+        let extern_function_ids: Vec<_> = find_external_functions(tcx, sys_crate);
 
         let wrapper_functions = find_wrapper_functions(tcx, &extern_function_ids);
 
@@ -326,7 +352,8 @@ impl<'tcx> RVCheckFinder<'tcx> {
         let parent = self.tcx.hir_parent_iter(expr.hir_id).next();
 
         // TODO support for rv borrowing?
-        // TODO full support for match, cross-function
+        // TODO see pattern from apppend() in Libgit/src/repo.rs::976 : support this?
+        // TODO full support for match
         match parent.map(|(_, node)| node) {
             // let result = <tracked expr>: move holder to result's binding HirId
             Some(rustc_hir::Node::LetStmt(local)) => {
@@ -344,7 +371,6 @@ impl<'tcx> RVCheckFinder<'tcx> {
             Some(rustc_hir::Node::Expr(e))
                 if let rustc_hir::ExprKind::Binary(bin_op, _ex1, ex2) = e.kind =>
             {
-                // TODO into own function
                 let rv_check = ReturnValueCheck::parse_from_bin_op(&bin_op, &ex2);
                 // is this a comparison and part of an if stmt?
                 if let Some(rv_check) = rv_check
@@ -428,7 +454,7 @@ impl<'tcx> RVCheckFinder<'tcx> {
 
 struct WrapperFuncFinder<'a, 'tcx> {
     tcx: rustc_middle::ty::TyCtxt<'tcx>,
-    extern_function_ids: &'a HashSet<rustc_hir::def_id::DefId>,
+    extern_function_ids: &'a Vec<rustc_hir::def_id::DefId>,
     owner_def_id: rustc_hir::def_id::DefId,
     wrapper_functions: HashSet<WrapperFunction>,
 }
