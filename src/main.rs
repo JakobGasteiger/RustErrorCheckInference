@@ -200,6 +200,7 @@ enum ResultType {
 // checks whether a blocks tail expression is Ok()` or Err()
 fn branch_result_type(block_expr: &rustc_hir::Expr<'_>) -> Option<ResultType> {
     if let rustc_hir::ExprKind::Block(block, _) = block_expr.kind {
+        // TODO support return stamt, not just semicolonlesse exprs as return?
         if let Some(tail) = block.expr {
             if let rustc_hir::ExprKind::Call(func, _) = &tail.kind {
                 if let rustc_hir::ExprKind::Path(qpath) = &func.kind {
@@ -212,6 +213,32 @@ fn branch_result_type(block_expr: &rustc_hir::Expr<'_>) -> Option<ResultType> {
                                 return Some(ResultType::Err);
                             }
                         }
+                    }
+                }
+            }
+        }
+    }
+    None
+}
+
+// checks whether a blocks tail expression is Ok()` or Err()
+fn arm_result_type(expr: &rustc_hir::Expr<'_>) -> Option<ResultType> {
+
+    // reuse above function if we have a whole block as our match arm
+    // TODO cleaner solution; currently bit ugly but alright for now
+    if let rustc_hir::ExprKind::Block(_, _) = expr.kind {
+        return branch_result_type(expr);
+    }
+
+    if let rustc_hir::ExprKind::Call(func, _) = &expr.kind {
+        if let rustc_hir::ExprKind::Path(qpath) = &func.kind {
+            if let rustc_hir::QPath::Resolved(_, path) = qpath {
+                if let Some(seg) = path.segments.last() {
+                    if seg.ident.name.as_str() == "Ok" {
+                        return Some(ResultType::Ok);
+                    }
+                    if seg.ident.name.as_str() == "Err" {
+                        return Some(ResultType::Err);
                     }
                 }
             }
@@ -348,8 +375,8 @@ impl<'tcx> RVCheckFinder<'tcx> {
         return ReturnValueCheck::Empty;
     }
 
-    fn check_use_site(&mut self, expr: &'tcx rustc_hir::Expr<'tcx>) -> Option<ReturnValueCheck> {
-        let parent = self.tcx.hir_parent_iter(expr.hir_id).next();
+    fn check_use_site(&mut self, expr_being_checked: &'tcx rustc_hir::Expr<'tcx>) -> Option<ReturnValueCheck> {
+        let parent = self.tcx.hir_parent_iter(expr_being_checked.hir_id).next();
 
         // TODO support for rv borrowing?
         // TODO see pattern from apppend() in Libgit/src/repo.rs::976 : support this?
@@ -364,27 +391,73 @@ impl<'tcx> RVCheckFinder<'tcx> {
             }
 
             // TODO
-            Some(rustc_hir::Node::Expr(e)) if matches!(e.kind, rustc_hir::ExprKind::Match(..)) => {
-                println!("RV checked via match at {:?}", expr.span);
+            Some(rustc_hir::Node::Expr(e)) if let rustc_hir::ExprKind::Match(_matchee, arms, _) = e.kind => {
+
+                println!("RV checked via match at {:?}", expr_being_checked.span);
+
+                // only support 2-armed match stmts: one Err, one Ok arm
+                // TODO change this?
+                if arms.len() != 2 {
+                    println!("Arm count !=2");
+                    return None;
+                }
+
+                println!("Arm count ==2");
+
+                // TODO support guards on mor than one arm?
+                if let Some(arm1_guard) = arms[0].guard {  
+
+                    println!("Stepping into Guard 1...");
+                    if let rustc_hir::ExprKind::Binary(arm1_bin_op, _arm1_bin_ex1, arm1_bin_ex2) = arm1_guard.kind {
+
+                        println!("Guard 1 is Binary Expression...");
+
+                        let rv_check = ReturnValueCheck::parse_from_bin_op(&arm1_bin_op, &arm1_bin_ex2);
+
+                        if let Some(rv_check) = rv_check {
+
+                            let arm1_result_type = arm_result_type(arms[0].body);
+                            println!("Binary Operation: {:?}", arm1_bin_op.node);
+    
+                            // if we are checking for an error (and returning as such), we found our rv check
+                            if let Some(ResultType::Err) = arm1_result_type {
+                                println!("Error Condition is {:?}", rv_check);
+                                return Some(rv_check);
+                            //if we are checking for non-error (and thus returning ok), the opposite of the check is our error
+                            // TODO expand beyond simple either/or (allow for multiple different error checks) ?
+                            } else if let Some(ResultType::Ok) = arm1_result_type {
+                                println!("Error Condition is {:?}", rv_check.clone().opposite());
+                                return Some(rv_check.opposite());
+                            }
+    
+                            println!("Neither Err nor Ok Block");
+                        }
+
+                    }
+                } else {
+                    println!("No guard found!");
+                }
             }
 
+            // TODO support first comparand, comparands other than zero ?
             Some(rustc_hir::Node::Expr(e))
                 if let rustc_hir::ExprKind::Binary(bin_op, _ex1, ex2) = e.kind =>
             {
                 let rv_check = ReturnValueCheck::parse_from_bin_op(&bin_op, &ex2);
+
                 // is this a comparison and part of an if stmt?
-                if let Some(rv_check) = rv_check
+                if let Some(rv_check) = rv_check.clone()
                     && let Some((_, rustc_hir::Node::Expr(expr))) =
                         self.tcx.hir_parent_iter(e.hir_id).next()
                     && let rustc_hir::ExprKind::If(cond, then_block, _else_block) = expr.kind
                 {
-                    // cond should always be our binary expression: confirm this
+                    // cond should always be our binary expression: confirm this, abort if not
                     if cond.hir_id != e.hir_id {
                         return None;
                     }
 
                     let then_result_type = branch_result_type(then_block);
-                    println!("RV checked via comparison at {:?}", expr.span);
+                    println!("RV checked via If comparison at {:?}", expr.span);
                     println!("Binary Operation: {:?}", bin_op.node);
 
                     // if we are checking for an error (and returning as such), we found our rv check
@@ -398,8 +471,8 @@ impl<'tcx> RVCheckFinder<'tcx> {
                         return Some(rv_check.opposite());
                     }
 
-                    println!("Neither Error nor Ok Block");
-                }
+                    println!("Neither Err nor Ok Block");
+                } 
             }
 
             // TODO ?
@@ -409,7 +482,7 @@ impl<'tcx> RVCheckFinder<'tcx> {
                 if let rustc_hir::ExprKind::MethodCall(method, ..) = e.kind {
                     println!(
                         "RV checked via method '{}' at {:?}",
-                        method.ident, expr.span
+                        method.ident, expr_being_checked.span
                     );
                 }
             }
@@ -418,9 +491,9 @@ impl<'tcx> RVCheckFinder<'tcx> {
             Some(rustc_hir::Node::Expr(e))
                 if let rustc_hir::ExprKind::Call(func, args) = e.kind =>
             {
-                println!("RV passed to another function at {:?}", expr.span);
+                println!("RV passed to another function at {:?}", expr_being_checked.span);
                 // which argument number is our RV when being passed in?
-                if let Some(arg_index) = args.iter().position(|a| a.hir_id == expr.hir_id) {
+                if let Some(arg_index) = args.iter().position(|a| a.hir_id == expr_being_checked.hir_id) {
                     if let rustc_hir::ExprKind::Path(qpath) = &func.kind {
                         let owner = self.wrapper_function.wrapper_function_id.expect_local();
                         let typeck_results = self.tcx.typeck(owner);
@@ -444,7 +517,7 @@ impl<'tcx> RVCheckFinder<'tcx> {
             }
 
             _ => {
-                println!("RV use unclassified at {:?}", expr.span); // TODO no print at all here?
+                println!("RV use unclassified at {:?}", expr_being_checked.span); // TODO no print at all here?
             }
         }
 
