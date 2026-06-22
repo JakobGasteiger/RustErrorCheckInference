@@ -181,6 +181,7 @@ fn find_RV_checks(tcx: rustc_middle::ty::TyCtxt<'_>, wrapper_function: WrapperFu
         tcx.def_path_str(wrapper_function.wrapper_function_id)
     );
 
+    // TODO check if a body exists, since this may currently panic
     let owner_local_def_id = wrapper_function.wrapper_function_id.expect_local();
     let body = tcx.hir_body_owned_by(owner_local_def_id);
 
@@ -199,38 +200,49 @@ enum ResultType {
 }
 
 // checks whether a blocks tail expression is Ok()` or Err()
-fn branch_result_type(block_expr: &rustc_hir::Expr<'_>) -> Option<ResultType> {
+fn block_result_type(block_expr: &rustc_hir::Expr<'_>) -> Option<ResultType> {
+
     if let rustc_hir::ExprKind::Block(block, _) = block_expr.kind {
-        // TODO support return stmt, not just semicolonlesse exprs as return?
-        if let Some(tail) = block.expr {
-            if let rustc_hir::ExprKind::Call(func, _) = &tail.kind {
-                if let rustc_hir::ExprKind::Path(qpath) = &func.kind {
-                    if let rustc_hir::QPath::Resolved(_, path) = qpath {
-                        if let Some(seg) = path.segments.last() {
-                            if seg.ident.name.as_str() == "Ok" {
-                                return Some(ResultType::Ok);
-                            }
-                            if seg.ident.name.as_str() == "Err" {
-                                return Some(ResultType::Err);
-                            }
-                        }
-                    }
+        
+        // go through all the stmts in the block
+        for stmt in block.stmts {
+
+            // return for return stmt, if there is one
+            if let rustc_hir::StmtKind::Semi(expr) = stmt.kind {
+                if let rustc_hir::ExprKind::Ret(Some(ret_expr)) = expr.kind {
+                    return expr_result_type(&ret_expr);
                 }
             }
+
+            // return for semicolonless expr, if there is one
+            if let rustc_hir::StmtKind::Expr(expr) = stmt.kind {
+                return expr_result_type(&expr);
+            }
+        }
+
+        if let Some(tail) = block.expr {
+            return expr_result_type(&tail);
         }
     }
     None
 }
 
-// checks whether a blocks tail expression is Ok()` or Err()
-fn arm_result_type(expr: &rustc_hir::Expr<'_>) -> Option<ResultType> {
+// checks whether a match stmts arm expression is Ok() or Err()
+fn arm_result_type(arm_body: &rustc_hir::Expr<'_>) -> Option<ResultType> {
 
     // reuse above function if we have a whole block as our match arm
-    // TODO cleaner solution; currently bit ugly but alright for now
-    if let rustc_hir::ExprKind::Block(_, _) = expr.kind {
-        return branch_result_type(expr);
+    if let rustc_hir::ExprKind::Block(_, _) = arm_body.kind {
+        return block_result_type(arm_body);
+    }
+    // return for return stmt, if the arm expr is one
+    if let rustc_hir::ExprKind::Ret(Some(ret_expr)) = arm_body.kind {
+        return expr_result_type(&ret_expr);
     }
 
+    expr_result_type(arm_body)
+}
+
+fn expr_result_type(expr: &rustc_hir::Expr<'_>) -> Option<ResultType> {
     if let rustc_hir::ExprKind::Call(func, _) = &expr.kind {
         if let rustc_hir::ExprKind::Path(qpath) = &func.kind {
             if let rustc_hir::QPath::Resolved(_, path) = qpath {
@@ -247,6 +259,7 @@ fn arm_result_type(expr: &rustc_hir::Expr<'_>) -> Option<ResultType> {
     }
     None
 }
+
 
 struct ExternFuncCheckCallbacks;
 
@@ -353,6 +366,7 @@ impl<'tcx> RVCheckFinder<'tcx> {
             return ReturnValueCheck::Empty;
         };
 
+        // TODO check if a body exists, since this may currently panic
         let body = self.tcx.hir_body_owned_by(local_def_id);
 
         // get the parameter pattern at arg_index
@@ -389,7 +403,7 @@ impl<'tcx> RVCheckFinder<'tcx> {
 
         // TODO support for rv borrowing?
         // TODO see pattern from apppend() in Libgit/src/repo.rs::976 : support this?
-        // TODO full support for match
+        // TODO support for code inside unsafe blocks?
         match parent.map(|(_, node)| node) {
             // let result = <tracked expr>: move holder to result's binding HirId
             Some(rustc_hir::Node::LetStmt(local)) => {
@@ -399,7 +413,6 @@ impl<'tcx> RVCheckFinder<'tcx> {
                 }
             }
 
-            // TODO
             Some(rustc_hir::Node::Expr(e)) if let rustc_hir::ExprKind::Match(_matchee, arms, _) = e.kind => {
 
                 println!("RV checked via match at {:?}", expr_being_checked.span);
@@ -413,7 +426,6 @@ impl<'tcx> RVCheckFinder<'tcx> {
 
                 println!("Arm count ==2");
 
-                // TODO support guards on mor than one arm?
                 if let Some(arm1_guard) = arms[0].guard {  
 
                     println!("Stepping into Guard 1...");
@@ -465,7 +477,7 @@ impl<'tcx> RVCheckFinder<'tcx> {
                         return None;
                     }
 
-                    let then_result_type = branch_result_type(then_block);
+                    let then_result_type = block_result_type(then_block);
                     println!("RV checked via If comparison at {:?}", expr.span);
                     println!("Binary Operation: {:?}", bin_op.node);
 
