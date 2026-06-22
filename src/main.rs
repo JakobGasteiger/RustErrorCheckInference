@@ -188,6 +188,7 @@ fn find_RV_checks(tcx: rustc_middle::ty::TyCtxt<'_>, wrapper_function: WrapperFu
         tcx,
         wrapper_function: wrapper_function.clone(), // TODO remove this clone
         wrapped_function_value_holder: None,
+        already_visited_function: Vec::new(),
     };
     finder.visit_body(body);
 }
@@ -200,7 +201,7 @@ enum ResultType {
 // checks whether a blocks tail expression is Ok()` or Err()
 fn branch_result_type(block_expr: &rustc_hir::Expr<'_>) -> Option<ResultType> {
     if let rustc_hir::ExprKind::Block(block, _) = block_expr.kind {
-        // TODO support return stamt, not just semicolonlesse exprs as return?
+        // TODO support return stmt, not just semicolonlesse exprs as return?
         if let Some(tail) = block.expr {
             if let rustc_hir::ExprKind::Call(func, _) = &tail.kind {
                 if let rustc_hir::ExprKind::Path(qpath) = &func.kind {
@@ -287,6 +288,9 @@ struct RVCheckFinder<'tcx> {
     // after "let result2 = result": result2's binding HirId
     // etc
     wrapped_function_value_holder: Option<rustc_hir::HirId>,
+
+    // functions already visited while going through sub-error-check function: for fix point analysis; if there is a loop, abort to guarantee termination
+    already_visited_function: Vec<rustc_hir::def_id::DefId>
 }
 
 impl<'tcx> rustc_hir::intravisit::Visitor<'tcx> for RVCheckFinder<'tcx> {
@@ -331,7 +335,8 @@ impl<'tcx> rustc_hir::intravisit::Visitor<'tcx> for RVCheckFinder<'tcx> {
 }
 
 impl<'tcx> RVCheckFinder<'tcx> {
-    // recursivel called when a rv ist passed into another funciton to be checked
+
+    // recursively called when a rv ist passed into another function to be checked
     fn analyze_error_check_function(
         &mut self,
         tcx: rustc_middle::ty::TyCtxt<'_>,
@@ -363,10 +368,14 @@ impl<'tcx> RVCheckFinder<'tcx> {
                 return_value_check: ReturnValueCheck::Empty,
             };
 
+            let mut new_visited_function_list = self.already_visited_function.clone();
+            new_visited_function_list.push(error_check_function_id);
+
             let mut sub_finder = RVCheckFinder {
                 tcx: self.tcx,
                 wrapper_function: new_wrapper_function,
                 wrapped_function_value_holder: Some(param_hir_id),
+                already_visited_function: new_visited_function_list,
             };
             sub_finder.visit_body(body);
             return sub_finder.wrapper_function.return_value_check;
@@ -505,6 +514,12 @@ impl<'tcx> RVCheckFinder<'tcx> {
                                 arg_index,
                                 self.tcx.def_path_str(callee_def_id)
                             );
+                            
+                            // if we find a recursion loop, we terminate analysis for this wrapper
+                            if self.already_visited_function.contains(&callee_def_id) {
+                                println!("Recursion loop found, aborting!");
+                                return Some(ReturnValueCheck::Indeterminate);
+                            }
 
                             return Some(self.analyze_error_check_function(
                                 self.tcx,
