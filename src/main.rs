@@ -149,6 +149,7 @@ fn find_sys_crate<'tcx>(tcx: rustc_middle::ty::TyCtxt<'tcx>) -> rustc_span::def_
     rustc_hir::def_id::LOCAL_CRATE
 }
 
+// TODO support functions inside impl blocks
 fn find_wrapper_functions(
     tcx: rustc_middle::ty::TyCtxt<'_>,
     extern_function_ids: &Vec<rustc_hir::def_id::DefId>,
@@ -181,9 +182,17 @@ fn find_RV_checks(tcx: rustc_middle::ty::TyCtxt<'_>, wrapper_function: WrapperFu
         tcx.def_path_str(wrapper_function.wrapper_function_id)
     );
 
-    // TODO check if a body exists, since this may currently panic
-    let owner_local_def_id = wrapper_function.wrapper_function_id.expect_local();
-    let body = tcx.hir_body_owned_by(owner_local_def_id);
+
+    // only works for local functions (no HIR body for external crates)
+    let Some(owner_local_def_id) = wrapper_function.wrapper_function_id.as_local() else {
+        println!("Not local!");
+        return;
+    };
+    // abort if function has no body
+    let Some(body) = tcx.hir_maybe_body_owned_by(owner_local_def_id) else {
+        println!("No body!");
+        return;
+    };
 
     let mut finder = RVCheckFinder {
         tcx,
@@ -197,6 +206,8 @@ fn find_RV_checks(tcx: rustc_middle::ty::TyCtxt<'_>, wrapper_function: WrapperFu
 enum ResultType {
     Ok,
     Err,
+    Some,
+    None
 }
 
 // checks whether a blocks tail expression is Ok()` or Err()
@@ -210,17 +221,21 @@ fn block_result_type(block_expr: &rustc_hir::Expr<'_>) -> Option<ResultType> {
             // return for return stmt, if there is one
             if let rustc_hir::StmtKind::Semi(expr) = stmt.kind {
                 if let rustc_hir::ExprKind::Ret(Some(ret_expr)) = expr.kind {
+                    println!("Return Statement Found");
                     return expr_result_type(&ret_expr);
                 }
             }
 
             // return for semicolonless expr, if there is one
+            // TODO this possibly doesnt do anything? test
             if let rustc_hir::StmtKind::Expr(expr) = stmt.kind {
+                println!("Return Expression Found");
                 return expr_result_type(&expr);
             }
         }
 
         if let Some(tail) = block.expr {
+            println!("Tail Found");
             return expr_result_type(&tail);
         }
     }
@@ -248,10 +263,20 @@ fn expr_result_type(expr: &rustc_hir::Expr<'_>) -> Option<ResultType> {
             if let rustc_hir::QPath::Resolved(_, path) = qpath {
                 if let Some(seg) = path.segments.last() {
                     if seg.ident.name.as_str() == "Ok" {
+                        println!("Found Ok");
                         return Some(ResultType::Ok);
                     }
                     if seg.ident.name.as_str() == "Err" {
+                        println!("Found  Err");
                         return Some(ResultType::Err);
+                    }
+                    if seg.ident.name.as_str() == "Some" {
+                        println!("Found Some");
+                        return Some(ResultType::Some);
+                    }
+                    if seg.ident.name.as_str() == "None" {
+                        println!("Found None");
+                        return Some(ResultType::None);
                     }
                 }
             }
@@ -337,12 +362,17 @@ impl<'tcx> rustc_hir::intravisit::Visitor<'tcx> for RVCheckFinder<'tcx> {
             if self.wrapped_function_value_holder.is_none() {
                 self.wrapped_function_value_holder = Some(expr.hir_id);
             }
+            println!("Checking use site...");
             let rv_check = self.check_use_site(expr);
             if let Some(rv_check) = rv_check {
-                self.wrapper_function.return_value_check = rv_check; // TODO abort walk here?
+                self.wrapper_function.return_value_check = rv_check; 
+                // abort walk here
+                //println!("Aborting walk");
+                //return;
             }
         }
 
+        //println!("Continuing walk...");
         rustc_hir::intravisit::walk_expr(self, expr);
     }
 }
@@ -350,9 +380,10 @@ impl<'tcx> rustc_hir::intravisit::Visitor<'tcx> for RVCheckFinder<'tcx> {
 impl<'tcx> RVCheckFinder<'tcx> {
 
     // recursively called when a rv ist passed into another function to be checked
+    // TODO unite with fin_RV_checks() ?
     fn analyze_error_check_function(
         &mut self,
-        tcx: rustc_middle::ty::TyCtxt<'_>,
+        tcx: rustc_middle::ty::TyCtxt<'tcx>,
         error_check_function_id: rustc_hir::def_id::DefId,
         arg_index: usize,
     ) -> ReturnValueCheck {
@@ -363,11 +394,14 @@ impl<'tcx> RVCheckFinder<'tcx> {
 
         // only works for local functions (no HIR body for external crates)
         let Some(local_def_id) = error_check_function_id.as_local() else {
-            return ReturnValueCheck::Empty;
+            println!("Not local!");
+            return ReturnValueCheck::Indeterminate;
         };
-
-        // TODO check if a body exists, since this may currently panic
-        let body = self.tcx.hir_body_owned_by(local_def_id);
+        // abort if function has no body
+        let Some(body) = tcx.hir_maybe_body_owned_by(local_def_id) else {
+            println!("No body!");
+            return ReturnValueCheck::Indeterminate;
+        };
 
         // get the parameter pattern at arg_index
         let Some(param) = body.params.get(arg_index) else {
@@ -385,7 +419,7 @@ impl<'tcx> RVCheckFinder<'tcx> {
             let mut new_visited_function_list = self.already_visited_function.clone();
             new_visited_function_list.push(error_check_function_id);
 
-            let mut sub_finder = RVCheckFinder {
+            let mut sub_finder = RVCheckFinder{
                 tcx: self.tcx,
                 wrapper_function: new_wrapper_function,
                 wrapped_function_value_holder: Some(param_hir_id),
@@ -440,20 +474,21 @@ impl<'tcx> RVCheckFinder<'tcx> {
                             let arm1_result_type = arm_result_type(arms[0].body);
                             println!("Binary Operation: {:?}", arm1_bin_op.node);
     
-                            // if we are checking for an error (and returning as such), we found our rv check
-                            if let Some(ResultType::Err) = arm1_result_type {
-                                println!("Error Condition is {:?}", rv_check);
-                                return Some(rv_check);
-                            //if we are checking for non-error (and thus returning ok), the opposite of the check is our error
-                            // TODO expand beyond simple either/or (allow for multiple different error checks) ?
-                            } else if let Some(ResultType::Ok) = arm1_result_type {
-                                println!("Error Condition is {:?}", rv_check.clone().opposite());
-                                return Some(rv_check.opposite());
-                            }
+                            if let Some(arm1_result_type) = arm1_result_type {
+                                // if we are checking for an error (and returning as such), we found our rv check
+                                if matches!(arm1_result_type, ResultType::Err) || matches!(arm1_result_type, ResultType::None) {
+                                    println!("Error Condition is {:?}", rv_check);
+                                    return Some(rv_check);
+                                //if we are checking for non-error (and thus returning ok), the opposite of the check is our error
+                                // TODO expand beyond simple either/or (allow for multiple different error checks) ?
+                                } else if matches!(arm1_result_type, ResultType::Ok) || matches!(arm1_result_type, ResultType::Some) {
+                                    println!("Error Condition is {:?}", rv_check.clone().opposite());
+                                    return Some(rv_check.opposite());
+                                }
     
-                            println!("Neither Err nor Ok Block");
+                                println!("Neither Error nor Normal Block");
+                            }
                         }
-
                     }
                 } else {
                     println!("No guard found!");
@@ -476,23 +511,25 @@ impl<'tcx> RVCheckFinder<'tcx> {
                     if cond.hir_id != e.hir_id {
                         return None;
                     }
-
-                    let then_result_type = block_result_type(then_block);
+                    
                     println!("RV checked via If comparison at {:?}", expr.span);
                     println!("Binary Operation: {:?}", bin_op.node);
+                    let then_result_type = block_result_type(then_block);
 
-                    // if we are checking for an error (and returning as such), we found our rv check
-                    if let Some(ResultType::Err) = then_result_type {
-                        println!("Error Condition is {:?}", rv_check);
-                        return Some(rv_check);
-                    //if we are checking for non-error (and thus returning ok), the opposite of the check is our error
-                    // TODO expand beyond simple either/or (allow for multiple different error checks) ?
-                    } else if let Some(ResultType::Ok) = then_result_type {
-                        println!("Error Condition is {:?}", rv_check.clone().opposite());
-                        return Some(rv_check.opposite());
+                    if let Some(arm1_result_type) = then_result_type {
+                        // if we are checking for an error (and returning as such), we found our rv check
+                        if matches!(arm1_result_type, ResultType::Err) || matches!(arm1_result_type, ResultType::None) {
+                            println!("Error Condition is {:?}", rv_check);
+                            return Some(rv_check);
+                        //if we are checking for non-error (and thus returning ok), the opposite of the check is our error
+                        // TODO expand beyond simple either/or (allow for multiple different error checks) ?
+                        } else if matches!(arm1_result_type, ResultType::Ok) || matches!(arm1_result_type, ResultType::Some) {
+                            println!("Error Condition is {:?}", rv_check.clone().opposite());
+                            return Some(rv_check.opposite());
+                        }
+
+                        println!("Neither Error nor Normal Block");
                     }
-
-                    println!("Neither Err nor Ok Block");
                 } 
             }
 
