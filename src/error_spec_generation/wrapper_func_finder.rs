@@ -1,0 +1,112 @@
+
+// * responsible for finding external functions and their wrappers
+
+use crate::error_spec_generation::spec_generation::ReturnValueCheck;
+use crate::rustc_hir::intravisit::Visitor;
+
+
+#[derive(PartialEq, Eq, Hash, Clone, Debug)]
+// TODO split into wrapperFunction, ErrorSpec ?
+pub struct WrapperFunction {
+    pub wrapper_function_id: rustc_hir::def_id::DefId,
+    pub wrapped_function_id: rustc_hir::def_id::DefId,
+    pub return_value_check: ReturnValueCheck,
+}
+
+
+struct WrapperFuncFinder<'a, 'tcx> {
+    tcx: rustc_middle::ty::TyCtxt<'tcx>,
+    extern_function_ids: &'a Vec<rustc_hir::def_id::DefId>,
+    owner_def_id: rustc_hir::def_id::DefId,
+    wrapper_functions: Vec<WrapperFunction>,
+}
+
+impl<'a, 'tcx> rustc_hir::intravisit::Visitor<'tcx> for WrapperFuncFinder<'a, 'tcx> {
+    fn visit_expr(&mut self, expr: &'tcx rustc_hir::Expr<'tcx>) {
+        // function calls
+        if let rustc_hir::ExprKind::Call(func, _args) = &expr.kind {
+            // gets path to definition of function
+            if let rustc_hir::ExprKind::Path(qpath) = &func.kind {
+                let typeck_results = self.tcx.typeck(self.owner_def_id.expect_local());
+                let resolution = typeck_results.qpath_res(qpath, func.hir_id);
+
+                // resolutes to a definition
+                if let rustc_hir::def::Res::Def(_, callee_def_id) = resolution {
+                    if self.extern_function_ids.contains(&callee_def_id) {
+                        println!(
+                            "Call to external function {:?} in {}",
+                            self.tcx.def_path_str(callee_def_id),
+                            self.tcx.def_path_str(self.owner_def_id)
+                        );
+                        self.wrapper_functions.push(WrapperFunction {
+                            wrapper_function_id: self.owner_def_id,
+                            wrapped_function_id: callee_def_id,
+                            // until we find a specific check in the RV check finder step, we assume nothing is an error
+                            return_value_check: ReturnValueCheck::Empty,
+                        });
+                    }
+                }
+            }
+        }
+        rustc_hir::intravisit::walk_expr(self, expr);
+    }
+}
+
+
+pub fn find_external_functions<'tcx>(
+    tcx: rustc_middle::ty::TyCtxt<'tcx>,
+    sys_crate: rustc_span::def_id::CrateNum
+) -> Vec<rustc_hir::def_id::DefId> {
+
+    let external_functions = tcx
+        .foreign_modules(sys_crate)
+        .values()
+        .flat_map(|foreign_mod| foreign_mod.foreign_items.iter().copied())
+        .filter(|did| matches!(tcx.def_kind(*did), rustc_hir::def::DefKind::Fn));
+
+    Vec::from_iter(external_functions)
+}
+
+
+pub fn find_wrapper_functions(
+    tcx: rustc_middle::ty::TyCtxt<'_>,
+    extern_function_ids: &Vec<rustc_hir::def_id::DefId>,
+) -> Vec<WrapperFunction> {
+    let mut wrapper_functions: Vec<WrapperFunction> = Vec::new();
+
+    // go through all functions incl those in impl blocks, use visit_expr() to go through all expression and see if they are calls to an extern function
+    for item in tcx.hir_free_items().map(|id| tcx.hir_item(id)) {
+        if let rustc_hir::ItemKind::Fn { body: body_id, .. } = &item.kind {
+            let body = tcx.hir_body(*body_id);
+            let owner_def_id = item.owner_id.to_def_id();
+
+            let mut finder = WrapperFuncFinder {
+                tcx,
+                extern_function_ids,
+                owner_def_id,
+                wrapper_functions: Vec::new(),
+            };
+            finder.visit_body(body);
+            wrapper_functions.extend(finder.wrapper_functions);
+        } else if let rustc_hir::ItemKind::Impl(impl_block) = &item.kind {
+            // same as above for all the funcitons inide the impl block (code essentially copied)
+            // TODO reduce biolerplate here?
+            for impl_item in impl_block.items.iter().map(|impl_item_id| tcx.hir_impl_item(*impl_item_id)) {
+                if let rustc_hir::ImplItemKind::Fn(_, body_id) = &impl_item.kind {
+                    let body = tcx.hir_body(*body_id);
+                    let owner_def_id = impl_item.owner_id.to_def_id();
+
+                    let mut finder = WrapperFuncFinder {
+                        tcx,
+                        extern_function_ids,
+                        owner_def_id,
+                        wrapper_functions: Vec::new(),
+                    };
+                    finder.visit_body(body);
+                    wrapper_functions.extend(finder.wrapper_functions);
+                }
+            }
+        }
+    } 
+    wrapper_functions
+}
