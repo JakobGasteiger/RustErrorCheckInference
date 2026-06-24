@@ -198,7 +198,7 @@ fn find_RV_checks(tcx: rustc_middle::ty::TyCtxt<'_>, wrapper_function: WrapperFu
         tcx,
         wrapper_function: wrapper_function.clone(), // TODO remove this clone
         wrapped_function_value_holder: None,
-        already_visited_function: Vec::new(),
+        already_visited_functions: Vec::new(),
     };
     finder.visit_body(body);
 }
@@ -265,19 +265,23 @@ fn expr_result_type(expr: &rustc_hir::Expr<'_>) -> Option<ResultType> {
                     if seg.ident.name.as_str() == "Ok" {
                         println!("Found Ok");
                         return Some(ResultType::Ok);
-                    }
-                    if seg.ident.name.as_str() == "Err" {
-                        println!("Found  Err");
+                    } else if seg.ident.name.as_str() == "Err" {
+                        println!("Found Err");
                         return Some(ResultType::Err);
-                    }
-                    if seg.ident.name.as_str() == "Some" {
+                    } else if seg.ident.name.as_str() == "Some" {
                         println!("Found Some");
                         return Some(ResultType::Some);
                     }
-                    if seg.ident.name.as_str() == "None" {
-                        println!("Found None");
-                        return Some(ResultType::None);
-                    }
+                }
+            }
+        } 
+    // None is a path, not a call, must be treated differently
+    } else if let rustc_hir::ExprKind::Path(qpath) = &expr.kind {
+        if let rustc_hir::QPath::Resolved(_, path) = qpath {
+            if let Some(seg) = path.segments.last() {
+                if seg.ident.name.as_str() == "None" {
+                    println!("Found None");
+                    return Some(ResultType::None);
                 }
             }
         }
@@ -328,7 +332,7 @@ struct RVCheckFinder<'tcx> {
     wrapped_function_value_holder: Option<rustc_hir::HirId>,
 
     // functions already visited while going through sub-error-check function: for fix point analysis; if there is a loop, abort to guarantee termination
-    already_visited_function: Vec<rustc_hir::def_id::DefId>
+    already_visited_functions: Vec<rustc_hir::def_id::DefId>
 }
 
 impl<'tcx> rustc_hir::intravisit::Visitor<'tcx> for RVCheckFinder<'tcx> {
@@ -416,14 +420,14 @@ impl<'tcx> RVCheckFinder<'tcx> {
                 return_value_check: ReturnValueCheck::Empty,
             };
 
-            let mut new_visited_function_list = self.already_visited_function.clone();
+            let mut new_visited_function_list = self.already_visited_functions.clone();
             new_visited_function_list.push(error_check_function_id);
 
             let mut sub_finder = RVCheckFinder{
                 tcx: self.tcx,
                 wrapper_function: new_wrapper_function,
                 wrapped_function_value_holder: Some(param_hir_id),
-                already_visited_function: new_visited_function_list,
+                already_visited_functions: new_visited_function_list,
             };
             sub_finder.visit_body(body);
             return sub_finder.wrapper_function.return_value_check;
@@ -437,7 +441,6 @@ impl<'tcx> RVCheckFinder<'tcx> {
 
         // TODO support for rv borrowing?
         // TODO see pattern from apppend() in Libgit/src/repo.rs::976 : support this?
-        // TODO support for code inside unsafe blocks?
         match parent.map(|(_, node)| node) {
             // let result = <tracked expr>: move holder to result's binding HirId
             Some(rustc_hir::Node::LetStmt(local)) => {
@@ -565,7 +568,7 @@ impl<'tcx> RVCheckFinder<'tcx> {
                             );
                             
                             // if we find a recursion loop, we terminate analysis for this wrapper
-                            if self.already_visited_function.contains(&callee_def_id) {
+                            if self.already_visited_functions.contains(&callee_def_id) {
                                 println!("Recursion loop found, aborting!");
                                 return Some(ReturnValueCheck::Indeterminate);
                             }
