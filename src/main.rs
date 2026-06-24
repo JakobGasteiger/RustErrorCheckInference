@@ -339,6 +339,12 @@ impl<'tcx> rustc_hir::intravisit::Visitor<'tcx> for RVCheckFinder<'tcx> {
     // as we go through the expressions of the body, for each expr
     // we check if it is the current holder of the return value, and if so, what happens to it ( via ehck_use_site() )
     fn visit_expr(&mut self, expr: &'tcx rustc_hir::Expr<'tcx>) {
+
+        // if we have already found a check, we do not look further
+        if !matches!(self.wrapper_function.return_value_check, ReturnValueCheck::Empty) {
+            return;
+        }
+
         let owner = self.wrapper_function.wrapper_function_id.expect_local();
         let typeck_results = self.tcx.typeck(owner);
 
