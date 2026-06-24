@@ -156,7 +156,7 @@ fn find_wrapper_functions(
 ) -> Vec<WrapperFunction> {
     let mut wrapper_functions: Vec<WrapperFunction> = Vec::new();
 
-    // go through all funtions, use visit_expr() to go through all expression and see if they are calls to an extern function
+    // go through all functions incl those in impl blocks, use visit_expr() to go through all expression and see if they are calls to an extern function
     for item in tcx.hir_free_items().map(|id| tcx.hir_item(id)) {
         if let rustc_hir::ItemKind::Fn { body: body_id, .. } = &item.kind {
             let body = tcx.hir_body(*body_id);
@@ -170,8 +170,26 @@ fn find_wrapper_functions(
             };
             finder.visit_body(body);
             wrapper_functions.extend(finder.wrapper_functions);
+        } else if let rustc_hir::ItemKind::Impl(impl_block) = &item.kind {
+            // same as above for all the funcitons inide the impl block (code essentially copied)
+            // TODO reduce biolerplate here?
+            for impl_item in impl_block.items.iter().map(|impl_item_id| tcx.hir_impl_item(*impl_item_id)) {
+                if let rustc_hir::ImplItemKind::Fn(_, body_id) = &impl_item.kind {
+                    let body = tcx.hir_body(*body_id);
+                    let owner_def_id = impl_item.owner_id.to_def_id();
+
+                    let mut finder = WrapperFuncFinder {
+                        tcx,
+                        extern_function_ids,
+                        owner_def_id,
+                        wrapper_functions: HashSet::new(),
+                    };
+                    finder.visit_body(body);
+                    wrapper_functions.extend(finder.wrapper_functions);
+                }
+            }
         }
-    }
+    } 
     wrapper_functions
 }
 
