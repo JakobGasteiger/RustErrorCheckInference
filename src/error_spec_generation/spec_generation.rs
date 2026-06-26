@@ -4,7 +4,7 @@
 use crate::error_spec_generation::{spec_generation::ReturnValueCheck::*, wrapper_func_finder::WrapperFunction};
 use crate::rustc_hir::intravisit::Visitor;
 
-#[derive(PartialEq, Eq, Hash, Clone, Debug)]
+#[derive(PartialEq, Eq, Hash, Clone, Copy, Debug)]
 pub enum ReturnValueCheck {
     Empty,
     LesserZero,
@@ -219,39 +219,7 @@ impl<'tcx> RVCheckFinder<'tcx> {
 
                 println!("Arm count ==2");
 
-                if let Some(arm1_guard) = arms[0].guard {  
-
-                    println!("Stepping into Guard 1...");
-                    if let rustc_hir::ExprKind::Binary(arm1_bin_op, _arm1_bin_ex1, arm1_bin_ex2) = arm1_guard.kind {
-
-                        println!("Guard 1 is Binary Expression...");
-
-                        let rv_check = ReturnValueCheck::parse_from_bin_op(&arm1_bin_op, &arm1_bin_ex2);
-
-                        if let Some(rv_check) = rv_check {
-
-                            let arm1_result_type = arm_result_type(arms[0].body);
-                            println!("Binary Operation: {:?}", arm1_bin_op.node);
-    
-                            if let Some(arm1_result_type) = arm1_result_type {
-                                // if we are checking for an error (and returning as such), we found our rv check
-                                if matches!(arm1_result_type, ResultType::Err) || matches!(arm1_result_type, ResultType::None) {
-                                    println!("Error Condition is {:?}", rv_check);
-                                    return Some(rv_check);
-                                //if we are checking for non-error (and thus returning ok), the opposite of the check is our error
-                                // TODO expand beyond simple either/or (allow for multiple different error checks) ?
-                                } else if matches!(arm1_result_type, ResultType::Ok) || matches!(arm1_result_type, ResultType::Some) {
-                                    println!("Error Condition is {:?}", rv_check.clone().opposite());
-                                    return Some(rv_check.opposite());
-                                }
-    
-                                println!("Neither Error nor Normal Block");
-                            }
-                        }
-                    }
-                } else {
-                    println!("No guard found!");
-                }
+                return self.analyze_match_stmt(arms);
             }
 
             // TODO support first comparand, comparands other than zero ?
@@ -261,7 +229,7 @@ impl<'tcx> RVCheckFinder<'tcx> {
                 let rv_check = ReturnValueCheck::parse_from_bin_op(&bin_op, &ex2);
 
                 // is this a comparison and part of an if stmt?
-                if let Some(rv_check) = rv_check.clone()
+                if let Some(rv_check) = rv_check.clone() // TODO remove clone?
                     && let Some((_, rustc_hir::Node::Expr(expr))) =
                         self.tcx.hir_parent_iter(e.hir_id).next()
                     && let rustc_hir::ExprKind::If(cond, then_block, _else_block) = expr.kind
@@ -273,9 +241,121 @@ impl<'tcx> RVCheckFinder<'tcx> {
                     
                     println!("RV checked via If comparison at {:?}", expr.span);
                     println!("Binary Operation: {:?}", bin_op.node);
-                    let then_result_type = block_result_type(then_block);
 
-                    if let Some(arm1_result_type) = then_result_type {
+                    return self.analyze_if_stmt(rv_check, then_block);
+                    
+                } 
+            }
+
+            // TODO
+            Some(rustc_hir::Node::Expr(e))
+                if matches!(e.kind, rustc_hir::ExprKind::MethodCall(..)) =>
+            {
+                if let rustc_hir::ExprKind::MethodCall(method, ..) = e.kind {
+                    return self.analyze_method_call(&method, expr_being_checked);
+                }
+            }
+
+            // TODO boolean returns
+            Some(rustc_hir::Node::Expr(e))
+                if let rustc_hir::ExprKind::Call(func, args) = e.kind =>
+            {
+                println!("RV passed to another function at {:?}", expr_being_checked.span);
+                return self.analyze_function_call(&func, args, expr_being_checked);
+            }
+
+            _ => {
+                println!("RV use unclassified at {:?}", expr_being_checked.span); // TODO no print at all here?
+            }
+        }
+
+        None
+    }
+
+
+    fn analyze_function_call(self: &mut Self, func: &rustc_hir::Expr, args: &[rustc_hir::Expr], expr_being_checked: &rustc_hir::Expr) -> Option<ReturnValueCheck>{
+
+        // which argument number is our RV when being passed in?
+        if let Some(arg_index) = args.iter().position(|a| a.hir_id == expr_being_checked.hir_id) {
+            if let rustc_hir::ExprKind::Path(qpath) = &func.kind {
+                let owner = self.wrapper_function.wrapper_function_id.expect_local();
+                let typeck_results = self.tcx.typeck(owner);
+                let res = typeck_results.qpath_res(qpath, func.hir_id);
+
+                if let rustc_hir::def::Res::Def(_, callee_def_id) = res {
+                    println!(
+                        "RV passed as arg {} to {} : recursing",
+                        arg_index,
+                        self.tcx.def_path_str(callee_def_id)
+                    );
+                    
+                    // if we find a recursion loop, we terminate analysis for this wrapper
+                    if self.already_visited_functions.contains(&callee_def_id) {
+                        println!("Recursion loop found, aborting!");
+                        return Some(ReturnValueCheck::Indeterminate);
+                    }
+
+                    return Some(self.analyze_error_check_function(
+                        self.tcx,
+                        callee_def_id,
+                        arg_index,
+                    ));
+                }
+            }
+        }
+
+        None
+    }
+
+    fn analyze_method_call(self: &Self, method: &rustc_hir::PathSegment, expr_being_checked: &rustc_hir::Expr) -> Option<ReturnValueCheck> {
+        println!(
+            "RV checked via method '{}' at {:?}",
+            method.ident, expr_being_checked.span
+        );
+
+        // TODO temp, actually implment function
+        None
+    }
+
+    fn analyze_if_stmt(self: &Self, rv_check: ReturnValueCheck, then_block: &rustc_hir::Expr) -> Option<ReturnValueCheck> {
+
+        let then_result_type = block_result_type(then_block);
+
+        if let Some(arm1_result_type) = then_result_type {
+            // if we are checking for an error (and returning as such), we found our rv check
+            if matches!(arm1_result_type, ResultType::Err) || matches!(arm1_result_type, ResultType::None) {
+                println!("Error Condition is {:?}", rv_check);
+                return Some(rv_check);
+            //if we are checking for non-error (and thus returning ok), the opposite of the check is our error
+            // TODO expand beyond simple either/or (allow for multiple different error checks) ?
+            } else if matches!(arm1_result_type, ResultType::Ok) || matches!(arm1_result_type, ResultType::Some) {
+                println!("Error Condition is {:?}", rv_check.clone().opposite());
+                return Some(rv_check.opposite());
+            }
+
+            println!("Neither Error nor Normal Block");
+        }
+
+        None
+    }
+
+    fn analyze_match_stmt(self: &Self, arms: &[rustc_hir::Arm]) -> Option<ReturnValueCheck> {
+
+        if let Some(arm1_guard) = arms[0].guard {  
+
+            println!("Stepping into Guard 1...");
+            if let rustc_hir::ExprKind::Binary(arm1_bin_op, _arm1_bin_ex1, arm1_bin_ex2) = arm1_guard.kind {
+
+                println!("Guard 1 is Binary Expression...");
+
+                let rv_check = ReturnValueCheck::parse_from_bin_op(&arm1_bin_op, &arm1_bin_ex2);
+
+                if let Some(rv_check) = rv_check {
+
+                    let arm1_result_type = arm_result_type(arms[0].body);
+                    println!("Binary Operation: {:?}", arm1_bin_op.node);
+
+                    if let Some(arm1_result_type) = arm1_result_type {
                         // if we are checking for an error (and returning as such), we found our rv check
                         if matches!(arm1_result_type, ResultType::Err) || matches!(arm1_result_type, ResultType::None) {
                             println!("Error Condition is {:?}", rv_check);
@@ -289,61 +369,12 @@ impl<'tcx> RVCheckFinder<'tcx> {
 
                         println!("Neither Error nor Normal Block");
                     }
-                } 
-            }
-
-            // TODO ?
-            Some(rustc_hir::Node::Expr(e))
-                if matches!(e.kind, rustc_hir::ExprKind::MethodCall(..)) =>
-            {
-                if let rustc_hir::ExprKind::MethodCall(method, ..) = e.kind {
-                    println!(
-                        "RV checked via method '{}' at {:?}",
-                        method.ident, expr_being_checked.span
-                    );
                 }
             }
-
-            // TODO boolean returns
-            Some(rustc_hir::Node::Expr(e))
-                if let rustc_hir::ExprKind::Call(func, args) = e.kind =>
-            {
-                println!("RV passed to another function at {:?}", expr_being_checked.span);
-                // which argument number is our RV when being passed in?
-                if let Some(arg_index) = args.iter().position(|a| a.hir_id == expr_being_checked.hir_id) {
-                    if let rustc_hir::ExprKind::Path(qpath) = &func.kind {
-                        let owner = self.wrapper_function.wrapper_function_id.expect_local();
-                        let typeck_results = self.tcx.typeck(owner);
-                        let res = typeck_results.qpath_res(qpath, func.hir_id);
-
-                        if let rustc_hir::def::Res::Def(_, callee_def_id) = res {
-                            println!(
-                                "RV passed as arg {} to {} : recursing",
-                                arg_index,
-                                self.tcx.def_path_str(callee_def_id)
-                            );
-                            
-                            // if we find a recursion loop, we terminate analysis for this wrapper
-                            if self.already_visited_functions.contains(&callee_def_id) {
-                                println!("Recursion loop found, aborting!");
-                                return Some(ReturnValueCheck::Indeterminate);
-                            }
-
-                            return Some(self.analyze_error_check_function(
-                                self.tcx,
-                                callee_def_id,
-                                arg_index,
-                            ));
-                        }
-                    }
-                }
-            }
-
-            _ => {
-                println!("RV use unclassified at {:?}", expr_being_checked.span); // TODO no print at all here?
-            }
+        } else {
+            println!("No guard found!");
         }
-
+        
         None
     }
 }
