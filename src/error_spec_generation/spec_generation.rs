@@ -252,6 +252,11 @@ impl<'tcx> RVCheckFinder<'tcx> {
                 if matches!(e.kind, rustc_hir::ExprKind::MethodCall(..)) =>
             {
                 if let rustc_hir::ExprKind::MethodCall(method, ..) = e.kind {
+
+                    println!(
+                        "RV checked via method '{}' at {:?}",
+                        method.ident, expr_being_checked.span
+                    );
                     return self.analyze_method_call(&method, expr_being_checked);
                 }
             }
@@ -308,10 +313,6 @@ impl<'tcx> RVCheckFinder<'tcx> {
     }
 
     fn analyze_method_call(self: &Self, method: &rustc_hir::PathSegment, expr_being_checked: &rustc_hir::Expr) -> Option<ReturnValueCheck> {
-        println!(
-            "RV checked via method '{}' at {:?}",
-            method.ident, expr_being_checked.span
-        );
 
         // TODO temp, actually implment function
         None
