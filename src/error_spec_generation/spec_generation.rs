@@ -193,12 +193,14 @@ impl<'tcx> RVCheckFinder<'tcx> {
     }
 
     fn check_use_site(&mut self, expr_being_checked: &'tcx rustc_hir::Expr<'tcx>) -> Option<ReturnValueCheck> {
-        let parent = self.tcx.hir_parent_iter(expr_being_checked.hir_id).next();
+
+        let parent = self.tcx.hir_parent_iter(expr_being_checked.hir_id).next().map(|(_, node)| node);
 
         // TODO support for rv borrowing?
         // TODO see pattern from apppend() in Libgit/src/repo.rs::976 : support this?
-        match parent.map(|(_, node)| node) {
-            // let result = <tracked expr>: move holder to result's binding HirId
+
+        match parent {
+            // on sth like let result = <tracked expr>: move holder to result's binding HirId
             Some(rustc_hir::Node::LetStmt(local)) => {
                 if let rustc_hir::PatKind::Binding(_, hir_id, ident, _) = local.pat.kind {
                     println!("RV identity moves to '{}'", ident.name);
@@ -206,7 +208,7 @@ impl<'tcx> RVCheckFinder<'tcx> {
                 }
             }
 
-            Some(rustc_hir::Node::Expr(e)) if let rustc_hir::ExprKind::Match(_matchee, arms, _) = e.kind => {
+            Some(rustc_hir::Node::Expr(parent_expr)) if let rustc_hir::ExprKind::Match(_matchee, arms, _) = parent_expr.kind => {
 
                 println!("RV checked via match at {:?}", expr_being_checked.span);
 
@@ -223,19 +225,19 @@ impl<'tcx> RVCheckFinder<'tcx> {
             }
 
             // TODO support first comparand, comparands other than zero ?
-            Some(rustc_hir::Node::Expr(e))
-                if let rustc_hir::ExprKind::Binary(bin_op, _ex1, ex2) = e.kind =>
+            Some(rustc_hir::Node::Expr(parent_expr))
+                if let rustc_hir::ExprKind::Binary(bin_op, _ex1, ex2) = parent_expr.kind =>
             {
                 let rv_check = ReturnValueCheck::parse_from_bin_op(&bin_op, &ex2);
 
                 // is this a comparison and part of an if stmt?
                 if let Some(rv_check) = rv_check.clone() // TODO remove clone?
                     && let Some((_, rustc_hir::Node::Expr(expr))) =
-                        self.tcx.hir_parent_iter(e.hir_id).next()
+                        self.tcx.hir_parent_iter(parent_expr.hir_id).next()
                     && let rustc_hir::ExprKind::If(cond, then_block, _else_block) = expr.kind
                 {
                     // cond should always be our binary expression: confirm this, abort if not
-                    if cond.hir_id != e.hir_id {
+                    if cond.hir_id != parent_expr.hir_id {
                         return None;
                     }
                     
@@ -248,10 +250,10 @@ impl<'tcx> RVCheckFinder<'tcx> {
             }
 
             // TODO
-            Some(rustc_hir::Node::Expr(e))
-                if matches!(e.kind, rustc_hir::ExprKind::MethodCall(..)) =>
+            Some(rustc_hir::Node::Expr(parent_expr))
+                if matches!(parent_expr.kind, rustc_hir::ExprKind::MethodCall(..)) =>
             {
-                if let rustc_hir::ExprKind::MethodCall(method, ..) = e.kind {
+                if let rustc_hir::ExprKind::MethodCall(method, receiver, args, ..) = parent_expr.kind {
 
                     println!(
                         "RV checked via method '{}' at {:?}",
@@ -262,53 +264,74 @@ impl<'tcx> RVCheckFinder<'tcx> {
             }
 
             // TODO boolean returns
-            Some(rustc_hir::Node::Expr(e))
-                if let rustc_hir::ExprKind::Call(func, args) = e.kind =>
+            Some(rustc_hir::Node::Expr(parent_expr))
+                if let rustc_hir::ExprKind::Call(func, args) = parent_expr.kind =>
             {
                 println!("RV passed to another function at {:?}", expr_being_checked.span);
                 return self.analyze_function_call(&func, args, expr_being_checked);
             }
 
             _ => {
-                println!("RV use unclassified at {:?}", expr_being_checked.span); // TODO no print at all here?
+                println!("RV use unclassified at {:?}", expr_being_checked.span);
             }
         }
 
         None
     }
 
+    // TODO: harmonize with get_method_def_id: pass call expr, not the function itself    
+    fn get_function_def_id(self: &Self, func: &rustc_hir::Expr) -> Option<rustc_hir::def_id::DefId> {
+        if let rustc_hir::ExprKind::Path(qpath) = &func.kind {
+            let owner = self.wrapper_function.wrapper_function_id.expect_local();
+            let typeck_results = self.tcx.typeck(owner);
+            let res = typeck_results.qpath_res(qpath, func.hir_id);
+
+            if let rustc_hir::def::Res::Def(_, callee_def_id) = res {
+                return Some(callee_def_id);
+            }
+        }
+        None
+    }
+    
 
     fn analyze_function_call(self: &mut Self, func: &rustc_hir::Expr, args: &[rustc_hir::Expr], expr_being_checked: &rustc_hir::Expr) -> Option<ReturnValueCheck>{
 
         // which argument number is our RV when being passed in?
         if let Some(arg_index) = args.iter().position(|a| a.hir_id == expr_being_checked.hir_id) {
-            if let rustc_hir::ExprKind::Path(qpath) = &func.kind {
-                let owner = self.wrapper_function.wrapper_function_id.expect_local();
-                let typeck_results = self.tcx.typeck(owner);
-                let res = typeck_results.qpath_res(qpath, func.hir_id);
+            if let Some(callee_def_id) = &self.get_function_def_id(func) {
 
-                if let rustc_hir::def::Res::Def(_, callee_def_id) = res {
-                    println!(
-                        "RV passed as arg {} to {} : recursing",
-                        arg_index,
-                        self.tcx.def_path_str(callee_def_id)
-                    );
-                    
-                    // if we find a recursion loop, we terminate analysis for this wrapper
-                    if self.already_visited_functions.contains(&callee_def_id) {
-                        println!("Recursion loop found, aborting!");
-                        return Some(ReturnValueCheck::Indeterminate);
-                    }
-
-                    return Some(self.analyze_error_check_function(
-                        self.tcx,
-                        callee_def_id,
-                        arg_index,
-                    ));
+                println!(
+                    "RV passed as arg {} to {} : recursing",
+                    arg_index,
+                    self.tcx.def_path_str(*callee_def_id)
+                );
+                
+                // if we find a recursion loop, we terminate analysis for this wrapper
+                if self.already_visited_functions.contains(&callee_def_id) {
+                    println!("Recursion loop found, aborting!");
+                    return Some(ReturnValueCheck::Indeterminate);
                 }
+
+                return Some(self.analyze_error_check_function(
+                    self.tcx,
+                    callee_def_id.clone(),
+                    arg_index,
+                ));
             }
         }
 
+        None
+    }
+
+    fn get_method_def_id(self: &Self, method_expr: &rustc_hir::Expr) -> Option<rustc_hir::def_id::DefId> {
+        let owner = self.wrapper_function.wrapper_function_id.expect_local();
+        let typeck_results = self.tcx.typeck(owner);
+
+        if let Some(def_id) = typeck_results.type_dependent_def_id(method_expr.hir_id) {
+            if def_id.is_local() {
+                return Some(def_id);
+            }
+        }
         None
     }
 
