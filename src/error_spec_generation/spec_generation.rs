@@ -62,6 +62,7 @@ impl ReturnValueCheck {
     }
 }
 
+#[derive(PartialEq, Eq)]
 enum ResultType {
     Ok,
     Err,
@@ -69,6 +70,12 @@ enum ResultType {
     None
 }
 
+#[derive(PartialEq, Eq)]
+enum ReturnType {
+    ResultOrOption,
+    Bool,
+    Other,
+}
 
 // finds the checks on return values (=RV)
 struct RVCheckFinder<'tcx> {
@@ -279,6 +286,27 @@ impl<'tcx> RVCheckFinder<'tcx> {
         None
     }
 
+    fn get_function_or_method_return_type(self: &Self, def_id: &rustc_hir::def_id::DefId) -> ReturnType {
+        
+        let return_type = self.tcx.fn_sig(*def_id).skip_binder().output().skip_binder();
+
+        match return_type.kind() {
+            rustc_middle::ty::TyKind::Adt(adt_def, _args) => {
+                let type_name = self.tcx.def_path_str(adt_def.did());
+                if type_name == "core::result::Result" || type_name == "std::result::Result"
+                || type_name == "core::result::Option" || type_name == "std::result::Option" {
+                    return ReturnType::ResultOrOption;
+                }
+            },
+
+            rustc_middle::ty::TyKind::Bool => return ReturnType::Bool,
+
+            _ => return ReturnType::Other
+        }
+
+        ReturnType::Other
+    }
+
     // TODO: harmonize with get_method_def_id: pass call expr, not the function itself    
     fn get_function_def_id(self: &Self, func: &rustc_hir::Expr) -> Option<rustc_hir::def_id::DefId> {
         if let rustc_hir::ExprKind::Path(qpath) = &func.kind {
@@ -294,11 +322,14 @@ impl<'tcx> RVCheckFinder<'tcx> {
     }
     
 
-    fn analyze_function_call(self: &mut Self, func: &rustc_hir::Expr, args: &[rustc_hir::Expr], expr_being_checked: &rustc_hir::Expr) -> Option<ReturnValueCheck>{
+    fn analyze_function_call(self: &mut Self, func: &rustc_hir::Expr, args: &[rustc_hir::Expr], expr_being_checked: &rustc_hir::Expr) -> Option<ReturnValueCheck> {
 
-        // which argument number is our RV when being passed in?
-        if let Some(arg_index) = args.iter().position(|a| a.hir_id == expr_being_checked.hir_id) {
-            if let Some(callee_def_id) = &self.get_function_def_id(func) {
+        if let Some(callee_def_id) = &self.get_function_def_id(func) {
+
+            if self.get_function_or_method_return_type(callee_def_id) != ReturnType::ResultOrOption { return None; }
+
+            // which argument number is our RV when being passed in?
+            if let Some(arg_index) = args.iter().position(|a| a.hir_id == expr_being_checked.hir_id) {
 
                 println!(
                     "RV passed as arg {} to {} : recursing",
