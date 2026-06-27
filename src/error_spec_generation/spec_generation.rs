@@ -147,8 +147,8 @@ impl<'tcx> rustc_hir::intravisit::Visitor<'tcx> for RVCheckFinder<'tcx> {
 impl<'tcx> RVCheckFinder<'tcx> {
 
     // recursively called when a rv ist passed into another function to be checked
-    // TODO unite with fin_RV_checks() ?
-    fn analyze_error_check_function(
+    // TODO unite with find_RV_checks() or analyze_function or analyze_method or sth ?
+    fn analyze_sub_error_check_function(
         &mut self,
         tcx: rustc_middle::ty::TyCtxt<'tcx>,
         error_check_function_id: rustc_hir::def_id::DefId,
@@ -170,7 +170,7 @@ impl<'tcx> RVCheckFinder<'tcx> {
             return ReturnValueCheck::Indeterminate;
         };
 
-        // get the parameter pattern at arg_index
+        // get the parameter at arg_index
         let Some(param) = body.params.get(arg_index) else {
             return ReturnValueCheck::Empty;
         };
@@ -260,13 +260,13 @@ impl<'tcx> RVCheckFinder<'tcx> {
             Some(rustc_hir::Node::Expr(parent_expr))
                 if matches!(parent_expr.kind, rustc_hir::ExprKind::MethodCall(..)) =>
             {
-                if let rustc_hir::ExprKind::MethodCall(method, receiver, args, ..) = parent_expr.kind {
+                if let rustc_hir::ExprKind::MethodCall(method, ..) = parent_expr.kind {
 
                     println!(
                         "RV checked via method '{}' at {:?}",
                         method.ident, expr_being_checked.span
                     );
-                    return self.analyze_method_call(&method, expr_being_checked);
+                    return self.analyze_method_call(&parent_expr, expr_being_checked);
                 }
             }
 
@@ -324,9 +324,14 @@ impl<'tcx> RVCheckFinder<'tcx> {
 
     fn analyze_function_call(self: &mut Self, func: &rustc_hir::Expr, args: &[rustc_hir::Expr], expr_being_checked: &rustc_hir::Expr) -> Option<ReturnValueCheck> {
 
-        if let Some(callee_def_id) = &self.get_function_def_id(func) {
+        if let Some(function_def_id) = &self.get_function_def_id(func) {
 
-            if self.get_function_or_method_return_type(callee_def_id) != ReturnType::ResultOrOption { return None; }
+            // abort if we a re analyzing a method that doesn'T return result or option
+            // TODO handle case bool
+            if self.get_function_or_method_return_type(function_def_id) != ReturnType::ResultOrOption { 
+                println!("Does not return Result or Option");
+                return None; 
+            }
 
             // which argument number is our RV when being passed in?
             if let Some(arg_index) = args.iter().position(|a| a.hir_id == expr_being_checked.hir_id) {
@@ -334,18 +339,18 @@ impl<'tcx> RVCheckFinder<'tcx> {
                 println!(
                     "RV passed as arg {} to {} : recursing",
                     arg_index,
-                    self.tcx.def_path_str(*callee_def_id)
+                    self.tcx.def_path_str(*function_def_id)
                 );
                 
                 // if we find a recursion loop, we terminate analysis for this wrapper
-                if self.already_visited_functions.contains(&callee_def_id) {
+                if self.already_visited_functions.contains(&function_def_id) {
                     println!("Recursion loop found, aborting!");
                     return Some(ReturnValueCheck::Indeterminate);
                 }
 
-                return Some(self.analyze_error_check_function(
+                return Some(self.analyze_sub_error_check_function(
                     self.tcx,
-                    callee_def_id.clone(),
+                    function_def_id.clone(),
                     arg_index,
                 ));
             }
@@ -366,7 +371,34 @@ impl<'tcx> RVCheckFinder<'tcx> {
         None
     }
 
-    fn analyze_method_call(self: &Self, method: &rustc_hir::PathSegment, expr_being_checked: &rustc_hir::Expr) -> Option<ReturnValueCheck> {
+    fn analyze_method_call(self: &mut Self, method: &rustc_hir::Expr, expr_being_checked: &rustc_hir::Expr) -> Option<ReturnValueCheck> {
+
+        if let Some(method_def_id) = self.get_method_def_id(method) && let rustc_hir::ExprKind::MethodCall(method, receiver, _args, ..) = method.kind {
+
+            // abort if we a re analyzing a method that doesn'T return result or option
+            // TODO handle case bool
+            if self.get_function_or_method_return_type(&method_def_id) != ReturnType::ResultOrOption { 
+                println!("Does not return Result or Option");
+                return None; 
+            }
+
+            println!(
+                "RV passed as to method {} : recursing",
+                self.tcx.def_path_str(method_def_id)
+            );
+            
+            // if we find a recursion loop, we terminate analysis for this wrapper
+            if self.already_visited_functions.contains(&method_def_id) {
+                println!("Recursion loop found, aborting!");
+                return Some(ReturnValueCheck::Indeterminate);
+            }
+
+            return Some(self.analyze_sub_error_check_function(
+                self.tcx,
+                method_def_id.clone(),
+                0, // self, which is the argument we care about, is always the first argument
+            ));
+        }
 
         // TODO temp, actually implment function
         None
