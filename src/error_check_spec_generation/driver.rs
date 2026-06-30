@@ -1,9 +1,9 @@
 
 // * responsible for the complier hook and managing the flow of the analysis
 
-use crate::error_spec_generation::spec_generation::find_RV_checks;
-use crate::error_spec_generation::wrapper_func_finder::find_external_functions;
-use crate::error_spec_generation::wrapper_func_finder::find_wrapper_functions;
+use crate::error_check_spec_generation::spec_generation::find_RV_checks;
+use crate::error_check_spec_generation::wrapper_func_finder::find_external_functions;
+use crate::error_check_spec_generation::wrapper_func_finder::find_wrapper_functions;
 
 pub struct ExternFuncCheckCallbacks;
 

@@ -1,7 +1,7 @@
 
 // * responsible for finding external functions and their wrappers
 
-use crate::error_spec_generation::spec_generation::ReturnValueCheck;
+use crate::error_check_spec_generation::spec_generation::ReturnValueCheck;
 use crate::rustc_hir::intravisit::Visitor;
 
 

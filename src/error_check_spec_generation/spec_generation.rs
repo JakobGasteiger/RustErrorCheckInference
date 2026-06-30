@@ -1,7 +1,7 @@
 
 // * responsible for generating error check specifications for wrapper functions
 
-use crate::error_spec_generation::{spec_generation::ReturnValueCheck::*, wrapper_func_finder::WrapperFunction};
+use crate::error_check_spec_generation::{spec_generation::ReturnValueCheck::*, wrapper_func_finder::WrapperFunction};
 use crate::rustc_hir::intravisit::Visitor;
 
 #[derive(PartialEq, Eq, Hash, Clone, Copy, Debug)]

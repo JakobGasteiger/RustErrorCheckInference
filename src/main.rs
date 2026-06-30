@@ -8,9 +8,9 @@ extern crate rustc_interface;
 extern crate rustc_middle;
 extern crate rustc_span;
 
-mod error_spec_generation; 
+mod error_check_spec_generation; 
 
-use crate::error_spec_generation::driver::*;
+use crate::error_check_spec_generation::driver::*;
 
 
 fn main() {

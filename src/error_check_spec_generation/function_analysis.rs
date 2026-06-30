@@ -1,7 +1,7 @@
 
 // * contains some functions related to analyzing sub-error-check-function/methods: soreted into own file for organization
 
-use crate::error_spec_generation::{spec_generation::{RVCheckFinder, ReturnType, ReturnValueCheck}, wrapper_func_finder::WrapperFunction};
+use crate::error_check_spec_generation::{spec_generation::{RVCheckFinder, ReturnType, ReturnValueCheck}, wrapper_func_finder::WrapperFunction};
 use crate::rustc_hir::intravisit::Visitor;
 
 impl<'tcx> RVCheckFinder<'tcx> {
