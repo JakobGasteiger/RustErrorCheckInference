@@ -80,9 +80,10 @@ impl<'tcx> RVCheckFinder<'tcx> {
         ReturnType::Other
     }
 
-    // TODO: harmonize with get_method_def_id: pass call expr, not the function itself    
+    // TODO: harmonize with get_method_def_id ?: pass call expr, not the function itself    
     pub fn get_function_def_id(self: &Self, func: &rustc_hir::Expr) -> Option<rustc_hir::def_id::DefId> {
         if let rustc_hir::ExprKind::Path(qpath) = &func.kind {
+            // TODO can panic, fix with as_local()
             let owner = self.wrapper_function.wrapper_function_id.expect_local();
             let typeck_results = self.tcx.typeck(owner);
             let res = typeck_results.qpath_res(qpath, func.hir_id);
@@ -95,12 +96,12 @@ impl<'tcx> RVCheckFinder<'tcx> {
     }
     
 
-    pub fn analyze_function_call(self: &mut Self, func: &rustc_hir::Expr, args: &[rustc_hir::Expr], expr_being_checked: &rustc_hir::Expr) -> Option<ReturnValueCheck> {
+    pub fn analyze_res_opt_function_call(self: &mut Self, func: &rustc_hir::Expr, args: &[rustc_hir::Expr], expr_being_checked: &rustc_hir::Expr) -> Option<ReturnValueCheck> {
 
         if let Some(function_def_id) = &self.get_function_def_id(func) {
 
             // abort if we a re analyzing a method that doesn'T return result or option
-            // TODO handle case bool
+            // TODO handle case bool, including hardcoded support for is_null and such, in separate function; refactor in check_use_case will be necessary
             if self.get_function_or_method_return_type(function_def_id) != ReturnType::ResultOrOption { 
                 println!("Does not return Result or Option");
                 return None; 
@@ -133,6 +134,7 @@ impl<'tcx> RVCheckFinder<'tcx> {
     }
 
     pub fn get_method_def_id(self: &Self, method_expr: &rustc_hir::Expr) -> Option<rustc_hir::def_id::DefId> {
+        // TODO can panic, fix with as_local()
         let owner = self.wrapper_function.wrapper_function_id.expect_local();
         let typeck_results = self.tcx.typeck(owner);
 
@@ -144,12 +146,12 @@ impl<'tcx> RVCheckFinder<'tcx> {
         None
     }
 
-    pub fn analyze_method_call(self: &mut Self, method: &rustc_hir::Expr, expr_being_checked: &rustc_hir::Expr) -> Option<ReturnValueCheck> {
+    pub fn analyze_res_opt_method_call(self: &mut Self, method: &rustc_hir::Expr, expr_being_checked: &rustc_hir::Expr) -> Option<ReturnValueCheck> {
 
         if let Some(method_def_id) = self.get_method_def_id(method) && let rustc_hir::ExprKind::MethodCall(method, receiver, _args, ..) = method.kind {
 
-            // abort if we a re analyzing a method that doesn'T return result or option
-            // TODO handle case bool
+            // abort if we a re analyzing a method that doesn't return result or option
+            // TODO handle case bool in separate funciton: refactor in check_use_case will be necessary
             if self.get_function_or_method_return_type(&method_def_id) != ReturnType::ResultOrOption { 
                 println!("Does not return Result or Option");
                 return None; 

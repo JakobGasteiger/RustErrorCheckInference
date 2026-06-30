@@ -179,7 +179,7 @@ impl<'tcx> RVCheckFinder<'tcx> {
             }
 
             // TODO support first comparand, comparands other than zero ?
-            // TODo support check in else if
+            // TODO support check in else if
             Some(rustc_hir::Node::Expr(parent_expr))
                 if let rustc_hir::ExprKind::Binary(bin_op, _ex1, ex2) = parent_expr.kind =>
             {
@@ -207,14 +207,15 @@ impl<'tcx> RVCheckFinder<'tcx> {
             // TODO
             Some(rustc_hir::Node::Expr(parent_expr))
                 if matches!(parent_expr.kind, rustc_hir::ExprKind::MethodCall(..)) =>
-            {
+            {   
+                // TODO redundant with matches! above, fix
                 if let rustc_hir::ExprKind::MethodCall(method, ..) = parent_expr.kind {
 
                     println!(
                         "RV checked via method '{}' at {:?}",
                         method.ident, expr_being_checked.span
                     );
-                    return self.analyze_method_call(&parent_expr, expr_being_checked);
+                    return self.analyze_res_opt_method_call(&parent_expr, expr_being_checked);
                 }
             }
 
@@ -223,7 +224,7 @@ impl<'tcx> RVCheckFinder<'tcx> {
                 if let rustc_hir::ExprKind::Call(func, args) = parent_expr.kind =>
             {
                 println!("RV passed to another function at {:?}", expr_being_checked.span);
-                return self.analyze_function_call(&func, args, expr_being_checked);
+                return self.analyze_res_opt_function_call(&func, args, expr_being_checked);
             }
 
             _ => {
@@ -326,7 +327,7 @@ pub fn find_RV_checks(tcx: rustc_middle::ty::TyCtxt<'_>, wrapper_function: Wrapp
 }
 
 
-// checks whether a blocks tail expression is Ok()` or Err()
+// checks whether a blocks tail expression is Ok(), Err(), Some(), or None
 fn block_result_type(block_expr: &rustc_hir::Expr<'_>) -> Option<ResultOrOptionVariant> {
 
     if let rustc_hir::ExprKind::Block(block, _) = block_expr.kind {
