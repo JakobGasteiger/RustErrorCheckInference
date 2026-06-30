@@ -55,16 +55,22 @@ impl<'a, 'tcx> rustc_hir::intravisit::Visitor<'tcx> for WrapperFuncFinder<'a, 't
 
 pub fn find_external_functions<'tcx>(
     tcx: rustc_middle::ty::TyCtxt<'tcx>,
-    sys_crate: rustc_span::def_id::CrateNum
+    sys_crates: &Vec<rustc_span::def_id::CrateNum>
 ) -> Vec<rustc_hir::def_id::DefId> {
 
-    let external_functions = tcx
-        .foreign_modules(sys_crate)
-        .values()
-        .flat_map(|foreign_mod| foreign_mod.foreign_items.iter().copied())
-        .filter(|did| matches!(tcx.def_kind(*did), rustc_hir::def::DefKind::Fn));
+    let mut external_functions = Vec::new();
 
-    Vec::from_iter(external_functions)
+    for sys_crate in sys_crates {
+        let crate_external_functions = tcx
+            .foreign_modules(*sys_crate)
+            .values()
+            .flat_map(|foreign_mod| foreign_mod.foreign_items.iter().copied())
+            .filter(|did| matches!(tcx.def_kind(*did), rustc_hir::def::DefKind::Fn));
+        
+        external_functions.extend(crate_external_functions);
+    }
+
+    external_functions
 }
 
 

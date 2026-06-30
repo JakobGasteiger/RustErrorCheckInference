@@ -21,9 +21,9 @@ impl rustc_driver::Callbacks for ExternFuncCheckCallbacks {
 
         println!("Checker starting...");
 
-        let sys_crate = find_sys_crate(tcx);
+        let sys_crates = find_sys_crates(tcx);
 
-        let extern_function_ids: Vec<_> = find_external_functions(tcx, sys_crate);
+        let extern_function_ids: Vec<_> = find_external_functions(tcx, &sys_crates);
 
         let wrapper_functions = find_wrapper_functions(tcx, &extern_function_ids);
 
@@ -35,18 +35,25 @@ impl rustc_driver::Callbacks for ExternFuncCheckCallbacks {
     }
 }
 
-fn find_sys_crate<'tcx>(tcx: rustc_middle::ty::TyCtxt<'tcx>) -> rustc_span::def_id::CrateNum {
+// sometime multiple crates are named *-sys: we analyze them all
+fn find_sys_crates<'tcx>(tcx: rustc_middle::ty::TyCtxt<'tcx>) -> Vec<rustc_span::def_id::CrateNum> {
+
+    let mut sys_crates = Vec::new();
 
     for cnum in tcx.crates(()) {
         let name = tcx.crate_name(*cnum);
         println!("Checking crate: {}", name.as_str());
         if name.as_str().ends_with("sys") {
             println!("Found *-sys crate: {}", name.as_str());
-            return cnum.clone();
+            sys_crates.push(cnum.clone());
         }
     }
 
     // if no *-sys crate found, return own crate (actually quite useful for simplified testing)
-    println!("No *-sys crate found, returning local");
-    rustc_hir::def_id::LOCAL_CRATE
+    if sys_crates.is_empty() {
+        println!("No *-sys crate found, returning local");
+        sys_crates.push(rustc_hir::def_id::LOCAL_CRATE);
+    }
+    
+    sys_crates
 }
