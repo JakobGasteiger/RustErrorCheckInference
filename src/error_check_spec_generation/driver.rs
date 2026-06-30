@@ -23,7 +23,7 @@ impl rustc_driver::Callbacks for ExternFuncCheckCallbacks {
 
         let sys_crates = find_sys_crates(tcx);
 
-        let extern_function_ids: Vec<_> = find_external_functions(tcx, &sys_crates);
+        let extern_function_ids = find_external_functions(tcx, &sys_crates);
 
         let wrapper_functions = find_wrapper_functions(tcx, &extern_function_ids);
 
@@ -35,7 +35,7 @@ impl rustc_driver::Callbacks for ExternFuncCheckCallbacks {
     }
 }
 
-// sometime multiple crates are named *-sys: we analyze them all
+// sometime multiple crates are named *-sys: we look for external funcs in them all
 fn find_sys_crates<'tcx>(tcx: rustc_middle::ty::TyCtxt<'tcx>) -> Vec<rustc_span::def_id::CrateNum> {
 
     let mut sys_crates = Vec::new();

@@ -179,6 +179,7 @@ impl<'tcx> RVCheckFinder<'tcx> {
             }
 
             // TODO support first comparand, comparands other than zero ?
+            // TODo support check in else if
             Some(rustc_hir::Node::Expr(parent_expr))
                 if let rustc_hir::ExprKind::Binary(bin_op, _ex1, ex2) = parent_expr.kind =>
             {
