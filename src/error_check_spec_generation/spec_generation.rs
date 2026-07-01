@@ -15,6 +15,7 @@ pub enum ReturnValueCheck {
     EqualZero,
     All, // should never be used, since no function should always return an error
     Indeterminate,
+    IndeterminateNotLocal, // we cannot analyze external functions, so we cannot determine the check
 }
 
 impl ReturnValueCheck {
@@ -28,7 +29,8 @@ impl ReturnValueCheck {
             GrEqZero => LesserZero,
             EqualZero => NotEqZero,
             All => Empty,
-            _ => Indeterminate,
+            Indeterminate => Indeterminate,
+            IndeterminateNotLocal => IndeterminateNotLocal,
         }
     }
 
@@ -133,9 +135,7 @@ impl<'tcx> rustc_hir::intravisit::Visitor<'tcx> for RVCheckFinder<'tcx> {
             let rv_check = self.check_use_site(expr);
             if let Some(rv_check) = rv_check {
                 self.wrapper_function.return_value_check = rv_check; 
-                // abort walk here
-                //println!("Aborting walk");
-                //return;
+                //println!("{:?}", self.wrapper_function);
             }
         }
 
@@ -299,7 +299,7 @@ impl<'tcx> RVCheckFinder<'tcx> {
 
 
 #[allow(non_snake_case)]
-pub fn find_RV_checks(tcx: rustc_middle::ty::TyCtxt<'_>, wrapper_function: WrapperFunction) {
+pub fn find_RV_checks(tcx: rustc_middle::ty::TyCtxt<'_>, wrapper_function: &mut WrapperFunction) {
     println!(
         "\nFor Wrapper Function {}",
         tcx.def_path_str(wrapper_function.wrapper_function_id)
@@ -309,11 +309,13 @@ pub fn find_RV_checks(tcx: rustc_middle::ty::TyCtxt<'_>, wrapper_function: Wrapp
     // only works for local functions (no HIR body for external crates)
     let Some(owner_local_def_id) = wrapper_function.wrapper_function_id.as_local() else {
         println!("Not local!");
+        wrapper_function.return_value_check = ReturnValueCheck::IndeterminateNotLocal;
         return;
     };
     // abort if function has no body
     let Some(body) = tcx.hir_maybe_body_owned_by(owner_local_def_id) else {
         println!("No body!");
+        wrapper_function.return_value_check = ReturnValueCheck::Indeterminate;
         return;
     };
 
@@ -324,6 +326,8 @@ pub fn find_RV_checks(tcx: rustc_middle::ty::TyCtxt<'_>, wrapper_function: Wrapp
         already_visited_functions: Vec::new(),
     };
     finder.visit_body(body);
+
+    *wrapper_function = finder.wrapper_function.clone();
 }
 
 
