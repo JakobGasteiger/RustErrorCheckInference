@@ -1,9 +1,7 @@
-
 // * responsible for finding external functions and their wrappers
 
 use crate::error_check_spec_generation::spec_generation::ReturnValueCheck;
 use crate::rustc_hir::intravisit::Visitor;
-
 
 #[derive(PartialEq, Eq, Hash, Clone, Debug)]
 // TODO split into wrapperFunction, ErrorSpec ?
@@ -12,7 +10,6 @@ pub struct WrapperFunction {
     pub wrapped_function_id: rustc_hir::def_id::DefId,
     pub return_value_check: ReturnValueCheck,
 }
-
 
 struct WrapperFuncFinder<'a, 'tcx> {
     tcx: rustc_middle::ty::TyCtxt<'tcx>,
@@ -52,12 +49,10 @@ impl<'a, 'tcx> rustc_hir::intravisit::Visitor<'tcx> for WrapperFuncFinder<'a, 't
     }
 }
 
-
 pub fn find_external_functions<'tcx>(
     tcx: rustc_middle::ty::TyCtxt<'tcx>,
-    sys_crates: &Vec<rustc_span::def_id::CrateNum>
+    sys_crates: &Vec<rustc_span::def_id::CrateNum>,
 ) -> Vec<rustc_hir::def_id::DefId> {
-
     let mut external_functions = Vec::new();
 
     for sys_crate in sys_crates {
@@ -66,13 +61,12 @@ pub fn find_external_functions<'tcx>(
             .values()
             .flat_map(|foreign_mod| foreign_mod.foreign_items.iter().copied())
             .filter(|did| matches!(tcx.def_kind(*did), rustc_hir::def::DefKind::Fn));
-        
+
         external_functions.extend(crate_external_functions);
     }
 
     external_functions
 }
-
 
 pub fn find_wrapper_functions(
     tcx: rustc_middle::ty::TyCtxt<'_>,
@@ -97,7 +91,11 @@ pub fn find_wrapper_functions(
         } else if let rustc_hir::ItemKind::Impl(impl_block) = &item.kind {
             // same as above for all the funcitons inide the impl block (code essentially copied)
             // TODO reduce biolerplate here?
-            for impl_item in impl_block.items.iter().map(|impl_item_id| tcx.hir_impl_item(*impl_item_id)) {
+            for impl_item in impl_block
+                .items
+                .iter()
+                .map(|impl_item_id| tcx.hir_impl_item(*impl_item_id))
+            {
                 if let rustc_hir::ImplItemKind::Fn(_, body_id) = &impl_item.kind {
                     let body = tcx.hir_body(*body_id);
                     let owner_def_id = impl_item.owner_id.to_def_id();
@@ -113,6 +111,6 @@ pub fn find_wrapper_functions(
                 }
             }
         }
-    } 
+    }
     wrapper_functions
 }

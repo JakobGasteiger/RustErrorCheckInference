@@ -8,10 +8,9 @@ extern crate rustc_interface;
 extern crate rustc_middle;
 extern crate rustc_span;
 
-mod error_check_spec_generation; 
+mod error_check_spec_generation;
 
 use crate::error_check_spec_generation::driver::*;
-
 
 fn main() {
     let mut args: Vec<String> = std::env::args().collect();

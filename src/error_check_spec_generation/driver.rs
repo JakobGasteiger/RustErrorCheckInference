@@ -1,4 +1,3 @@
-
 // * responsible for the complier hook and managing the flow of the analysis
 
 use crate::error_check_spec_generation::spec_generation::ReturnValueCheck;
@@ -10,7 +9,6 @@ use crate::error_check_spec_generation::wrapper_func_finder::find_wrapper_functi
 pub struct ExternFuncCheckCallbacks;
 
 impl rustc_driver::Callbacks for ExternFuncCheckCallbacks {
-
     fn after_analysis<'tcx>(
         &mut self,
         _compiler: &rustc_interface::interface::Compiler,
@@ -40,7 +38,6 @@ impl rustc_driver::Callbacks for ExternFuncCheckCallbacks {
     }
 }
 
-
 fn aggregate_and_print_statistics(wrapper_functions: &Vec<WrapperFunction>) {
     let mut total = 0;
     let mut empty = 0;
@@ -55,7 +52,6 @@ fn aggregate_and_print_statistics(wrapper_functions: &Vec<WrapperFunction>) {
     let mut indeterminate_not_local = 0;
 
     for wrapper_function in wrapper_functions {
-
         //println!("{:?}", wrapper_function);
         total += 1;
         match wrapper_function.return_value_check {
@@ -88,7 +84,6 @@ fn aggregate_and_print_statistics(wrapper_functions: &Vec<WrapperFunction>) {
 
 // sometime multiple crates are named *-sys: we look for external funcs in them all
 fn find_sys_crates<'tcx>(tcx: rustc_middle::ty::TyCtxt<'tcx>) -> Vec<rustc_span::def_id::CrateNum> {
-
     let mut sys_crates = Vec::new();
 
     for cnum in tcx.crates(()) {
@@ -105,6 +100,6 @@ fn find_sys_crates<'tcx>(tcx: rustc_middle::ty::TyCtxt<'tcx>) -> Vec<rustc_span:
         println!("No *-sys crate found, returning local");
         sys_crates.push(rustc_hir::def_id::LOCAL_CRATE);
     }
-    
+
     sys_crates
 }
