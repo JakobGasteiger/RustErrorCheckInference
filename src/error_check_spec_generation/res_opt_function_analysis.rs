@@ -1,8 +1,7 @@
-// * contains some functions related to analyzing sub-error-check-function/methods: soreted into own file for organization
+// * contains some functions related to analyzing sub-error-check-function/methods which return Result or Option: sorted into own file for organization
 
 use crate::error_check_spec_generation::{
-    spec_generation::{RVCheckFinder, ReturnType, ReturnValueCheck},
-    wrapper_func_finder::WrapperFunction,
+    driver::OtherStatistics, spec_generation::{RVCheckFinder, ReturnType, ReturnValueCheck}, wrapper_func_finder::WrapperFunction,
 };
 use crate::rustc_hir::intravisit::Visitor;
 
@@ -33,7 +32,7 @@ impl<'tcx> RVCheckFinder<'tcx> {
 
         // get the parameter at arg_index
         let Some(param) = body.params.get(arg_index) else {
-            return ReturnValueCheck::Empty;
+            return ReturnValueCheck::Indeterminate;
         };
 
         // that parameter's binding hir id becomes the new tracked identity
@@ -52,54 +51,15 @@ impl<'tcx> RVCheckFinder<'tcx> {
                 wrapper_function: new_wrapper_function,
                 wrapped_function_value_holder: Some(param_hir_id),
                 already_visited_functions: new_visited_function_list,
+                mode: ReturnType::ResultOrOption,
+                other_statistics: OtherStatistics::new(),
             };
             sub_finder.visit_body(body);
+            self.other_statistics += sub_finder.other_statistics.clone();
             return sub_finder.wrapper_function.return_value_check;
         }
 
         return ReturnValueCheck::Empty;
-    }
-
-    pub fn get_function_or_method_return_type(
-        self: &Self,
-        def_id: &rustc_hir::def_id::DefId,
-    ) -> ReturnType {
-        println!(
-            "Getting return type for function/method {:?}",
-            self.tcx.def_path_str(*def_id)
-        );
-
-        let return_type = self
-            .tcx
-            .fn_sig(*def_id)
-            .skip_binder()
-            .output()
-            .skip_binder();
-
-        println!(
-            "Return type: {:?} for function {:?}",
-            return_type,
-            self.tcx.def_path_str(*def_id)
-        );
-
-        match return_type.kind() {
-            rustc_middle::ty::TyKind::Adt(adt_def, _args) => {
-                let type_name = self.tcx.def_path_str(adt_def.did());
-                if type_name == "core::result::Result"
-                    || type_name == "std::result::Result"
-                    || type_name == "core::result::Option"
-                    || type_name == "std::result::Option"
-                {
-                    return ReturnType::ResultOrOption;
-                }
-            }
-
-            rustc_middle::ty::TyKind::Bool => return ReturnType::Bool,
-
-            _ => return ReturnType::Other,
-        }
-
-        ReturnType::Other
     }
 
     // TODO: harmonize with get_method_def_id ?: pass call expr, not the function itself
@@ -120,28 +80,7 @@ impl<'tcx> RVCheckFinder<'tcx> {
         None
     }
 
-    pub fn get_bool_function_check(
-        self: &mut Self,
-        func: &rustc_hir::Expr,
-    ) -> Option<ReturnValueCheck> {
-        if let Some(function_def_id) = self.get_function_def_id(func) {
-            println!(
-                "RV passed as arg to function {} : recursing",
-                self.tcx.def_path_str(function_def_id)
-            );
-
-            // if we find a recursion loop, we terminate analysis for this wrapper
-            if self.already_visited_functions.contains(&function_def_id) {
-                println!("Recursion loop found, aborting!");
-                return Some(ReturnValueCheck::Indeterminate);
-            }
-        }
-
-        // TODO temp, actually implement function
-        None
-    }
-
-    pub fn analyze_res_opt_function_call(
+    pub fn analyze_res_opt_function(
         self: &mut Self,
         func: &rustc_hir::Expr,
         args: &[rustc_hir::Expr],
@@ -195,41 +134,7 @@ impl<'tcx> RVCheckFinder<'tcx> {
         None
     }
 
-    pub fn get_bool_method_check(
-        self: &mut Self,
-        method_expr: &rustc_hir::Expr,
-    ) -> Option<ReturnValueCheck> {
-        if let Some(method_def_id) = self.get_method_def_id(method_expr)
-            && let rustc_hir::ExprKind::MethodCall(..) = method_expr.kind
-        {
-            println!(
-                "RV passed as to method {} : recursing",
-                self.tcx.def_path_str(method_def_id)
-            );
-
-            // if we find a recursion loop, we terminate analysis for this wrapper
-            if self.already_visited_functions.contains(&method_def_id) {
-                println!("Recursion loop found, aborting!");
-                return Some(ReturnValueCheck::Indeterminate);
-            }
-
-            let method_name = self.tcx.def_path_str(method_def_id);
-
-            // hardcoded support for some common boolean methods from std crate
-            if method_name.contains("is_null") {
-                return Some(ReturnValueCheck::EqualZero);
-            } else if method_name.contains("is_negative") {
-                return Some(ReturnValueCheck::LesserZero);
-            } else if method_name.contains("is_positive") {
-                return Some(ReturnValueCheck::GreaterZero);
-            }
-        }
-
-        // TODO temp, actually implement function
-        None
-    }
-
-    pub fn analyze_res_opt_method_call(
+    pub fn analyze_res_opt_method(
         self: &mut Self,
         method: &rustc_hir::Expr,
     ) -> Option<ReturnValueCheck> {

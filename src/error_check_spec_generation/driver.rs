@@ -1,5 +1,8 @@
 // * responsible for the complier hook and managing the flow of the analysis
 
+use std::ops::Add;
+use std::ops::AddAssign;
+
 use crate::error_check_spec_generation::spec_generation::ReturnValueCheck;
 use crate::error_check_spec_generation::spec_generation::find_RV_checks;
 use crate::error_check_spec_generation::wrapper_func_finder::WrapperFunction;
@@ -27,18 +30,21 @@ impl rustc_driver::Callbacks for ExternFuncCheckCallbacks {
 
         let mut wrapper_functions = find_wrapper_functions(tcx, &extern_function_ids);
 
+        let mut other_statistics = OtherStatistics::new();
+
         for mut wrapper_function in &mut wrapper_functions {
-            find_RV_checks(tcx, &mut wrapper_function);
+            find_RV_checks(tcx, &mut wrapper_function, &mut other_statistics);
             //println!("{:?}", wrapper_function);
         }
 
-        aggregate_and_print_statistics(&wrapper_functions);
+        aggregate_and_print_error_check_statistics(&wrapper_functions);
+        other_statistics.print();
 
         rustc_driver::Compilation::Continue
     }
 }
 
-fn aggregate_and_print_statistics(wrapper_functions: &Vec<WrapperFunction>) {
+fn aggregate_and_print_error_check_statistics(wrapper_functions: &Vec<WrapperFunction>) {
     let mut total = 0;
     let mut empty = 0;
     let mut gr_eq_zero = 0;
@@ -68,7 +74,7 @@ fn aggregate_and_print_statistics(wrapper_functions: &Vec<WrapperFunction>) {
         }
     }
 
-    println!("\n\nStatistics:");
+    println!("\n\nError Check Statistics:");
     println!("Total wrapper functions: {}", total);
     println!("Empty: {}", empty);
     println!("GrEqZero: {}", gr_eq_zero);
@@ -103,3 +109,56 @@ fn find_sys_crates<'tcx>(tcx: rustc_middle::ty::TyCtxt<'tcx>) -> Vec<rustc_span:
 
     sys_crates
 }
+
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub struct OtherStatistics {
+    // TODO add more statistics here
+    pub bool_functions_not_yet_supported: usize,
+    pub bool_methods_not_yet_supported: usize,
+}
+
+impl OtherStatistics {
+    pub fn new() -> Self {
+        OtherStatistics {
+            bool_functions_not_yet_supported: 0,
+            bool_methods_not_yet_supported: 0,
+        }
+    }
+}
+
+impl Add for OtherStatistics {
+    type Output = Self;
+
+    fn add(self, other: Self) -> Self {
+        OtherStatistics {
+            bool_functions_not_yet_supported: self.bool_functions_not_yet_supported
+                + other.bool_functions_not_yet_supported,
+            bool_methods_not_yet_supported: self.bool_methods_not_yet_supported
+                + other.bool_methods_not_yet_supported,
+        }
+    }
+}
+
+impl AddAssign for OtherStatistics {
+
+    fn add_assign(&mut self, other: Self) {
+        self.bool_functions_not_yet_supported += other.bool_functions_not_yet_supported;
+        self.bool_methods_not_yet_supported += other.bool_methods_not_yet_supported;
+    }
+}
+
+impl OtherStatistics {
+    pub fn print(&self) {
+        println!("Other Statistics:");
+        println!(
+            "Boolean functions not yet supported: {}",
+            self.bool_functions_not_yet_supported
+        );
+        println!(
+            "Boolean methods not yet supported: {}",
+            self.bool_methods_not_yet_supported
+        );
+    }
+}
+
+

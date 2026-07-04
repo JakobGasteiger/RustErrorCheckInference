@@ -1,5 +1,6 @@
 // * responsible for generating error check specifications for wrapper functions
 
+use crate::error_check_spec_generation::driver::OtherStatistics;
 use crate::error_check_spec_generation::{
     spec_generation::ReturnValueCheck::*, wrapper_func_finder::WrapperFunction,
 };
@@ -67,10 +68,10 @@ impl ReturnValueCheck {
 
 #[derive(PartialEq, Eq)]
 pub enum ResultOrOptionVariant {
-    Ok,
-    Err,
-    Some,
-    None,
+    ResultOk,
+    ResultErr,
+    OptionSome,
+    OptionNone,
 }
 
 #[derive(PartialEq, Eq)]
@@ -93,6 +94,8 @@ pub struct RVCheckFinder<'tcx> {
 
     // functions already visited while going through sub-error-check function: for fix point analysis; if there is a loop, abort to guarantee termination
     pub already_visited_functions: Vec<rustc_hir::def_id::DefId>,
+    pub mode: ReturnType, // TODO implement bool returning funcitons properly if needed
+    pub other_statistics: OtherStatistics,
 }
 
 impl<'tcx> rustc_hir::intravisit::Visitor<'tcx> for RVCheckFinder<'tcx> {
@@ -100,12 +103,12 @@ impl<'tcx> rustc_hir::intravisit::Visitor<'tcx> for RVCheckFinder<'tcx> {
     // we check if it is the current holder of the return value, and if so, what happens to it ( via ehck_use_site() )
     fn visit_expr(&mut self, expr: &'tcx rustc_hir::Expr<'tcx>) {
         // if we have already found a check, we do not look further
-        if !matches!(
-            self.wrapper_function.return_value_check,
-            ReturnValueCheck::Empty
-        ) {
-            return;
-        }
+        // if !matches!(
+        //     self.wrapper_function.return_value_check,
+        //     ReturnValueCheck::Empty
+        // ) {
+        //     return;
+        // }
 
         let owner = self.wrapper_function.wrapper_function_id.expect_local();
         let typeck_results = self.tcx.typeck(owner);
@@ -209,6 +212,14 @@ impl<'tcx> RVCheckFinder<'tcx> {
 
                     return self.analyze_if_stmt(rv_check, then_block);
                 }
+
+                // is this a top-level comparison, not part of an if stmt? (eg in a return statement)
+                // if self.mode == ReturnType::Bool {
+                //     println!("RV checked via top-level comparison at {:?}", expr_being_checked.span);
+                //     println!("Binary Operation: {:?}", bin_op.node);
+                //     return Some(rv_check);
+                // }
+                
             }
 
             Some(rustc_hir::Node::Expr(parent_expr))
@@ -221,13 +232,12 @@ impl<'tcx> RVCheckFinder<'tcx> {
 
                 if let Some(method_def_id) = self.get_method_def_id(&parent_expr) {
                     //println!("Method def id: {:?}", method_def_id);
-                    let return_type = self.get_function_or_method_return_type(&method_def_id);
+                    let return_type = get_function_or_method_return_type(&self.tcx, &method_def_id);
                     if return_type == ReturnType::ResultOrOption {
-                        return self.analyze_res_opt_method_call(&parent_expr);
+                        return self.analyze_res_opt_method(&parent_expr);
                     } else if return_type == ReturnType::Bool {
                         // TODO handle boolean returns
-                        println!("Boolean return type: not yet fully supported");
-                        let rv_check = self.get_bool_method_check(&parent_expr)?;
+                        let rv_check = self.analyze_bool_method(&parent_expr)?;
                         // is this part of an if stmt?
                         if let Some((_, rustc_hir::Node::Expr(expr))) =
                             self.tcx.hir_parent_iter(parent_expr.hir_id).next()
@@ -260,17 +270,16 @@ impl<'tcx> RVCheckFinder<'tcx> {
                 );
 
                 if let Some(function_def_id) = self.get_function_def_id(&func) {
-                    let return_type = self.get_function_or_method_return_type(&function_def_id);
+                    let return_type = get_function_or_method_return_type(&self.tcx, &function_def_id);
                     if return_type == ReturnType::ResultOrOption {
-                        return self.analyze_res_opt_function_call(
+                        return self.analyze_res_opt_function(
                             &func,
                             args,
                             expr_being_checked,
                         );
                     } else if return_type == ReturnType::Bool {
                         // TODO handle boolean returns
-                        println!("Boolean return type: not yet supported");
-                        let rv_check = self.get_bool_function_check(&func)?;
+                        let rv_check = self.analyze_bool_function(&func)?;
 
                         // is this part of an if stmt?
                         if let Some((_, rustc_hir::Node::Expr(expr))) =
@@ -311,15 +320,15 @@ impl<'tcx> RVCheckFinder<'tcx> {
 
         if let Some(arm1_result_type) = then_result_type {
             // if we are checking for an error (and returning as such), we found our rv check
-            if matches!(arm1_result_type, ResultOrOptionVariant::Err)
-                || matches!(arm1_result_type, ResultOrOptionVariant::None)
+            if matches!(arm1_result_type, ResultOrOptionVariant::ResultErr)
+                || matches!(arm1_result_type, ResultOrOptionVariant::OptionNone)
             {
                 println!("Error Condition is {:?}", rv_check);
                 return Some(rv_check);
             //if we are checking for non-error (and thus returning ok), the opposite of the check is our error
             // TODO expand beyond simple either/or (allow for multiple different error checks) ?
-            } else if matches!(arm1_result_type, ResultOrOptionVariant::Ok)
-                || matches!(arm1_result_type, ResultOrOptionVariant::Some)
+            } else if matches!(arm1_result_type, ResultOrOptionVariant::ResultOk)
+                || matches!(arm1_result_type, ResultOrOptionVariant::OptionSome)
             {
                 println!("Error Condition is {:?}", rv_check.clone().opposite());
                 return Some(rv_check.opposite());
@@ -347,15 +356,15 @@ impl<'tcx> RVCheckFinder<'tcx> {
 
                     if let Some(arm1_result_type) = arm1_result_type {
                         // if we are checking for an error (and returning as such), we found our rv check
-                        if matches!(arm1_result_type, ResultOrOptionVariant::Err)
-                            || matches!(arm1_result_type, ResultOrOptionVariant::None)
+                        if matches!(arm1_result_type, ResultOrOptionVariant::ResultErr)
+                            || matches!(arm1_result_type, ResultOrOptionVariant::OptionNone)
                         {
                             println!("Error Condition is {:?}", rv_check);
                             return Some(rv_check);
                         //if we are checking for non-error (and thus returning ok), the opposite of the check is our error
                         // TODO expand beyond simple either/or (allow for multiple different error checks) ?
-                        } else if matches!(arm1_result_type, ResultOrOptionVariant::Ok)
-                            || matches!(arm1_result_type, ResultOrOptionVariant::Some)
+                        } else if matches!(arm1_result_type, ResultOrOptionVariant::ResultOk)
+                            || matches!(arm1_result_type, ResultOrOptionVariant::OptionSome)
                         {
                             println!("Error Condition is {:?}", rv_check.clone().opposite());
                             return Some(rv_check.opposite());
@@ -371,10 +380,11 @@ impl<'tcx> RVCheckFinder<'tcx> {
 
         None
     }
+
 }
 
 #[allow(non_snake_case)]
-pub fn find_RV_checks(tcx: rustc_middle::ty::TyCtxt<'_>, wrapper_function: &mut WrapperFunction) {
+pub fn find_RV_checks(tcx: rustc_middle::ty::TyCtxt<'_>, wrapper_function: &mut WrapperFunction, other_statistics: &mut OtherStatistics) {
     println!(
         "\nFor Wrapper Function {}",
         tcx.def_path_str(wrapper_function.wrapper_function_id)
@@ -393,14 +403,18 @@ pub fn find_RV_checks(tcx: rustc_middle::ty::TyCtxt<'_>, wrapper_function: &mut 
         return;
     };
 
+    let mode = get_function_or_method_return_type(&tcx, &wrapper_function.wrapper_function_id);
+
     let mut finder = RVCheckFinder {
         tcx,
         wrapper_function: wrapper_function.clone(), // TODO remove this clone
         wrapped_function_value_holder: None,
         already_visited_functions: Vec::new(),
+        mode,
+        other_statistics: OtherStatistics::new(),
     };
     finder.visit_body(body);
-
+    *other_statistics += finder.other_statistics.clone();
     *wrapper_function = finder.wrapper_function.clone();
 }
 
@@ -454,13 +468,13 @@ fn expr_result_type(expr: &rustc_hir::Expr<'_>) -> Option<ResultOrOptionVariant>
                 if let Some(seg) = path.segments.last() {
                     if seg.ident.name.as_str() == "Ok" {
                         println!("Found Ok");
-                        return Some(ResultOrOptionVariant::Ok);
+                        return Some(ResultOrOptionVariant::ResultOk);
                     } else if seg.ident.name.as_str() == "Err" {
                         println!("Found Err");
-                        return Some(ResultOrOptionVariant::Err);
+                        return Some(ResultOrOptionVariant::ResultErr);
                     } else if seg.ident.name.as_str() == "Some" {
                         println!("Found Some");
-                        return Some(ResultOrOptionVariant::Some);
+                        return Some(ResultOrOptionVariant::OptionSome);
                     }
                 }
             }
@@ -471,10 +485,52 @@ fn expr_result_type(expr: &rustc_hir::Expr<'_>) -> Option<ResultOrOptionVariant>
             if let Some(seg) = path.segments.last() {
                 if seg.ident.name.as_str() == "None" {
                     println!("Found None");
-                    return Some(ResultOrOptionVariant::None);
+                    return Some(ResultOrOptionVariant::OptionNone);
                 }
             }
         }
     }
     None
 }
+
+
+pub fn get_function_or_method_return_type(
+        tcx: &rustc_middle::ty::TyCtxt<'_>,
+        def_id: &rustc_hir::def_id::DefId,
+    ) -> ReturnType {
+        println!(
+            "Getting return type for function/method {:?}",
+            tcx.def_path_str(*def_id)
+        );
+
+        let return_type = tcx
+            .fn_sig(*def_id)
+            .skip_binder()
+            .output()
+            .skip_binder();
+
+        println!(
+            "Return type: {:?} for function {:?}",
+            return_type,
+            tcx.def_path_str(*def_id)
+        );
+
+        match return_type.kind() {
+            rustc_middle::ty::TyKind::Adt(adt_def, _args) => {
+                let type_name = tcx.def_path_str(adt_def.did());
+                if type_name == "core::result::Result"
+                    || type_name == "std::result::Result"
+                    || type_name == "core::result::Option"
+                    || type_name == "std::result::Option"
+                {
+                    return ReturnType::ResultOrOption;
+                }
+            }
+
+            rustc_middle::ty::TyKind::Bool => return ReturnType::Bool,
+
+            _ => return ReturnType::Other,
+        }
+
+        ReturnType::Other
+    }
