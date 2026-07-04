@@ -16,5 +16,3 @@ Finding of empty checks : see also LibSSH::sftp.rs::812, LibSSH::channel.rs::340
 Fix Ok/Err as function call : also see LibSSH::channel.rs::340
 
 Explicitly only allow wrappers that are c_int (or any int?) -> Result or (possibly) Option
-
-Fix OpenSSL not locals
