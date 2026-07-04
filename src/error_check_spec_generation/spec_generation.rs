@@ -74,7 +74,7 @@ pub enum ResultOrOptionVariant {
     OptionNone,
 }
 
-#[derive(PartialEq, Eq)]
+#[derive(PartialEq, Eq, Debug)]
 pub enum ReturnType {
     ResultOrOption,
     Bool,
@@ -166,6 +166,7 @@ impl<'tcx> RVCheckFinder<'tcx> {
         // TODO see pattern from apppend() in Libgit/src/repo.rs::976 : support this?
 
         // we go through all the layers of parents until there is something we can analyze (if any)
+        let mut previous_parent = expr_being_checked; // will be needed as a possible function/method argument, if tthe funciton gets a whole expression as an argument
         for parent in parents {
             match parent {
                 // on sth like let result = <tracked expr>: move holder to result's binding HirId
@@ -235,8 +236,12 @@ impl<'tcx> RVCheckFinder<'tcx> {
                     if let Some(method_def_id) = self.get_method_def_id(&parent_expr) {
                         //println!("Method def id: {:?}", method_def_id);
                         let return_type = get_function_or_method_return_type(&self.tcx, &method_def_id);
+                        println!("Return type, parsed: {:?}", return_type);
+
                         if return_type == ReturnType::ResultOrOption {
-                            return self.analyze_res_opt_method(&parent_expr, expr_being_checked);
+                            return self.analyze_res_opt_method(&parent_expr, previous_parent); // cannot simply use expr_being checked, as it might be in a block or sth
+
+
                         } else if return_type == ReturnType::Bool {
                             // TODO handle boolean returns
                             let rv_check = self.analyze_bool_method(&parent_expr)?;
@@ -274,8 +279,11 @@ impl<'tcx> RVCheckFinder<'tcx> {
                     if let Some(function_def_id) = self.get_function_def_id(&func) {
                         let return_type =
                             get_function_or_method_return_type(&self.tcx, &function_def_id);
+                        println!("Return type, parsed: {:?}", return_type);
+
                         if return_type == ReturnType::ResultOrOption {
-                            return self.analyze_res_opt_function(&func, args, expr_being_checked);
+                            return self.analyze_res_opt_function(&func, args, previous_parent); // cannot simply use expr_being checked, as it might be in a block or sth
+
                         } else if return_type == ReturnType::Bool {
                             // TODO handle boolean returns
                             let rv_check = self.analyze_bool_function(&func)?;
@@ -305,6 +313,10 @@ impl<'tcx> RVCheckFinder<'tcx> {
                 _ => {
                     println!("Cannot analyze at {:?}, continuing up parent expr chain", expr_being_checked.span);
                 }
+            }
+
+            if let rustc_hir::Node::Expr(parent) = parent {
+                previous_parent = parent;
             }
         }
 

@@ -95,6 +95,10 @@ impl<'tcx> RVCheckFinder<'tcx> {
             //     return None;
             // }
 
+            println!("Analysis of function {} is being started", self.tcx.def_path_str(*function_def_id));
+            // println!("Function has args {:?}", args);
+            // println!("Expr being checked is {:?}", expr_being_checked);
+
             // which argument number is our RV when being passed in?
             if let Some(arg_index) = args
                 .iter()
@@ -117,6 +121,8 @@ impl<'tcx> RVCheckFinder<'tcx> {
                     function_def_id.clone(),
                     arg_index,
                 );
+            } else {
+                println!("RV not found in args, aborting");
             }
         }
 
@@ -143,8 +149,11 @@ impl<'tcx> RVCheckFinder<'tcx> {
     ) -> Option<ReturnValueCheck> {
         // technically redundant with callsite, but it's no big deal
         if let Some(method_def_id) = self.get_method_def_id(method)
-            && let rustc_hir::ExprKind::MethodCall(method, receiver, args, ..) = method.kind
+            && let rustc_hir::ExprKind::MethodCall(_method, receiver, args, ..) = method.kind
         {
+
+            println!("Analysis of method {} is being started", self.tcx.def_path_str(method_def_id));
+
             let args_incl_receiver = std::iter::once(receiver)
                 .chain(args.iter())
                 .collect::<Vec<_>>();
@@ -171,6 +180,8 @@ impl<'tcx> RVCheckFinder<'tcx> {
                     method_def_id.clone(),
                     arg_index,
                 );
+            } else {
+                println!("RV not found in args, aborting");
             }
         }
         None
