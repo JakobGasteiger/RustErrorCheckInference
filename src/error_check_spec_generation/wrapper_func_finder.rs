@@ -8,7 +8,7 @@ use crate::rustc_hir::intravisit::Visitor;
 pub struct WrapperFunction {
     pub wrapper_function_id: rustc_hir::def_id::DefId,
     pub wrapped_function_id: rustc_hir::def_id::DefId,
-    pub return_value_check: ReturnValueCheck,
+    pub return_value_check: Option<ReturnValueCheck>,
 }
 
 struct WrapperFuncFinder<'a, 'tcx> {
@@ -39,7 +39,7 @@ impl<'a, 'tcx> rustc_hir::intravisit::Visitor<'tcx> for WrapperFuncFinder<'a, 't
                             wrapper_function_id: self.owner_def_id,
                             wrapped_function_id: callee_def_id,
                             // until we find a specific check in the RV check finder step, we assume nothing is an error
-                            return_value_check: ReturnValueCheck::Empty,
+                            return_value_check: None,
                         });
                     }
                 }

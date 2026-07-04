@@ -61,16 +61,17 @@ fn aggregate_and_print_error_check_statistics(wrapper_functions: &Vec<WrapperFun
         //println!("{:?}", wrapper_function);
         total += 1;
         match wrapper_function.return_value_check {
-            ReturnValueCheck::Empty => empty += 1,
-            ReturnValueCheck::GrEqZero => gr_eq_zero += 1,
-            ReturnValueCheck::LesEqZero => les_eq_zero += 1,
-            ReturnValueCheck::EqualZero => equal_zero += 1,
-            ReturnValueCheck::GreaterZero => greater_zero += 1,
-            ReturnValueCheck::LesserZero => lesser_zero += 1,
-            ReturnValueCheck::NotEqZero => not_eq_zero += 1,
-            ReturnValueCheck::All => all += 1,
-            ReturnValueCheck::Indeterminate => indeterminate += 1,
-            ReturnValueCheck::IndeterminateNotLocal => indeterminate_not_local += 1,
+            Some(ReturnValueCheck::Empty) => empty += 1,
+            Some(ReturnValueCheck::GrEqZero) => gr_eq_zero += 1,
+            Some(ReturnValueCheck::LesEqZero) => les_eq_zero += 1,
+            Some(ReturnValueCheck::EqualZero) => equal_zero += 1,
+            Some(ReturnValueCheck::GreaterZero) => greater_zero += 1,
+            Some(ReturnValueCheck::LesserZero) => lesser_zero += 1,
+            Some(ReturnValueCheck::NotEqZero) => not_eq_zero += 1,
+            Some(ReturnValueCheck::All) => all += 1,
+            Some(ReturnValueCheck::Indeterminate) => indeterminate += 1,
+            Some(ReturnValueCheck::IndeterminateNotLocal) => indeterminate_not_local += 1,
+            None => indeterminate += 1, // treat None as indeterminate
         }
     }
 
@@ -140,7 +141,6 @@ impl Add for OtherStatistics {
 }
 
 impl AddAssign for OtherStatistics {
-
     fn add_assign(&mut self, other: Self) {
         self.bool_functions_not_yet_supported += other.bool_functions_not_yet_supported;
         self.bool_methods_not_yet_supported += other.bool_methods_not_yet_supported;
@@ -160,5 +160,3 @@ impl OtherStatistics {
         );
     }
 }
-
-

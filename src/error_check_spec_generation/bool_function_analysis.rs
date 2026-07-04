@@ -1,7 +1,11 @@
 // * contains some functions related to analyzing sub-error-check-function/methods which return bool: sorted into own file for organization
 
 use crate::error_check_spec_generation::{
-    driver::OtherStatistics, spec_generation::{RVCheckFinder, ResultOrOptionVariant::OptionSome, ReturnType, ReturnValueCheck}, wrapper_func_finder::WrapperFunction,
+    driver::OtherStatistics,
+    spec_generation::{
+        RVCheckFinder, ResultOrOptionVariant::OptionSome, ReturnType, ReturnValueCheck,
+    },
+    wrapper_func_finder::WrapperFunction,
 };
 use crate::rustc_hir::intravisit::Visitor;
 
@@ -13,7 +17,7 @@ impl<'tcx> RVCheckFinder<'tcx> {
         tcx: rustc_middle::ty::TyCtxt<'tcx>,
         error_check_function_id: rustc_hir::def_id::DefId,
         arg_index: usize,
-    ) -> ReturnValueCheck {
+    ) -> Option<ReturnValueCheck> {
         println!(
             "\nFor Sub Error Check Function {}",
             tcx.def_path_str(error_check_function_id)
@@ -22,17 +26,17 @@ impl<'tcx> RVCheckFinder<'tcx> {
         // only works for local functions (no HIR body for external crates)
         let Some(local_def_id) = error_check_function_id.as_local() else {
             println!("Not local!");
-            return ReturnValueCheck::IndeterminateNotLocal;
+            return Some(ReturnValueCheck::IndeterminateNotLocal);
         };
         // abort if function has no body
         let Some(body) = tcx.hir_maybe_body_owned_by(local_def_id) else {
             println!("No body!");
-            return ReturnValueCheck::Indeterminate;
+            return Some(ReturnValueCheck::Indeterminate);
         };
 
         // get the parameter at arg_index
         let Some(param) = body.params.get(arg_index) else {
-            return ReturnValueCheck::Indeterminate;
+            return Some(ReturnValueCheck::Indeterminate);
         };
 
         // that parameter's binding hir id becomes the new tracked identity
@@ -40,7 +44,7 @@ impl<'tcx> RVCheckFinder<'tcx> {
             let new_wrapper_function = WrapperFunction {
                 wrapper_function_id: error_check_function_id,
                 wrapped_function_id: self.wrapper_function.wrapped_function_id,
-                return_value_check: ReturnValueCheck::Empty,
+                return_value_check: None,
             };
 
             let mut new_visited_function_list = self.already_visited_functions.clone();
@@ -59,20 +63,19 @@ impl<'tcx> RVCheckFinder<'tcx> {
             return sub_finder.wrapper_function.return_value_check;
         }
 
-        return ReturnValueCheck::Empty;
+        return None;
     }
 
     pub fn analyze_bool_function(
         self: &mut Self,
         func: &rustc_hir::Expr,
     ) -> Option<ReturnValueCheck> {
-
         println!("Boolean return type: not yet supported");
         self.other_statistics.bool_functions_not_yet_supported += 1;
 
         if let Some(function_def_id) = self.get_function_def_id(func) {
             println!(
-                "RV passed as arg to function {} : recursing",
+                "RV passed as arg to bool-returning function {} : recursing",
                 self.tcx.def_path_str(function_def_id)
             );
 
@@ -92,14 +95,13 @@ impl<'tcx> RVCheckFinder<'tcx> {
         self: &mut Self,
         method_expr: &rustc_hir::Expr,
     ) -> Option<ReturnValueCheck> {
-
         println!("Boolean return type: not yet fully supported");
 
         if let Some(method_def_id) = self.get_method_def_id(method_expr)
             && let rustc_hir::ExprKind::MethodCall(..) = method_expr.kind
         {
             println!(
-                "RV passed as to method {} : recursing",
+                "RV passed to bool-returning method {} : recursing",
                 self.tcx.def_path_str(method_def_id)
             );
 
