@@ -429,6 +429,12 @@ pub fn find_RV_checks(
         other_statistics: OtherStatistics::new(),
     };
     finder.visit_body(body);
+
+    if finder.wrapper_function.return_value_check.is_none() {
+        // TODO proper findinf for empty error checks
+        println!("No check found for wrapper function {}, setting Indeterminate", tcx.def_path_str(wrapper_function.wrapper_function_id));
+        finder.wrapper_function.return_value_check = Some(ReturnValueCheck::Indeterminate);
+    }
     *other_statistics += finder.other_statistics.clone();
     *wrapper_function = finder.wrapper_function.clone();
 }
