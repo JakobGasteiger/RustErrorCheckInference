@@ -709,3 +709,43 @@ pub fn get_function_or_method_return_type(
 
     ReturnType::Other
 }
+
+#[test]
+fn test_return_value_check_union() {
+    let check1 = ReturnValueCheck::LesserZero;
+    let check2 = ReturnValueCheck::GreaterZero;
+    let union_check = check1.union(check2);
+    assert_eq!(union_check, ReturnValueCheck::NotEqZero);
+
+    let check3 = ReturnValueCheck::EqualZero;
+    let union_check2 = check1.union(check3);
+    assert_eq!(union_check2, ReturnValueCheck::LesEqZero);
+
+    let check4 = ReturnValueCheck::GrEqZero;
+    let union_check3 = check2.union(check4);
+    assert_eq!(union_check3, ReturnValueCheck::GrEqZero);
+
+    let check5 = ReturnValueCheck::All;
+    let union_check4 = check1.union(check5);
+    assert_eq!(union_check4, ReturnValueCheck::All);
+}
+
+#[test]
+fn test_return_value_check_intersection() {
+    let check1 = ReturnValueCheck::LesserZero;
+    let check2 = ReturnValueCheck::GreaterZero;
+    let intersection_check = check1.intersection(check2);
+    assert_eq!(intersection_check, ReturnValueCheck::Empty);
+
+    let check3 = ReturnValueCheck::EqualZero;
+    let intersection_check2 = check1.intersection(check3);
+    assert_eq!(intersection_check2, ReturnValueCheck::Empty);
+
+    let check4 = ReturnValueCheck::GrEqZero;
+    let intersection_check3 = check2.intersection(check4);
+    assert_eq!(intersection_check3, ReturnValueCheck::GreaterZero);
+
+    let check5 = ReturnValueCheck::All;
+    let intersection_check4 = check1.intersection(check5);
+    assert_eq!(intersection_check4, ReturnValueCheck::LesserZero);
+}
