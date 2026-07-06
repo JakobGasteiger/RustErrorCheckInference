@@ -95,7 +95,10 @@ impl<'tcx> RVCheckFinder<'tcx> {
             //     return None;
             // }
 
-            println!("Analysis of function {} is being started", self.tcx.def_path_str(*function_def_id));
+            println!(
+                "Analysis of function {} is being started",
+                self.tcx.def_path_str(*function_def_id)
+            );
             // println!("Function has args {:?}", args);
             // println!("Expr being checked is {:?}", expr_being_checked);
 
@@ -151,8 +154,10 @@ impl<'tcx> RVCheckFinder<'tcx> {
         if let Some(method_def_id) = self.get_method_def_id(method)
             && let rustc_hir::ExprKind::MethodCall(_method, receiver, args, ..) = method.kind
         {
-
-            println!("Analysis of method {} is being started", self.tcx.def_path_str(method_def_id));
+            println!(
+                "Analysis of method {} is being started",
+                self.tcx.def_path_str(method_def_id)
+            );
 
             let args_incl_receiver = std::iter::once(receiver)
                 .chain(args.iter())

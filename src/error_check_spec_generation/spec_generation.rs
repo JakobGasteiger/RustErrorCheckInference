@@ -66,7 +66,7 @@ impl ReturnValueCheck {
     }
 }
 
-#[derive(PartialEq, Eq)]
+#[derive(PartialEq, Eq, Debug, Clone, Copy, Hash)]
 pub enum ResultOrOptionVariant {
     ResultOk,
     ResultErr,
@@ -102,7 +102,6 @@ impl<'tcx> rustc_hir::intravisit::Visitor<'tcx> for RVCheckFinder<'tcx> {
     // as we go through the expressions of the body, for each expr
     // we check if it is the current holder of the return value, and if so, what happens to it ( via ehck_use_site() )
     fn visit_expr(&mut self, expr: &'tcx rustc_hir::Expr<'tcx>) {
-
         // if we have already found a check, we do not look further
         if self.wrapper_function.return_value_check.is_some() {
             return;
@@ -113,13 +112,14 @@ impl<'tcx> rustc_hir::intravisit::Visitor<'tcx> for RVCheckFinder<'tcx> {
 
         // does the current expr match what were tracking?
         let matches_tracked: bool = match (&expr.kind, self.wrapped_function_value_holder) {
-
             // not tracking yet: is this expr a call to the wrapped external func?
             (rustc_hir::ExprKind::Call(func, _), None) => {
                 if let rustc_hir::ExprKind::Path(qpath) = &func.kind {
                     let res = typeck_results.qpath_res(qpath, func.hir_id);
-                    let matches =matches!(res, rustc_hir::def::Res::Def(_, def_id) if def_id == self.wrapper_function.wrapped_function_id);
-                    if matches { println!("Found call to wrapped C function: {:?}", res); }
+                    let matches = matches!(res, rustc_hir::def::Res::Def(_, def_id) if def_id == self.wrapper_function.wrapped_function_id);
+                    if matches {
+                        println!("Found call to wrapped C function: {:?}", res);
+                    }
                     matches
                 } else {
                     false
@@ -129,7 +129,9 @@ impl<'tcx> rustc_hir::intravisit::Visitor<'tcx> for RVCheckFinder<'tcx> {
             (rustc_hir::ExprKind::Path(qpath), Some(holder)) => {
                 let res = typeck_results.qpath_res(qpath, expr.hir_id);
                 let matches = matches!(res, rustc_hir::def::Res::Local(hir_id) if hir_id == holder);
-                if matches { println!("Found use of holding variable: {:?}", res); }
+                if matches {
+                    println!("Found use of holding variable: {:?}", res);
+                }
                 matches
             }
             //otherwise
@@ -156,18 +158,45 @@ impl<'tcx> RVCheckFinder<'tcx> {
         &mut self,
         expr_being_checked: &'tcx rustc_hir::Expr<'tcx>,
     ) -> Option<ReturnValueCheck> {
+
+        let mut return_value_check: Option<ReturnValueCheck> = None; // will only be returned if we do not find any sort of check, as those return directly
+
         let parents = self
             .tcx
             .hir_parent_iter(expr_being_checked.hir_id)
-            .map(|(_, node)| node);
+            .map(|(_, node)| node)
+            .into_iter();
         //println!("Parent: {:?}", parents);
 
         // TODO support for rv borrowing?
         // TODO see pattern from apppend() in Libgit/src/repo.rs::976 : support this?
 
+        let mut previous_parent = expr_being_checked; // will be needed as a possible function/method argument, if the funciton gets a whole expression as an argument
+
         // we go through all the layers of parents until there is something we can analyze (if any)
-        let mut previous_parent = expr_being_checked; // will be needed as a possible function/method argument, if tthe funciton gets a whole expression as an argument
         for parent in parents {
+
+            if let rustc_hir::Node::Expr(parent_expr) = parent.clone() {
+
+                // println!("Analyzing if parent expression {:?} is return without check", parent_expr.kind);
+
+                let result_type = single_expr_result_type(parent_expr);
+                println!(
+                    "Parent expression has result type {:?}", result_type
+                );
+
+                // if we find a Non-error return, with no check being found in the parents later in this loop, then no return is an error, and thus the check is "Empty"
+                // the opposite check would be "All", which should never be used, since no function should always return an error 
+                // therefore not implemented (would be a bit more complicated, as it would not use the tracked value, as we do in this fucntion
+                if result_type == Some(ResultOrOptionVariant::ResultOk)
+                    || result_type == Some(ResultOrOptionVariant::OptionSome)
+                {
+                    return_value_check = Some(ReturnValueCheck::Empty);
+                    println!("- only temporary, continuing up chain...");
+                    continue; // we continue to see if there is a check later in the parent chain, which would override this
+                }
+            }
+
             match parent {
                 // on sth like let result = <tracked expr>: move holder to result's binding HirId
                 rustc_hir::Node::LetStmt(local) => {
@@ -235,13 +264,12 @@ impl<'tcx> RVCheckFinder<'tcx> {
 
                     if let Some(method_def_id) = self.get_method_def_id(&parent_expr) {
                         //println!("Method def id: {:?}", method_def_id);
-                        let return_type = get_function_or_method_return_type(&self.tcx, &method_def_id);
+                        let return_type =
+                            get_function_or_method_return_type(&self.tcx, &method_def_id);
                         println!("Return type, parsed: {:?}", return_type);
 
                         if return_type == ReturnType::ResultOrOption {
                             return self.analyze_res_opt_method(&parent_expr, previous_parent); // cannot simply use expr_being checked, as it might be in a block or sth
-
-
                         } else if return_type == ReturnType::Bool {
                             // TODO handle boolean returns
                             let rv_check = self.analyze_bool_method(&parent_expr)?;
@@ -283,7 +311,6 @@ impl<'tcx> RVCheckFinder<'tcx> {
 
                         if return_type == ReturnType::ResultOrOption {
                             return self.analyze_res_opt_function(&func, args, previous_parent); // cannot simply use expr_being checked, as it might be in a block or sth
-
                         } else if return_type == ReturnType::Bool {
                             // TODO handle boolean returns
                             let rv_check = self.analyze_bool_function(&func)?;
@@ -311,7 +338,10 @@ impl<'tcx> RVCheckFinder<'tcx> {
                 }
 
                 _ => {
-                    println!("Cannot analyze at {:?}, continuing up parent expr chain", expr_being_checked.span);
+                    println!(
+                        "Cannot analyze at {:?}, continuing up parent expr chain",
+                        expr_being_checked.span
+                    );
                 }
             }
 
@@ -319,8 +349,12 @@ impl<'tcx> RVCheckFinder<'tcx> {
                 previous_parent = parent;
             }
         }
+        
+        if let Some(return_value_check) = return_value_check {
+            println!("Parent Chain exhausted, Error Condition is: {:?}", return_value_check);
+        }
 
-        None
+        return_value_check
     }
 
     fn analyze_if_stmt(
@@ -432,7 +466,10 @@ pub fn find_RV_checks(
 
     if finder.wrapper_function.return_value_check.is_none() {
         // TODO proper findinf for empty error checks
-        println!("No check found for wrapper function {}, setting Indeterminate", tcx.def_path_str(wrapper_function.wrapper_function_id));
+        println!(
+            "No check found for wrapper function {}, setting Indeterminate",
+            tcx.def_path_str(wrapper_function.wrapper_function_id)
+        );
         finder.wrapper_function.return_value_check = Some(ReturnValueCheck::Indeterminate);
     }
     *other_statistics += finder.other_statistics.clone();
@@ -448,7 +485,7 @@ fn block_result_type(block_expr: &rustc_hir::Expr<'_>) -> Option<ResultOrOptionV
             if let rustc_hir::StmtKind::Semi(expr) = stmt.kind {
                 if let rustc_hir::ExprKind::Ret(Some(ret_expr)) = expr.kind {
                     println!("Return Statement Found");
-                    return expr_result_type(&ret_expr);
+                    return single_expr_result_type(&ret_expr);
                 }
             }
 
@@ -456,13 +493,13 @@ fn block_result_type(block_expr: &rustc_hir::Expr<'_>) -> Option<ResultOrOptionV
             // TODO this possibly doesnt do anything? test
             if let rustc_hir::StmtKind::Expr(expr) = stmt.kind {
                 println!("Return Expression Found");
-                return expr_result_type(&expr);
+                return single_expr_result_type(&expr);
             }
         }
 
         if let Some(tail) = block.expr {
             println!("Tail Found");
-            return expr_result_type(&tail);
+            return single_expr_result_type(&tail);
         }
     }
     None
@@ -476,25 +513,26 @@ fn arm_result_type(arm_body: &rustc_hir::Expr<'_>) -> Option<ResultOrOptionVaria
     }
     // return for return stmt, if the arm expr is one
     if let rustc_hir::ExprKind::Ret(Some(ret_expr)) = arm_body.kind {
-        return expr_result_type(&ret_expr);
+        return single_expr_result_type(&ret_expr);
     }
 
-    expr_result_type(arm_body)
+    single_expr_result_type(arm_body)
 }
 
-fn expr_result_type(expr: &rustc_hir::Expr<'_>) -> Option<ResultOrOptionVariant> {
+// finds the return for a single expression (no blocks or larger stuff like that)
+fn single_expr_result_type(expr: &rustc_hir::Expr<'_>) -> Option<ResultOrOptionVariant> {
     if let rustc_hir::ExprKind::Call(func, _) = &expr.kind {
         if let rustc_hir::ExprKind::Path(qpath) = &func.kind {
             if let rustc_hir::QPath::Resolved(_, path) = qpath {
                 if let Some(seg) = path.segments.last() {
                     if seg.ident.name.as_str() == "Ok" {
-                        println!("Found Ok");
+                        println!("Found Ok at {:?}", expr.span);
                         return Some(ResultOrOptionVariant::ResultOk);
                     } else if seg.ident.name.as_str() == "Err" {
-                        println!("Found Err");
+                        println!("Found Err at {:?}", expr.span);
                         return Some(ResultOrOptionVariant::ResultErr);
                     } else if seg.ident.name.as_str() == "Some" {
-                        println!("Found Some");
+                        println!("Found Some at {:?}", expr.span);
                         return Some(ResultOrOptionVariant::OptionSome);
                     }
                 }
@@ -505,7 +543,7 @@ fn expr_result_type(expr: &rustc_hir::Expr<'_>) -> Option<ResultOrOptionVariant>
         if let rustc_hir::QPath::Resolved(_, path) = qpath {
             if let Some(seg) = path.segments.last() {
                 if seg.ident.name.as_str() == "None" {
-                    println!("Found None");
+                    println!("Found None at {:?}", expr.span);
                     return Some(ResultOrOptionVariant::OptionNone);
                 }
             }
