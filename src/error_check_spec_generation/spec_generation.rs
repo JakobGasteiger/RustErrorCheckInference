@@ -491,7 +491,20 @@ impl<'tcx> RVCheckFinder<'tcx> {
 
         println!("Arm count ==2");
 
+        let mut pattern_rv_check = ReturnValueCheck::All;
 
+        if let rustc_hir::PatKind::Expr(pat_expr) = arms[0].pat.kind {
+            if let rustc_hir::PatExprKind::Lit { lit, .. } = &pat_expr.kind {
+                if let rustc_ast::LitKind::Int(value, _) = lit.node {
+                    if value == 0 {
+                        pattern_rv_check = ReturnValueCheck::EqualZero;
+                        println!("Arm 1 pattern is 0, patterns rv check is EqualZero");
+                    }
+                } // TODO support defined constants?
+            }
+        }
+
+        let mut guard_rv_check = ReturnValueCheck::All;
 
         if let Some(arm1_guard) = arms[0].guard {
             println!("Stepping into Guard 1...");
@@ -499,39 +512,43 @@ impl<'tcx> RVCheckFinder<'tcx> {
                 arm1_guard.kind
             {
                 println!("Guard 1 is Binary Expression...");
-
-                let guard_rv_check = ReturnValueCheck::parse_from_bin_op(&arm1_bin_op, &arm1_bin_ex2);
-
-                if let Some(rv_check) = guard_rv_check {
-                    let arm1_result_type = arm_result_type(arms[0].body);
-                    println!("Binary Operation: {:?}", arm1_bin_op.node);
-
-                    if let Some(arm1_result_type) = arm1_result_type {
-                        // if we are checking for an error (and returning as such), we found our rv check
-                        if matches!(arm1_result_type, ResultOrOptionVariant::ResultErr)
-                            || matches!(arm1_result_type, ResultOrOptionVariant::OptionNone)
-                        {
-                            println!("Error Condition is {:?}", rv_check);
-                            return Some(rv_check);
-                        //if we are checking for non-error (and thus returning ok), the opposite of the check is our error
-                        // TODO expand beyond simple either/or (allow for multiple different error checks) ?
-                        } else if matches!(arm1_result_type, ResultOrOptionVariant::ResultOk)
-                            || matches!(arm1_result_type, ResultOrOptionVariant::OptionSome)
-                        {
-                            println!("Error Condition is {:?}", rv_check.clone().opposite());
-                            return Some(rv_check.opposite());
-                        }
-
-                        println!("Neither Error nor Normal Block");
-                    }
+                
+                if let Some(check) = ReturnValueCheck::parse_from_bin_op(&arm1_bin_op, &arm1_bin_ex2) {
+                    guard_rv_check = check;
+                    println!("Guard is Binary Operation: {:?}", arm1_bin_op.node);
+                } else {
+                    println!("Guard is Binary Operation, but could not parse: {:?}", arm1_bin_op.node);
                 }
+
             } else {
                 // TODO support for guards that are not binary expressions? (in particular hardcoded methods)
-                println!("Guard 1 is not Binary Expression, aborting");
-                return None;
+                println!("Guard 1 is not Binary Expression, will continue as if it means 'all'");
             }
         } else {
             println!("No guard found!");
+        }
+
+        let total_rv_check = pattern_rv_check.intersection(guard_rv_check);
+
+        let arm1_result_type = arm_result_type(arms[0].body);
+
+        if let Some(arm1_result_type) = arm1_result_type {
+            // if we are checking for an error (and returning as such), we found our rv check
+            if matches!(arm1_result_type, ResultOrOptionVariant::ResultErr)
+                || matches!(arm1_result_type, ResultOrOptionVariant::OptionNone)
+            {
+                println!("Error Condition is {:?}", total_rv_check);
+                return Some(total_rv_check);
+            //if we are checking for non-error (and thus returning ok), the opposite of the check is our error
+            // TODO expand beyond simple either/or (allow for multiple different error checks) ?
+            } else if matches!(arm1_result_type, ResultOrOptionVariant::ResultOk)
+                || matches!(arm1_result_type, ResultOrOptionVariant::OptionSome)
+            {
+                println!("Error Condition is {:?}", total_rv_check.clone().opposite());
+                return Some(total_rv_check.opposite());
+            }
+
+            println!("Neither Error nor Normal Block");
         }
 
         None
