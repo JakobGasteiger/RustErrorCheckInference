@@ -15,6 +15,8 @@ Explicitly only allow wrappers that take c_int (or any int?) as input from wrapp
 
 support match stmts that dont use guards or that have more than one arm
 
+support for match guards that are not binary expressions? (in particular hardcoded methods)
+
 support if stmts with elif
 
 LibSSH::channel.rs::554 god example of what is too complex to support fully? (result still right in this case)

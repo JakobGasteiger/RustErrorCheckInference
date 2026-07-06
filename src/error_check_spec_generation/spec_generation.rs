@@ -133,13 +133,9 @@ impl ReturnValueCheck {
             _ => Self::Indeterminate,
         }
     }
-}
-
-impl Add for ReturnValueCheck {
-    type Output = ReturnValueCheck;
 
     // implementation via number sets is a bit roundabout, but easier than matching on every single possibility
-    fn add(self, other: ReturnValueCheck) -> ReturnValueCheck {
+    fn union(self, other: ReturnValueCheck) -> ReturnValueCheck {
         if self == ReturnValueCheck::Indeterminate || other == ReturnValueCheck::Indeterminate {
             return ReturnValueCheck::Indeterminate;
         } else if self == ReturnValueCheck::IndeterminateNotLocal
@@ -157,11 +153,20 @@ impl Add for ReturnValueCheck {
         }
         Self::from_number_set(as_num_set)
     }
-}
 
-impl AddAssign for ReturnValueCheck {
-    fn add_assign(&mut self, other: Self) {
-        *self = *self + other;
+    fn intersection(self, other: ReturnValueCheck) -> ReturnValueCheck {
+        if self == ReturnValueCheck::Indeterminate || other == ReturnValueCheck::Indeterminate {
+            return ReturnValueCheck::Indeterminate;
+        } else if self == ReturnValueCheck::IndeterminateNotLocal || other == ReturnValueCheck::IndeterminateNotLocal
+        {
+            return ReturnValueCheck::IndeterminateNotLocal;
+        }
+
+        let mut as_num_set: HashSet<i8> = HashSet::new();
+        if let Some(self_set) = self.to_number_set() && let Some(other_set) = other.to_number_set() {
+            as_num_set = self_set.intersection(&other_set).copied().collect();
+        }
+        Self::from_number_set(as_num_set)
     }
 }
 
@@ -305,15 +310,6 @@ impl<'tcx> RVCheckFinder<'tcx> {
                     if let rustc_hir::ExprKind::Match(_matchee, arms, _) = parent_expr.kind =>
                 {
                     println!("RV checked via match at {:?}", expr_being_checked.span);
-
-                    // only support 2-armed match stmts: one Err, one Ok arm
-                    // TODO change this?
-                    if arms.len() != 2 {
-                        println!("Arm count !=2");
-                        return None;
-                    }
-
-                    println!("Arm count ==2");
 
                     return self.analyze_match_stmt(arms);
                 }
@@ -485,6 +481,18 @@ impl<'tcx> RVCheckFinder<'tcx> {
     }
 
     fn analyze_match_stmt(self: &Self, arms: &[rustc_hir::Arm]) -> Option<ReturnValueCheck> {
+
+        // only support 2-armed match stmts: one Err, one Ok arm
+        // TODO change this?
+        if arms.len() != 2 {
+            println!("Arm count !=2");
+            return None;
+        }
+
+        println!("Arm count ==2");
+
+
+
         if let Some(arm1_guard) = arms[0].guard {
             println!("Stepping into Guard 1...");
             if let rustc_hir::ExprKind::Binary(arm1_bin_op, _arm1_bin_ex1, arm1_bin_ex2) =
@@ -492,9 +500,9 @@ impl<'tcx> RVCheckFinder<'tcx> {
             {
                 println!("Guard 1 is Binary Expression...");
 
-                let rv_check = ReturnValueCheck::parse_from_bin_op(&arm1_bin_op, &arm1_bin_ex2);
+                let guard_rv_check = ReturnValueCheck::parse_from_bin_op(&arm1_bin_op, &arm1_bin_ex2);
 
-                if let Some(rv_check) = rv_check {
+                if let Some(rv_check) = guard_rv_check {
                     let arm1_result_type = arm_result_type(arms[0].body);
                     println!("Binary Operation: {:?}", arm1_bin_op.node);
 
@@ -517,6 +525,10 @@ impl<'tcx> RVCheckFinder<'tcx> {
                         println!("Neither Error nor Normal Block");
                     }
                 }
+            } else {
+                // TODO support for guards that are not binary expressions? (in particular hardcoded methods)
+                println!("Guard 1 is not Binary Expression, aborting");
+                return None;
             }
         } else {
             println!("No guard found!");
