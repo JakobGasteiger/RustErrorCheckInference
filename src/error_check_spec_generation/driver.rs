@@ -137,7 +137,7 @@ impl Add for OtherStatistics {
             bool_functions_not_yet_supported: self.bool_functions_not_yet_supported
                 + other.bool_functions_not_yet_supported,
             bool_methods_not_yet_supported: self.bool_methods_not_yet_supported
-                + other.bool_methods_not_yet_supported, 
+                + other.bool_methods_not_yet_supported,
             not_result_or_option_return_types: self.not_result_or_option_return_types
                 + other.not_result_or_option_return_types,
         }

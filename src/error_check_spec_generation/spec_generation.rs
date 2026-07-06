@@ -138,11 +138,13 @@ impl ReturnValueCheck {
 impl Add for ReturnValueCheck {
     type Output = ReturnValueCheck;
 
+    // implementation via number sets is a bit roundabout, but easier than matching on every single possibility
     fn add(self, other: ReturnValueCheck) -> ReturnValueCheck {
-
         if self == ReturnValueCheck::Indeterminate || other == ReturnValueCheck::Indeterminate {
             return ReturnValueCheck::Indeterminate;
-        } else if self == ReturnValueCheck::IndeterminateNotLocal || other == ReturnValueCheck::IndeterminateNotLocal {
+        } else if self == ReturnValueCheck::IndeterminateNotLocal
+            || other == ReturnValueCheck::IndeterminateNotLocal
+        {
             return ReturnValueCheck::IndeterminateNotLocal;
         }
 
@@ -255,7 +257,6 @@ impl<'tcx> RVCheckFinder<'tcx> {
         &mut self,
         expr_being_checked: &'tcx rustc_hir::Expr<'tcx>,
     ) -> Option<ReturnValueCheck> {
-
         let mut return_value_check: Option<ReturnValueCheck> = None; // will only be returned if we do not find any sort of check, as those return directly
 
         let parents = self
@@ -272,18 +273,14 @@ impl<'tcx> RVCheckFinder<'tcx> {
 
         // we go through all the layers of parents until there is something we can analyze (if any)
         for parent in parents {
-
             if let rustc_hir::Node::Expr(parent_expr) = parent.clone() {
-
                 // println!("Analyzing if parent expression {:?} is return without check", parent_expr.kind);
 
                 let result_type = single_expr_result_type(parent_expr);
-                println!(
-                    "Parent expression has result type {:?}", result_type
-                );
+                println!("Parent expression has result type {:?}", result_type);
 
                 // if we find a Non-error return, with no check being found in the parents later in this loop, then no return is an error, and thus the check is "Empty"
-                // the opposite check would be "All", which should never be used, since no function should always return an error 
+                // the opposite check would be "All", which should never be used, since no function should always return an error
                 // therefore not implemented (would be a bit more complicated, as it would not use the tracked value, as we do in this fucntion
                 if result_type == Some(ResultOrOptionVariant::ResultOk)
                     || result_type == Some(ResultOrOptionVariant::OptionSome)
@@ -447,9 +444,12 @@ impl<'tcx> RVCheckFinder<'tcx> {
                 previous_parent = parent;
             }
         }
-        
+
         if let Some(return_value_check) = return_value_check {
-            println!("Parent Chain exhausted, Error Condition is: {:?}", return_value_check);
+            println!(
+                "Parent Chain exhausted, Error Condition is: {:?}",
+                return_value_check
+            );
         }
 
         return_value_check
@@ -538,7 +538,9 @@ pub fn find_RV_checks(
     );
 
     // we only support wrapper functions that return Result or Option, maybe bool to come, but might not be necessary
-    if get_function_or_method_return_type(&tcx, &wrapper_function.wrapper_function_id) != ReturnType::ResultOrOption {
+    if get_function_or_method_return_type(&tcx, &wrapper_function.wrapper_function_id)
+        != ReturnType::ResultOrOption
+    {
         other_statistics.not_result_or_option_return_types += 1;
         wrapper_function.return_value_check = Some(ReturnValueCheck::Indeterminate);
         return;
