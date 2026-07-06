@@ -9,8 +9,7 @@ support assertions?
 
 always output span, not just name
 
-Assignments, not just let stmts
-X509_PURPOSE_get_idBIO_setr
+Assignments, not just let stmts ?
 
 Fix Ok/Err as function call : also see LibSSH::channel.rs::340
 

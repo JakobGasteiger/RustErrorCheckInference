@@ -580,6 +580,9 @@ pub fn get_function_or_method_return_type(
             let type_name = tcx.def_path_str(adt_def.did());
             if type_name == "core::result::Result"
                 || type_name == "std::result::Result"
+                || type_name == "std::io::Result"
+                || type_name == "core::thread::Result"
+                || type_name == "core::fmt::Result"
                 || type_name == "core::option::Option"
                 || type_name == "std::option::Option"
             {
