@@ -11,10 +11,10 @@ always output span, not just name
 
 Assignments, not just let stmts ?
 
-Fix Ok/Err as function call : also see LibSSH::channel.rs::340
-
-Explicitly only allow wrappers that are c_int (or any int?) -> Result or (possibly) Option
+Explicitly only allow wrappers that take c_int (or any int?) as input from wrapped function?
 
 support match stmts that dont use guards or that have more than one arm
 
 support if stmts with elif
+
+LibSSH::channel.rs::554 god example of what is too complex to support fully? (result still right in this case)

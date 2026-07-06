@@ -1,5 +1,8 @@
 // * responsible for generating error check specifications for wrapper functions
 
+use std::collections::HashSet;
+use std::ops::{Add, AddAssign};
+
 use crate::error_check_spec_generation::driver::OtherStatistics;
 use crate::error_check_spec_generation::{
     spec_generation::ReturnValueCheck::*, wrapper_func_finder::WrapperFunction,
@@ -63,6 +66,100 @@ impl ReturnValueCheck {
             rustc_hir::BinOpKind::Gt => Some(Self::GreaterZero),
             _ => None,
         }
+    }
+
+    fn to_number_set(self) -> Option<HashSet<i8>> {
+        let mut set = HashSet::new();
+        match self {
+            Self::Empty => {}
+            Self::LesserZero => {
+                set.insert(-1);
+            }
+            Self::GreaterZero => {
+                set.insert(1);
+            }
+            Self::NotEqZero => {
+                set.insert(-1);
+                set.insert(1);
+            }
+            Self::LesEqZero => {
+                set.insert(-1);
+                set.insert(0);
+            }
+            Self::GrEqZero => {
+                set.insert(0);
+                set.insert(1);
+            }
+            Self::EqualZero => {
+                set.insert(0);
+            }
+            Self::All => {
+                set.insert(-1);
+                set.insert(0);
+                set.insert(1);
+            }
+            Self::Indeterminate | Self::IndeterminateNotLocal => return None,
+        }
+
+        Some(set)
+    }
+
+    fn from_number_set(set: HashSet<i8>) -> ReturnValueCheck {
+        match set.len() {
+            0 => Self::Empty,
+            1 => {
+                if set.contains(&-1) {
+                    Self::LesserZero
+                } else if set.contains(&0) {
+                    Self::EqualZero
+                } else if set.contains(&1) {
+                    Self::GreaterZero
+                } else {
+                    Self::Indeterminate
+                }
+            }
+            2 => {
+                if set.contains(&-1) && set.contains(&0) {
+                    Self::LesEqZero
+                } else if set.contains(&0) && set.contains(&1) {
+                    Self::GrEqZero
+                } else if set.contains(&-1) && set.contains(&1) {
+                    Self::NotEqZero
+                } else {
+                    Self::Indeterminate
+                }
+            }
+            3 => Self::All,
+            _ => Self::Indeterminate,
+        }
+    }
+}
+
+impl Add for ReturnValueCheck {
+    type Output = ReturnValueCheck;
+
+    fn add(self, other: ReturnValueCheck) -> ReturnValueCheck {
+
+        if self == ReturnValueCheck::Indeterminate || other == ReturnValueCheck::Indeterminate {
+            return ReturnValueCheck::Indeterminate;
+        } else if self == ReturnValueCheck::IndeterminateNotLocal || other == ReturnValueCheck::IndeterminateNotLocal {
+            return ReturnValueCheck::IndeterminateNotLocal;
+        }
+
+        let mut as_num_set: HashSet<i8> = HashSet::new();
+        if let Some(set) = self.to_number_set() {
+            as_num_set.extend(set);
+        }
+        if let Some(set) = other.to_number_set() {
+            as_num_set.extend(set);
+        }
+        Self::from_number_set(as_num_set)
+    }
+}
+
+impl AddAssign for ReturnValueCheck {
+    fn add_assign(&mut self, other: Self) {
+        *self = *self + other;
     }
 }
 
@@ -203,6 +300,7 @@ impl<'tcx> RVCheckFinder<'tcx> {
                     if let rustc_hir::PatKind::Binding(_, hir_id, ident, _) = local.pat.kind {
                         println!("RV identity moves to '{}'", ident.name);
                         self.wrapped_function_value_holder = Some(hir_id);
+                        break;
                     }
                 }
 
