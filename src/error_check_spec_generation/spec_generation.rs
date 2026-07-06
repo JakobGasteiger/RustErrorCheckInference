@@ -108,22 +108,22 @@ impl ReturnValueCheck {
         match set.len() {
             0 => Self::Empty,
             1 => {
-                if set.contains(&-1) {
+                if set.iter().any(|&x| x < 0) {
                     Self::LesserZero
                 } else if set.contains(&0) {
                     Self::EqualZero
-                } else if set.contains(&1) {
+                } else if set.iter().any(|&x| x > 0) {
                     Self::GreaterZero
                 } else {
                     Self::Indeterminate
                 }
             }
             2 => {
-                if set.contains(&-1) && set.contains(&0) {
+                if set.iter().any(|&x| x < 0) && set.contains(&0) {
                     Self::LesEqZero
-                } else if set.contains(&0) && set.contains(&1) {
+                } else if set.contains(&0) && set.iter().any(|&x| x > 0) {
                     Self::GrEqZero
-                } else if set.contains(&-1) && set.contains(&1) {
+                } else if set.iter().any(|&x| x < 0) && set.iter().any(|&x| x > 0) {
                     Self::NotEqZero
                 } else {
                     Self::Indeterminate
