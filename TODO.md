@@ -13,7 +13,7 @@ Assignments, not just let stmts ?
 
 Explicitly only allow wrappers that take c_int (or any int?) as input from wrapped function?
 
-support match stmts that dont use guards or that have more than one arm
+support match stmts that have more than one arm
 
 support for match guards that are not binary expressions? (in particular hardcoded methods)
 
