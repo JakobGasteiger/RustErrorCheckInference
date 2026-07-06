@@ -12,8 +12,10 @@ always output span, not just name
 Assignments, not just let stmts
 X509_PURPOSE_get_idBIO_setr
 
-Finding of empty checks : see also LibSSH::sftp.rs::812, LibSSH::channel.rs::340, a lot of indeterminate funcions in OpenSSL
-
 Fix Ok/Err as function call : also see LibSSH::channel.rs::340
 
 Explicitly only allow wrappers that are c_int (or any int?) -> Result or (possibly) Option
+
+support match stmts that dont use guards or that have more than one arm
+
+support if stmts with elif

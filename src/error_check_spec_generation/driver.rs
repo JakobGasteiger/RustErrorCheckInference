@@ -116,6 +116,7 @@ pub struct OtherStatistics {
     // TODO add more statistics here
     pub bool_functions_not_yet_supported: usize,
     pub bool_methods_not_yet_supported: usize,
+    pub not_result_or_option_return_types: usize,
 }
 
 impl OtherStatistics {
@@ -123,6 +124,7 @@ impl OtherStatistics {
         OtherStatistics {
             bool_functions_not_yet_supported: 0,
             bool_methods_not_yet_supported: 0,
+            not_result_or_option_return_types: 0,
         }
     }
 }
@@ -135,15 +137,16 @@ impl Add for OtherStatistics {
             bool_functions_not_yet_supported: self.bool_functions_not_yet_supported
                 + other.bool_functions_not_yet_supported,
             bool_methods_not_yet_supported: self.bool_methods_not_yet_supported
-                + other.bool_methods_not_yet_supported,
+                + other.bool_methods_not_yet_supported, 
+            not_result_or_option_return_types: self.not_result_or_option_return_types
+                + other.not_result_or_option_return_types,
         }
     }
 }
 
 impl AddAssign for OtherStatistics {
     fn add_assign(&mut self, other: Self) {
-        self.bool_functions_not_yet_supported += other.bool_functions_not_yet_supported;
-        self.bool_methods_not_yet_supported += other.bool_methods_not_yet_supported;
+        *self = self.clone() + other;
     }
 }
 
@@ -157,6 +160,10 @@ impl OtherStatistics {
         println!(
             "Boolean methods not yet supported: {}",
             self.bool_methods_not_yet_supported
+        );
+        println!(
+            "Not Result/Option return types: {}",
+            self.not_result_or_option_return_types
         );
     }
 }

@@ -439,6 +439,12 @@ pub fn find_RV_checks(
         tcx.def_path_str(wrapper_function.wrapper_function_id)
     );
 
+    // we only support wrapper functions that return Result or Option, maybe bool to come, but might not be necessary
+    if get_function_or_method_return_type(&tcx, &wrapper_function.wrapper_function_id) != ReturnType::ResultOrOption {
+        other_statistics.not_result_or_option_return_types += 1;
+        wrapper_function.return_value_check = Some(ReturnValueCheck::Indeterminate);
+        return;
+    }
     // only works for local functions (no HIR body for external crates)
     let Some(owner_local_def_id) = wrapper_function.wrapper_function_id.as_local() else {
         println!("Not local!");
@@ -574,8 +580,8 @@ pub fn get_function_or_method_return_type(
             let type_name = tcx.def_path_str(adt_def.did());
             if type_name == "core::result::Result"
                 || type_name == "std::result::Result"
-                || type_name == "core::result::Option"
-                || type_name == "std::result::Option"
+                || type_name == "core::option::Option"
+                || type_name == "std::option::Option"
             {
                 return ReturnType::ResultOrOption;
             }
