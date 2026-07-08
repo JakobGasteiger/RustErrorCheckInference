@@ -491,9 +491,12 @@ impl<'tcx> RVCheckFinder<'tcx> {
 
         // println!("Arm count ==2");
 
-        let mut match_total_rv_check = ReturnValueCheck::Empty;
+        let mut match_total_rv_check = ReturnValueCheck::All;
 
         for arm in arms {
+
+            println!("Analyzing arm at {:?}", arm.span);
+
             let mut arm_pattern_rv_check = ReturnValueCheck::All;
 
             if let rustc_hir::PatKind::Expr(pat_expr) = arm.pat.kind {
@@ -510,11 +513,11 @@ impl<'tcx> RVCheckFinder<'tcx> {
             let mut arm_guard_rv_check = ReturnValueCheck::All;
 
             if let Some(arm_guard) = arm.guard {
-                println!("Stepping into Guard 1...");
+                println!("Stepping into Guard...");
                 if let rustc_hir::ExprKind::Binary(arm_bin_op, _arm1_bin_ex1, arm_bin_ex2) =
                     arm_guard.kind
                 {
-                    println!("Guard 1 is Binary Expression...");
+                    println!("Guard is Binary Expression...");
                     
                     if let Some(check) = ReturnValueCheck::parse_from_bin_op(&arm_bin_op, &arm_bin_ex2) {
                         arm_guard_rv_check = check;
@@ -525,7 +528,7 @@ impl<'tcx> RVCheckFinder<'tcx> {
 
                 } else {
                     // TODO support for guards that are not binary expressions? (in particular hardcoded methods)
-                    println!("Guard 1 is not Binary Expression, will continue as if it means 'all'");
+                    println!("Guard is not Binary Expression, will continue as if it means 'all'");
                 }
             } else {
                 println!("No guard found!");
@@ -540,15 +543,15 @@ impl<'tcx> RVCheckFinder<'tcx> {
                 if matches!(arm_result_type, ResultOrOptionVariant::ResultErr)
                     || matches!(arm_result_type, ResultOrOptionVariant::OptionNone)
                 {
-                    println!("Error Condition is {:?}", arm_total_rv_check);
-                    match_total_rv_check = match_total_rv_check.union(arm_total_rv_check);
+                    println!("Arm Error Condition is {:?}", arm_total_rv_check);
+                    match_total_rv_check = match_total_rv_check.intersection(arm_total_rv_check);
                 //if we are checking for non-error (and thus returning ok), the opposite of the check is our error
                 // TODO expand beyond simple either/or (allow for multiple different error checks) ?
                 } else if matches!(arm_result_type, ResultOrOptionVariant::ResultOk)
                     || matches!(arm_result_type, ResultOrOptionVariant::OptionSome)
                 {
-                    println!("Error Condition is {:?}", arm_total_rv_check.clone().opposite());
-                    match_total_rv_check = match_total_rv_check.union(arm_total_rv_check.opposite());
+                    println!("Arm Error Condition is {:?}", arm_total_rv_check.clone().opposite());
+                    match_total_rv_check = match_total_rv_check.intersection(arm_total_rv_check.opposite());
                 }
 
                 println!("Neither Error nor Normal Block");
@@ -556,11 +559,11 @@ impl<'tcx> RVCheckFinder<'tcx> {
         }
 
         
-        // if our total remains empty, we did not find any error checks in the match statement, and thus return None
+        // if our total remains All (unchanged), we did not find any error checks in the match statement, and thus return None
         // a match that genuinely does not check for errors would not make sense
         // kinda ugly but works well enough
         // TODO improve
-        if match_total_rv_check == ReturnValueCheck::Empty {
+        if match_total_rv_check == ReturnValueCheck::All {
             println!("Match statement did not yield any error check, returning None");
             return None;
         }
