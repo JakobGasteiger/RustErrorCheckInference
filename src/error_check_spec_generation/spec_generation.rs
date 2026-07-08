@@ -504,6 +504,7 @@ impl<'tcx> RVCheckFinder<'tcx> {
         Some(if_stmt_total_rv_check)
     }
 
+    // TODO fix logic here
     fn analyze_match_stmt(self: &mut Self, arms: &[rustc_hir::Arm]) -> Option<ReturnValueCheck> {
 
         let mut match_total_rv_check: Option<ReturnValueCheck> = None;
