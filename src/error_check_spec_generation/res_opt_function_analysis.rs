@@ -24,7 +24,8 @@ impl<'tcx> RVCheckFinder<'tcx> {
         // only works for local functions (no HIR body for external crates)
         let Some(local_def_id) = error_check_function_id.as_local() else {
             println!("Not local!");
-            return Some(ReturnValueCheck::IndeterminateNotLocal);
+            self.other_statistics.not_local_functions += 1;
+            return Some(ReturnValueCheck::Indeterminate);
         };
         // abort if function has no body
         let Some(body) = tcx.hir_maybe_body_owned_by(local_def_id) else {

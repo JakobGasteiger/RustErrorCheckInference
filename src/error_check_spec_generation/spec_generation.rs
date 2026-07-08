@@ -20,7 +20,6 @@ pub enum ReturnValueCheck {
     EqualZero,
     All, // should never be used, since no function should always return an error
     Indeterminate,
-    IndeterminateNotLocal, // we cannot analyze external functions, so we cannot determine the check
 }
 
 impl ReturnValueCheck {
@@ -35,7 +34,6 @@ impl ReturnValueCheck {
             EqualZero => NotEqZero,
             All => Empty,
             Indeterminate => Indeterminate,
-            IndeterminateNotLocal => IndeterminateNotLocal,
         }
     }
 
@@ -98,7 +96,7 @@ impl ReturnValueCheck {
                 set.insert(0);
                 set.insert(1);
             }
-            Self::Indeterminate | Self::IndeterminateNotLocal => return None,
+            Self::Indeterminate => return None,
         }
 
         Some(set)
@@ -138,10 +136,6 @@ impl ReturnValueCheck {
     fn union(self, other: ReturnValueCheck) -> ReturnValueCheck {
         if self == ReturnValueCheck::Indeterminate || other == ReturnValueCheck::Indeterminate {
             return ReturnValueCheck::Indeterminate;
-        } else if self == ReturnValueCheck::IndeterminateNotLocal
-            || other == ReturnValueCheck::IndeterminateNotLocal
-        {
-            return ReturnValueCheck::IndeterminateNotLocal;
         }
 
         let mut as_num_set: HashSet<i8> = HashSet::new();
@@ -157,9 +151,6 @@ impl ReturnValueCheck {
     fn intersection(self, other: ReturnValueCheck) -> ReturnValueCheck {
         if self == ReturnValueCheck::Indeterminate || other == ReturnValueCheck::Indeterminate {
             return ReturnValueCheck::Indeterminate;
-        } else if self == ReturnValueCheck::IndeterminateNotLocal || other == ReturnValueCheck::IndeterminateNotLocal
-        {
-            return ReturnValueCheck::IndeterminateNotLocal;
         }
 
         let mut as_num_set: HashSet<i8> = HashSet::new();
@@ -595,7 +586,8 @@ pub fn find_RV_checks(
     // only works for local functions (no HIR body for external crates)
     let Some(owner_local_def_id) = wrapper_function.wrapper_function_id.as_local() else {
         println!("Not local!");
-        wrapper_function.return_value_check = Some(ReturnValueCheck::IndeterminateNotLocal);
+        wrapper_function.return_value_check = Some(ReturnValueCheck::Indeterminate);
+        other_statistics.not_local_functions += 1;
         return;
     };
     // abort if function has no body
