@@ -473,15 +473,6 @@ impl<'tcx> RVCheckFinder<'tcx> {
 
     fn analyze_match_stmt(self: &Self, arms: &[rustc_hir::Arm]) -> Option<ReturnValueCheck> {
 
-        // // only support 2-armed match stmts: one Err, one Ok arm
-        // // TODO change this?
-        // if arms.len() != 2 {
-        //     println!("Arm count !=2");
-        //     return None;
-        // }
-
-        // println!("Arm count ==2");
-
         let mut match_total_rv_check = ReturnValueCheck::All;
 
         for arm in arms {
@@ -549,15 +540,16 @@ impl<'tcx> RVCheckFinder<'tcx> {
             }
         }
 
-        
-        // if our total remains All (unchanged), we did not find any error checks in the match statement, and thus return None
-        // a match that genuinely does not check for errors would not make sense
-        // kinda ugly but works well enough
-        // TODO improve
-        if match_total_rv_check == ReturnValueCheck::All {
-            println!("Match statement did not yield any error check, returning None");
-            return None;
-        }
+        // this code was removed, as it was not really necessary, and would not work for match statements that genuinely believe everything is an error 
+        // (which would be weird, but a possible bug in the code being analyzed, and thus should be handled)
+        // // if our total remains All (unchanged), we did not find any error checks in the match statement, and thus return None
+        // // a match that genuinely believes everything is an error would not make sense
+        // // kinda ugly but works well enough
+        // // TODO improve
+        // if match_total_rv_check == ReturnValueCheck::All {
+        //     println!("Match statement did not yield any error check, returning None");
+        //     return None;
+        // }
         
         println!("Match statement total rv check is {:?}", match_total_rv_check);
         Some(match_total_rv_check)
