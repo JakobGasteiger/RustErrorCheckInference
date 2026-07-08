@@ -315,7 +315,7 @@ impl<'tcx> RVCheckFinder<'tcx> {
                     // is this part of an if stmt?
                     if let Some((_, rustc_hir::Node::Expr(expr))) =
                         self.tcx.hir_parent_iter(parent_expr.hir_id).next()
-                        && let rustc_hir::ExprKind::If(cond, then_block, _else_block) = expr.kind
+                        && let rustc_hir::ExprKind::If(cond, then_block, else_block) = expr.kind
                     {
                         // cond should always be our binary expression: confirm this, abort if not
                         if cond.hir_id != parent_expr.hir_id {
@@ -325,7 +325,7 @@ impl<'tcx> RVCheckFinder<'tcx> {
                         println!("RV checked via If comparison at {:?}", expr.span);
                         println!("Binary Operation: {:?}", bin_op.node);
 
-                        return self.analyze_if_stmt(rv_check, then_block);
+                        return self.analyze_if_stmt(rv_check, then_block, else_block);
                     }
 
                     // is this a top-level comparison, not part of an if stmt? (eg in a return statement)
@@ -358,7 +358,7 @@ impl<'tcx> RVCheckFinder<'tcx> {
                             // is this part of an if stmt?
                             if let Some((_, rustc_hir::Node::Expr(expr))) =
                                 self.tcx.hir_parent_iter(parent_expr.hir_id).next()
-                                && let rustc_hir::ExprKind::If(cond, then_block, _else_block) =
+                                && let rustc_hir::ExprKind::If(cond, then_block, else_block) =
                                     expr.kind
                             {
                                 // cond should always be our binary expression: confirm this, abort if not
@@ -368,7 +368,7 @@ impl<'tcx> RVCheckFinder<'tcx> {
 
                                 println!("RV checked via If comparison at {:?}", expr.span);
 
-                                return self.analyze_if_stmt(rv_check, then_block);
+                                return self.analyze_if_stmt(rv_check, then_block, else_block);
                             }
                         } else {
                             println!("Not Result/Option or Boolean return type: not supported");
@@ -400,7 +400,7 @@ impl<'tcx> RVCheckFinder<'tcx> {
                             // is this part of an if stmt?
                             if let Some((_, rustc_hir::Node::Expr(expr))) =
                                 self.tcx.hir_parent_iter(parent_expr.hir_id).next()
-                                && let rustc_hir::ExprKind::If(cond, then_block, _else_block) =
+                                && let rustc_hir::ExprKind::If(cond, then_block, else_block) =
                                     expr.kind
                             {
                                 // cond should always be our binary expression: confirm this, abort if not
@@ -410,7 +410,7 @@ impl<'tcx> RVCheckFinder<'tcx> {
 
                                 println!("RV checked via If comparison at {:?}", expr.span);
 
-                                return self.analyze_if_stmt(rv_check, then_block);
+                                return self.analyze_if_stmt(rv_check, then_block, else_block);
                             }
                         } else {
                             println!("Not Result/Option or Boolean return type: not supported");
@@ -443,56 +443,89 @@ impl<'tcx> RVCheckFinder<'tcx> {
     }
 
     fn analyze_if_stmt(
-        self: &Self,
+        self: &mut Self,
         rv_check: ReturnValueCheck,
         then_block: &rustc_hir::Expr,
+        else_block: Option<&rustc_hir::Expr>,
     ) -> Option<ReturnValueCheck> {
+
+        let mut if_stmt_total_rv_check = ReturnValueCheck::All;
+
         let then_result_type = block_result_type(then_block);
 
-        if let Some(arm1_result_type) = then_result_type {
+        if let Some(then_result_type) = then_result_type {
             // if we are checking for an error (and returning as such), we found our rv check
-            if matches!(arm1_result_type, ResultOrOptionVariant::ResultErr)
-                || matches!(arm1_result_type, ResultOrOptionVariant::OptionNone)
+            if matches!(then_result_type, ResultOrOptionVariant::ResultErr)
+                || matches!(then_result_type, ResultOrOptionVariant::OptionNone)
             {
-                println!("Error Condition is {:?}", rv_check);
-                return Some(rv_check);
+                println!("Block Error Condition is {:?}", rv_check);
+                if_stmt_total_rv_check = if_stmt_total_rv_check.intersection(rv_check);
             //if we are checking for non-error (and thus returning ok), the opposite of the check is our error
-            // TODO expand beyond simple either/or (allow for multiple different error checks) ?
-            } else if matches!(arm1_result_type, ResultOrOptionVariant::ResultOk)
-                || matches!(arm1_result_type, ResultOrOptionVariant::OptionSome)
+            } else if matches!(then_result_type, ResultOrOptionVariant::ResultOk)
+                || matches!(then_result_type, ResultOrOptionVariant::OptionSome)
             {
-                println!("Error Condition is {:?}", rv_check.clone().opposite());
-                return Some(rv_check.opposite());
+                println!("Block Error Condition is {:?}", rv_check.clone().opposite());
+                if_stmt_total_rv_check = if_stmt_total_rv_check.intersection(rv_check.opposite());
+            } else {
+                println!("Neither Error nor Normal Block");
             }
-
-            println!("Neither Error nor Normal Block");
         }
 
-        None
+        // if an elsi if exists, analyze it recursively (else if is just an else containing an if stmt as expr)
+        if let Some(else_block) = else_block {
+            if let rustc_hir::ExprKind::If(else_cond, else_then_block, else_else_block) = else_block.kind {
+
+                let mut else_cond_parsed = ReturnValueCheck::All; // temporary value 
+
+                if let rustc_hir::ExprKind::Binary(bin_op, _ex1, ex2) = else_cond.kind {
+                    if let Some(check) = ReturnValueCheck::parse_from_bin_op(&bin_op, &ex2) {
+                        println!("Else If condition is Binary Operation: {:?}; parsed as {:?}", bin_op.node, check);
+                        else_cond_parsed = check;
+                    }
+                } else if let rustc_hir::ExprKind::MethodCall(..) = else_cond.kind {
+                    if let Some(check) = self.analyze_bool_method(else_cond) {
+                        println!("Else If condition is Method Call; parsed as {:?}", check);
+                        else_cond_parsed = check;
+                    }
+                } else if let rustc_hir::ExprKind::Call(func, ..) = else_cond.kind {
+                    if let Some(check) = self.analyze_bool_function(func) {
+                        println!("Else If condition is Function Call; parsed as {:?}", check);
+                        else_cond_parsed = check;
+                    }
+                }
+
+                if let Some(else_block_rv_check) = self.analyze_if_stmt(else_cond_parsed, else_then_block, else_else_block) {
+                    if_stmt_total_rv_check = if_stmt_total_rv_check.intersection(else_block_rv_check);
+                }
+            }
+        }
+
+        println!{"If stmt total error condition is {:?}", if_stmt_total_rv_check}
+        Some(if_stmt_total_rv_check)
     }
 
-    fn analyze_match_stmt(self: &Self, arms: &[rustc_hir::Arm]) -> Option<ReturnValueCheck> {
+    fn analyze_match_stmt(self: &mut Self, arms: &[rustc_hir::Arm]) -> Option<ReturnValueCheck> {
 
-        let mut match_total_rv_check = ReturnValueCheck::All;
+        let mut match_total_rv_check: Option<ReturnValueCheck> = None;
 
         for arm in arms {
 
             println!("Analyzing arm at {:?}", arm.span);
 
-            let mut arm_pattern_rv_check = ReturnValueCheck::All;
+            let mut arm_pattern_check = ReturnValueCheck::All;
 
             if let rustc_hir::PatKind::Expr(pat_expr) = arm.pat.kind {
                 if let rustc_hir::PatExprKind::Lit { lit, .. } = &pat_expr.kind {
                     if let rustc_ast::LitKind::Int(value, _) = lit.node {
                         if value == 0 {
-                            arm_pattern_rv_check = ReturnValueCheck::EqualZero;
+                            arm_pattern_check = ReturnValueCheck::EqualZero;
                             println!("Arm 1 pattern is 0, patterns rv check is EqualZero");
                         }
                     } // TODO support defined constants?
                 }
             }
 
-            let mut arm_guard_rv_check = ReturnValueCheck::All;
+            let mut arm_guard_check = ReturnValueCheck::All;
 
             if let Some(arm_guard) = arm.guard {
                 println!("Stepping into Guard...");
@@ -502,21 +535,28 @@ impl<'tcx> RVCheckFinder<'tcx> {
                     println!("Guard is Binary Expression...");
                     
                     if let Some(check) = ReturnValueCheck::parse_from_bin_op(&arm_bin_op, &arm_bin_ex2) {
-                        arm_guard_rv_check = check;
+                        arm_guard_check = check;
                         println!("Guard is Binary Operation: {:?}", arm_bin_op.node);
                     } else {
                         println!("Guard is Binary Operation, but could not parse: {:?}", arm_bin_op.node);
                     }
 
-                } else {
-                    // TODO support for guards that are not binary expressions? (in particular hardcoded methods)
-                    println!("Guard is not Binary Expression, will continue as if it means 'all'");
+                } else if let rustc_hir::ExprKind::MethodCall(..) = arm_guard.kind {
+                    if let Some(check) = self.analyze_bool_method(arm_guard) {
+                        println!("Else If condition is Method Call; parsed as {:?}", check);
+                        arm_guard_check = check;
+                    }
+                } else if let rustc_hir::ExprKind::Call(func, ..) = arm_guard.kind {
+                    if let Some(check) = self.analyze_bool_function(func) {
+                        println!("Else If condition is Function Call; parsed as {:?}", check);
+                        arm_guard_check = check;
+                    }
                 }
             } else {
                 println!("No guard found!");
             }
 
-            let arm_total_rv_check = arm_pattern_rv_check.intersection(arm_guard_rv_check);
+            let arm_total_check = arm_pattern_check.intersection(arm_guard_check);
 
             let arm_result_type = arm_result_type(arm.body);
 
@@ -525,18 +565,33 @@ impl<'tcx> RVCheckFinder<'tcx> {
                 if matches!(arm_result_type, ResultOrOptionVariant::ResultErr)
                     || matches!(arm_result_type, ResultOrOptionVariant::OptionNone)
                 {
-                    println!("Arm Error Condition is {:?}", arm_total_rv_check);
-                    match_total_rv_check = match_total_rv_check.intersection(arm_total_rv_check);
+                    println!("Arm Error Condition is {:?}", arm_total_check);
+
+                    if let Some(check) = match_total_rv_check {
+                        match_total_rv_check = Some(check.union(arm_total_check));
+                    } else {
+                        match_total_rv_check = Some(arm_total_check)
+                    }
+
+                    println!("Temporary value of match total RV check is {:?} after unioning with {:?}", match_total_rv_check, arm_total_check);
                 //if we are checking for non-error (and thus returning ok), the opposite of the check is our error
                 // TODO expand beyond simple either/or (allow for multiple different error checks) ?
                 } else if matches!(arm_result_type, ResultOrOptionVariant::ResultOk)
                     || matches!(arm_result_type, ResultOrOptionVariant::OptionSome)
                 {
-                    println!("Arm Error Condition is {:?}", arm_total_rv_check.clone().opposite());
-                    match_total_rv_check = match_total_rv_check.intersection(arm_total_rv_check.opposite());
-                }
+                    println!("Arm Error Condition is {:?}", arm_total_check.clone().opposite());
 
-                println!("Neither Error nor Normal Block");
+                    if let Some(check) = match_total_rv_check {
+                        match_total_rv_check = Some(check.intersection(arm_total_check.opposite()));
+                    } else {
+                        match_total_rv_check = Some(arm_total_check.opposite())
+                    }
+
+                    println!("Temporary value of match total RV check is {:?} after intersecting with {:?}", match_total_rv_check, arm_total_check.opposite());
+
+                } else {
+                    println!("Neither Error nor Normal Block");
+                }
             }
         }
 
@@ -552,7 +607,8 @@ impl<'tcx> RVCheckFinder<'tcx> {
         // }
         
         println!("Match statement total rv check is {:?}", match_total_rv_check);
-        Some(match_total_rv_check)
+
+        match_total_rv_check
     }
 }
 
