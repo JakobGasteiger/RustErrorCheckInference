@@ -635,6 +635,9 @@ impl<'tcx> RVCheckFinder<'tcx> {
                         if value == 0 {
                             arm_pattern_check = ReturnValueCheck::EqualZero;
                             println!("Arm 1 pattern is 0, patterns rv check is EqualZero");
+                        } else {
+                            arm_pattern_check = ReturnValueCheck::Indeterminate;
+                            println!("Arm 1 pattern is not 0, patterns rv check is Indeterminate");
                         }
                     } // TODO support defined constants?
                 }
