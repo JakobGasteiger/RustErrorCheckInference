@@ -18,3 +18,5 @@ support "reversed" binops
 LibSSH::channel.rs::554 god example of what is too complex to support fully? (result still right in this case)
 
 FIX MATCH LOGIC !!!!!!!!!
+
+add support for unary ops (pretty much just negation)

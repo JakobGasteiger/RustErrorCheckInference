@@ -159,6 +159,21 @@ impl ReturnValueCheck {
         }
         Self::from_number_set(as_num_set)
     }
+
+    fn without(self, other: ReturnValueCheck) -> ReturnValueCheck {
+    if self == ReturnValueCheck::Indeterminate || other == ReturnValueCheck::Indeterminate {
+        return ReturnValueCheck::Indeterminate;
+    }
+
+    if let Some(self_set) = self.to_number_set()
+        && let Some(other_set) = other.to_number_set()
+    {
+        let difference: HashSet<i8> = self_set.difference(&other_set).copied().collect();
+        Self::from_number_set(difference)
+    } else {
+        ReturnValueCheck::Indeterminate
+    }
+}
 }
 
 #[derive(PartialEq, Eq, Debug, Clone, Copy, Hash)]
@@ -174,6 +189,35 @@ pub enum ReturnType {
     ResultOrOption,
     Bool,
     Other,
+}
+
+#[derive(Debug, Clone)]
+struct IfAnalysisResult {
+    error_check: Option<ReturnValueCheck>,
+    ok_check: Option<ReturnValueCheck>,
+}
+
+impl IfAnalysisResult {
+    fn empty() -> Self {
+        Self { error_check: None, ok_check: None }
+    }
+
+    fn merge(&mut self, other: IfAnalysisResult) {
+        self.error_check = merge_optioned_checks(self.error_check.clone(), other.error_check);
+        self.ok_check = merge_optioned_checks(self.ok_check.clone(), other.ok_check);
+    }
+
+    // derive error from ok if possible: error = opposite of all ok conditions
+    fn finalize(self) -> Option<ReturnValueCheck> {
+        match (self.error_check, self.ok_check) {
+            // have both — use error directly (ok is just confirmation)
+            (Some(err), _) => Some(err),
+            // only have ok — derive error as opposite
+            (None, Some(ok)) => Some(ok.opposite()),
+            // have neither
+            (None, None) => None,
+        }
+    }
 }
 
 // finds the checks on return values (=RV)
@@ -442,14 +486,31 @@ impl<'tcx> RVCheckFinder<'tcx> {
         return_value_check
     }
 
+
     fn analyze_if_stmt(
         self: &mut Self,
         rv_check: ReturnValueCheck,
         then_block: &rustc_hir::Expr,
         else_block: Option<&rustc_hir::Expr>,
     ) -> Option<ReturnValueCheck> {
+        let inner_return = self.analyze_if_stmt_inner(rv_check, then_block, else_block);
+        if inner_return.0 != inner_return.1.opposite() {
+            println!("Err checks not equal to opposite of OK checks")
+        }
+        println!("Total Err Condition is {:?}", inner_return.0);
+        Some(inner_return.0)
+    }
 
-        let mut if_stmt_total_rv_check = ReturnValueCheck::All;
+    // we wrap this to hide some of the uglier implementation details related to recursion
+    fn analyze_if_stmt_inner(
+        self: &mut Self,
+        rv_check: ReturnValueCheck,
+        then_block: &rustc_hir::Expr,
+        else_block: Option<&rustc_hir::Expr>,
+    ) -> (ReturnValueCheck, ReturnValueCheck) {
+
+        let mut if_stmt_total_err_check = ReturnValueCheck::Empty;
+        let mut if_stmt_total_ok_check = ReturnValueCheck::Empty;
 
         let then_result_type = block_result_type(then_block);
 
@@ -459,20 +520,21 @@ impl<'tcx> RVCheckFinder<'tcx> {
                 || matches!(then_result_type, ResultOrOptionVariant::OptionNone)
             {
                 println!("Block Error Condition is {:?}", rv_check);
-                if_stmt_total_rv_check = if_stmt_total_rv_check.intersection(rv_check);
+                if_stmt_total_err_check = if_stmt_total_err_check.union(rv_check);
             //if we are checking for non-error (and thus returning ok), the opposite of the check is our error
             } else if matches!(then_result_type, ResultOrOptionVariant::ResultOk)
                 || matches!(then_result_type, ResultOrOptionVariant::OptionSome)
             {
-                println!("Block Error Condition is {:?}", rv_check.clone().opposite());
-                if_stmt_total_rv_check = if_stmt_total_rv_check.intersection(rv_check.opposite());
+                println!("Block Ok Condition is {:?}", rv_check.clone());
+                if_stmt_total_ok_check = if_stmt_total_ok_check.union(rv_check);
             } else {
                 println!("Neither Error nor Normal Block");
             }
         }
 
-        // if an elsi if exists, analyze it recursively (else if is just an else containing an if stmt as expr)
+        // if there is an else block
         if let Some(else_block) = else_block {
+            // if an else if exists, analyze it recursively (else if is just an else containing an if stmt as expr)
             if let rustc_hir::ExprKind::If(else_cond, else_then_block, else_else_block) = else_block.kind {
 
                 let mut else_cond_parsed = ReturnValueCheck::All; // temporary value 
@@ -494,14 +556,55 @@ impl<'tcx> RVCheckFinder<'tcx> {
                     }
                 }
 
-                if let Some(else_block_rv_check) = self.analyze_if_stmt(else_cond_parsed, else_then_block, else_else_block) {
-                    if_stmt_total_rv_check = if_stmt_total_rv_check.intersection(else_block_rv_check);
+                let else_if_rv_check = self.analyze_if_stmt_inner(else_cond_parsed, else_then_block, else_else_block);
+                if_stmt_total_err_check = if_stmt_total_err_check.union(else_if_rv_check.0).without(if_stmt_total_ok_check);
+                if_stmt_total_ok_check = if_stmt_total_ok_check.union(else_if_rv_check.1).without(if_stmt_total_err_check);
+            } else {
+                let else_result_type = block_result_type(else_block);
+
+                if let Some(else_result_type) = else_result_type {
+                    // if we are checking for an error (and returning as such), we found our rv check
+                    if matches!(else_result_type, ResultOrOptionVariant::ResultErr)
+                        || matches!(else_result_type, ResultOrOptionVariant::OptionNone)
+                    {
+                        if_stmt_total_err_check = if_stmt_total_err_check.union(rv_check.opposite());
+                    //if we are checking for non-error (and thus returning ok), the opposite of the check is our error
+                    } else if matches!(else_result_type, ResultOrOptionVariant::ResultOk)
+                        || matches!(else_result_type, ResultOrOptionVariant::OptionSome)
+                    {
+                        if_stmt_total_ok_check = if_stmt_total_ok_check.union(rv_check.opposite());
+                    } else {
+                        println!("Else is Neither Error nor Normal Block");
+                    }
                 }
             }
-        }
 
-        println!{"If stmt total error condition is {:?}", if_stmt_total_rv_check}
-        Some(if_stmt_total_rv_check)
+        // if the else block does not contain its own if stmt
+        } 
+
+        println!("Err and Ok condition for this if stmt are {:?}, {:?}", if_stmt_total_err_check, if_stmt_total_ok_check);
+        (if_stmt_total_err_check, if_stmt_total_ok_check)
+    }
+
+    // parse any condition expression into a ReturnValueCheck
+    // TODO make use of this function more widely
+    fn parse_condition(&mut self, cond: &rustc_hir::Expr) -> Option<ReturnValueCheck> {
+        match &cond.kind {
+            rustc_hir::ExprKind::Binary(bin_op, _lhs, rhs) => {
+                ReturnValueCheck::parse_from_bin_op(bin_op, rhs)
+            }
+            rustc_hir::ExprKind::MethodCall(..) => {
+                self.analyze_bool_method(cond)
+            }
+            rustc_hir::ExprKind::Call(func, ..) => {
+                self.analyze_bool_function(func)
+            }
+            rustc_hir::ExprKind::Unary(rustc_hir::UnOp::Not, inner) => {
+                // negated condition -> opposite of the inner check
+                self.parse_condition(inner).map(|c| c.opposite())
+            }
+            _ => None,
+        }
     }
 
     // TODO fix logic here
@@ -786,6 +889,18 @@ pub fn get_function_or_method_return_type(
     ReturnType::Other
 }
 
+// merge two Option<ReturnValueCheck> by unioning them
+fn merge_optioned_checks(
+    a: Option<ReturnValueCheck>,
+    b: Option<ReturnValueCheck>,
+) -> Option<ReturnValueCheck> {
+    match (a, b) {
+        (None, x) => x,
+        (x, None) => x,
+        (Some(a), Some(b)) => Some(a.union(b)),
+    }
+}
+
 #[test]
 fn test_return_value_check_union() {
     let check1 = ReturnValueCheck::LesserZero;
@@ -824,4 +939,91 @@ fn test_return_value_check_intersection() {
     let check5 = ReturnValueCheck::All;
     let intersection_check4 = check1.intersection(check5);
     assert_eq!(intersection_check4, ReturnValueCheck::LesserZero);
+}
+
+#[test]
+fn test_without() {
+    // LesEqZero - EqualZero = LesserZero
+    assert_eq!(
+        ReturnValueCheck::LesEqZero.without(ReturnValueCheck::EqualZero),
+        ReturnValueCheck::LesserZero
+    );
+
+    // LesEqZero - LesserZero = EqualZero
+    assert_eq!(
+        ReturnValueCheck::LesEqZero.without(ReturnValueCheck::LesserZero),
+        ReturnValueCheck::EqualZero
+    );
+
+    // GrEqZero - EqualZero = GreaterZero
+    assert_eq!(
+        ReturnValueCheck::GrEqZero.without(ReturnValueCheck::EqualZero),
+        ReturnValueCheck::GreaterZero
+    );
+
+    // NotEqZero - LesserZero = GreaterZero
+    assert_eq!(
+        ReturnValueCheck::NotEqZero.without(ReturnValueCheck::LesserZero),
+        ReturnValueCheck::GreaterZero
+    );
+
+    // NotEqZero - GreaterZero = LesserZero
+    assert_eq!(
+        ReturnValueCheck::NotEqZero.without(ReturnValueCheck::GreaterZero),
+        ReturnValueCheck::LesserZero
+    );
+
+    // All - LesserZero = GrEqZero
+    assert_eq!(
+        ReturnValueCheck::All.without(ReturnValueCheck::LesserZero),
+        ReturnValueCheck::GrEqZero
+    );
+
+    // All - EqualZero = NotEqZero
+    assert_eq!(
+        ReturnValueCheck::All.without(ReturnValueCheck::EqualZero),
+        ReturnValueCheck::NotEqZero
+    );
+
+    // anything without itself = Empty
+    assert_eq!(
+        ReturnValueCheck::LesserZero.without(ReturnValueCheck::LesserZero),
+        ReturnValueCheck::Empty
+    );
+    assert_eq!(
+        ReturnValueCheck::GrEqZero.without(ReturnValueCheck::GrEqZero),
+        ReturnValueCheck::Empty
+    );
+
+    // anything without Empty = itself
+    assert_eq!(
+        ReturnValueCheck::LesserZero.without(ReturnValueCheck::Empty),
+        ReturnValueCheck::LesserZero
+    );
+
+    // Empty without anything = Empty
+    assert_eq!(
+        ReturnValueCheck::Empty.without(ReturnValueCheck::LesserZero),
+        ReturnValueCheck::Empty
+    );
+
+    // no overlap — result is self unchanged
+    assert_eq!(
+        ReturnValueCheck::LesserZero.without(ReturnValueCheck::GreaterZero),
+        ReturnValueCheck::LesserZero
+    );
+    assert_eq!(
+        ReturnValueCheck::EqualZero.without(ReturnValueCheck::LesserZero),
+        ReturnValueCheck::EqualZero
+    );
+
+    // Indeterminate propagates
+    assert_eq!(
+        ReturnValueCheck::LesserZero.without(ReturnValueCheck::Indeterminate),
+        ReturnValueCheck::Indeterminate
+    );
+    assert_eq!(
+        ReturnValueCheck::Indeterminate.without(ReturnValueCheck::LesserZero),
+        ReturnValueCheck::Indeterminate
+    );
 }
