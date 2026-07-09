@@ -610,7 +610,8 @@ impl<'tcx> RVCheckFinder<'tcx> {
     // TODO fix logic here
     fn analyze_match_stmt(self: &mut Self, arms: &[rustc_hir::Arm]) -> Option<ReturnValueCheck> {
 
-        let mut match_total_rv_check: Option<ReturnValueCheck> = None;
+        let mut match_total_err_check: ReturnValueCheck = ReturnValueCheck::Empty;
+        let mut match_total_ok_check: ReturnValueCheck = ReturnValueCheck::Empty;
 
         for arm in arms {
 
@@ -666,32 +667,24 @@ impl<'tcx> RVCheckFinder<'tcx> {
 
             if let Some(arm_result_type) = arm_result_type {
                 // if we are checking for an error (and returning as such), we found our rv check
-                if matches!(arm_result_type, ResultOrOptionVariant::ResultErr)
-                    || matches!(arm_result_type, ResultOrOptionVariant::OptionNone)
+                if matches!(arm_result_type, ResultOrOptionVariant::ResultErr | ResultOrOptionVariant::OptionNone)
                 {
                     println!("Arm Error Condition is {:?}", arm_total_check);
 
-                    if let Some(check) = match_total_rv_check {
-                        match_total_rv_check = Some(check.union(arm_total_check));
-                    } else {
-                        match_total_rv_check = Some(arm_total_check)
-                    }
+                    match_total_err_check = match_total_err_check.union(arm_total_check).without(match_total_ok_check);
 
-                    println!("Temporary value of match total RV check is {:?} after unioning with {:?}", match_total_rv_check, arm_total_check);
+                    println!("Temporary value of match total Err check is {:?} after unioning with {:?}", match_total_err_check, arm_total_check);
+
                 //if we are checking for non-error (and thus returning ok), the opposite of the check is our error
                 // TODO expand beyond simple either/or (allow for multiple different error checks) ?
                 } else if matches!(arm_result_type, ResultOrOptionVariant::ResultOk)
                     || matches!(arm_result_type, ResultOrOptionVariant::OptionSome)
                 {
-                    println!("Arm Error Condition is {:?}", arm_total_check.clone().opposite());
+                    println!("Arm Ok Condition is {:?}", arm_total_check.clone());
 
-                    if let Some(check) = match_total_rv_check {
-                        match_total_rv_check = Some(check.intersection(arm_total_check.opposite()));
-                    } else {
-                        match_total_rv_check = Some(arm_total_check.opposite())
-                    }
+                    match_total_ok_check = match_total_ok_check.union(arm_total_check).without(match_total_err_check);
 
-                    println!("Temporary value of match total RV check is {:?} after intersecting with {:?}", match_total_rv_check, arm_total_check.opposite());
+                    println!("Temporary value of match total OK check is {:?} after intersecting with {:?}", match_total_ok_check, arm_total_check);
 
                 } else {
                     println!("Neither Error nor Normal Block");
@@ -710,9 +703,11 @@ impl<'tcx> RVCheckFinder<'tcx> {
         //     return None;
         // }
         
-        println!("Match statement total rv check is {:?}", match_total_rv_check);
+        println!("Match statement total Err, OK checks are {:?}, {:?}", match_total_err_check, match_total_ok_check);
 
-        match_total_rv_check
+        println!("Match statement total Err check is {:?}", match_total_err_check);
+
+        Some(match_total_err_check)
     }
 }
 

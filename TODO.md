@@ -20,3 +20,5 @@ LibSSH::channel.rs::554 god example of what is too complex to support fully? (re
 FIX MATCH LOGIC !!!!!!!!!
 
 add support for unary ops (pretty much just negation)
+
+CLEANUP
