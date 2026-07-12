@@ -299,12 +299,13 @@ impl<'tcx> RVCheckFinder<'tcx> {
                     || result_type == Some(ResultOrOptionVariant::OptionSome)
                 {
                     return_value_check = Some(ReturnValueCheck::Empty);
-                    println!("- only temporary, continuing up chain...");
+                    // println!("- only temporary, continuing up chain...");
                     continue; // we continue to see if there is a check later in the parent chain, which would override this
                 }
             }
 
             match parent {
+
                 // on sth like let result = <tracked expr>: move holder to result's binding HirId
                 rustc_hir::Node::LetStmt(local) => {
                     if let rustc_hir::PatKind::Binding(_, hir_id, ident, _) = local.pat.kind {
@@ -327,7 +328,7 @@ impl<'tcx> RVCheckFinder<'tcx> {
                 rustc_hir::Node::Expr(parent_expr)
                     if let rustc_hir::ExprKind::Binary(bin_op, _ex1, ex2) = parent_expr.kind =>
                 {
-                    let rv_check = ReturnValueCheck::parse_from_bin_op(&bin_op, &ex2)?;
+                    let mut rv_check = ReturnValueCheck::parse_from_bin_op(&bin_op, &ex2)?;
 
                     // is this part of an if stmt?
                     if let Some((_, rustc_hir::Node::Expr(expr))) =
@@ -341,6 +342,27 @@ impl<'tcx> RVCheckFinder<'tcx> {
 
                         println!("RV checked via If comparison at {:?}", expr.span);
                         println!("Binary Operation: {:?}", bin_op.node);
+
+                        return self.analyze_if_stmt(rv_check, then_block, else_block);
+
+                    // or is it negated inside an if stmt?
+                    } else if let Some((_, rustc_hir::Node::Expr(expr))) =
+                        self.tcx.hir_parent_iter(parent_expr.hir_id).next()
+                        && let rustc_hir::ExprKind::Unary(rustc_hir::UnOp::Not, _) = expr.kind
+                        && let Some((_, rustc_hir::Node::Expr(expr2))) =
+                            self.tcx.hir_parent_iter(expr.hir_id).next()
+                        && let rustc_hir::ExprKind::If(cond, then_block, else_block) = expr.kind
+                    {
+                        // cond should always be our binary expression: confirm this, abort if not
+                        if cond.hir_id != parent_expr.hir_id {
+                            return None;
+                        }
+
+                        println!("RV checked via If comparison at {:?}", expr.span);
+                        println!("Negated Binary Operation: {:?}, so {:?}", bin_op.node, rv_check.opposite());
+
+                        // since the bin op is negated, we need the opoosite rv check
+                        rv_check = rv_check.opposite();
 
                         return self.analyze_if_stmt(rv_check, then_block, else_block);
                     }
@@ -370,8 +392,8 @@ impl<'tcx> RVCheckFinder<'tcx> {
                         if return_type == ReturnType::ResultOrOption {
                             return self.analyze_res_opt_method(&parent_expr, previous_parent); // cannot simply use expr_being checked, as it might be in a block or sth
                         } else if return_type == ReturnType::Bool {
-                            // TODO handle boolean returns
-                            let rv_check = self.analyze_bool_method(&parent_expr)?;
+                            let mut rv_check = self.analyze_bool_method(&parent_expr)?;
+
                             // is this part of an if stmt?
                             if let Some((_, rustc_hir::Node::Expr(expr))) =
                                 self.tcx.hir_parent_iter(parent_expr.hir_id).next()
@@ -384,6 +406,15 @@ impl<'tcx> RVCheckFinder<'tcx> {
                                 }
 
                                 println!("RV checked via If comparison at {:?}", expr.span);
+
+                                // if the previous parent is a not, we reverse the condition
+                                // ie if the method call is negated, and that negation is the if condition
+                                if let rustc_hir::ExprKind::Unary(rustc_hir::UnOp::Not, _) =
+                                    previous_parent.kind
+                                {
+                                    rv_check = rv_check.opposite();
+                                    println!("-> reversed due to being inside unary not")
+                                }
 
                                 return self.analyze_if_stmt(rv_check, then_block, else_block);
                             }
@@ -411,8 +442,7 @@ impl<'tcx> RVCheckFinder<'tcx> {
                         if return_type == ReturnType::ResultOrOption {
                             return self.analyze_res_opt_function(&func, args, previous_parent); // cannot simply use expr_being checked, as it might be in a block or sth
                         } else if return_type == ReturnType::Bool {
-                            // TODO handle boolean returns
-                            let rv_check = self.analyze_bool_function(&func)?;
+                            let mut rv_check = self.analyze_bool_function(&func)?;
 
                             // is this part of an if stmt?
                             if let Some((_, rustc_hir::Node::Expr(expr))) =
@@ -421,11 +451,21 @@ impl<'tcx> RVCheckFinder<'tcx> {
                                     expr.kind
                             {
                                 // cond should always be our binary expression: confirm this, abort if not
+                                // should never trigger
                                 if cond.hir_id != parent_expr.hir_id {
                                     return None;
                                 }
 
                                 println!("RV checked via If comparison at {:?}", expr.span);
+
+                                // if the previous parent is a not, we reverse the condition
+                                // ie if the function call is negated, and that negation is the if condition
+                                if let rustc_hir::ExprKind::Unary(rustc_hir::UnOp::Not, _) =
+                                    previous_parent.kind
+                                {
+                                    rv_check = rv_check.opposite();
+                                    println!("-> reversed due to being inside unary not")
+                                }
 
                                 return self.analyze_if_stmt(rv_check, then_block, else_block);
                             }
@@ -438,8 +478,9 @@ impl<'tcx> RVCheckFinder<'tcx> {
 
                 _ => {
                     println!(
-                        "Cannot analyze at {:?}, continuing up parent expr chain",
-                        expr_being_checked.span
+                        "Cannot analyze at {:?}, continuing up parent expr chain; ExprKind was {:?}",
+                        expr_being_checked.span,
+                        expr_being_checked.kind
                     );
                 }
             }

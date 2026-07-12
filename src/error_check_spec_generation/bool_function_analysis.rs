@@ -113,20 +113,28 @@ impl<'tcx> RVCheckFinder<'tcx> {
             }
 
             let method_name = self.tcx.def_path_str(method_def_id);
-            println!("Checking if bollean function {} is hardcoded...", method_name);
+            println!(
+                "Checking if boolean function {} is hardcoded...",
+                method_name
+            );
 
             // hardcoded support for some common boolean methods from std
             if method_name.ends_with("is_null") {
                 self.other_statistics.hardcoded_bool_methods_analyzed += 1;
+                println!("... yes, it is!");
                 return Some(ReturnValueCheck::EqualZero);
             } else if method_name.ends_with("is_negative") {
                 self.other_statistics.hardcoded_bool_methods_analyzed += 1;
+                println!("... yes, it is!");
                 return Some(ReturnValueCheck::LesserZero);
             } else if method_name.ends_with("is_positive") {
                 self.other_statistics.hardcoded_bool_methods_analyzed += 1;
+                println!("... yes, it is!");
                 return Some(ReturnValueCheck::GreaterZero);
             }
-                        
+
+            println!("... no, it isn't :(")
+
             // // hardcoded support for some common boolean methods from std
             // better to just use the more versatile ends_with option above
             // match method_name.as_str() {
@@ -148,7 +156,7 @@ impl<'tcx> RVCheckFinder<'tcx> {
 
         // TODO temp, actually implement function ?
         // TODO probably not really necessary? see how often actually used
-        
+
         self.other_statistics.bool_methods_not_yet_supported += 1;
         Some(ReturnValueCheck::Indeterminate)
     }

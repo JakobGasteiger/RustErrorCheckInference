@@ -141,9 +141,8 @@ impl Add for OtherStatistics {
                 + other.bool_methods_not_yet_supported,
             not_result_or_option_return_types: self.not_result_or_option_return_types
                 + other.not_result_or_option_return_types,
-            not_local_functions: self.not_local_functions 
-                + other.not_local_functions,
-            hardcoded_bool_methods_analyzed: self.hardcoded_bool_methods_analyzed 
+            not_local_functions: self.not_local_functions + other.not_local_functions,
+            hardcoded_bool_methods_analyzed: self.hardcoded_bool_methods_analyzed
                 + other.hardcoded_bool_methods_analyzed,
         }
     }
@@ -171,6 +170,9 @@ impl OtherStatistics {
             self.not_result_or_option_return_types
         );
         println!("Not local functions: {}", self.not_local_functions);
-        println!("Hardcoded Bool functions analyzed: {}", self.hardcoded_bool_methods_analyzed);
+        println!(
+            "Hardcoded Bool functions analyzed: {}",
+            self.hardcoded_bool_methods_analyzed
+        );
     }
 }
