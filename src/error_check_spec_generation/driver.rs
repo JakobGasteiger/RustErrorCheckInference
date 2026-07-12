@@ -38,7 +38,7 @@ impl rustc_driver::Callbacks for ExternFuncCheckCallbacks {
         }
 
         aggregate_and_print_error_check_statistics(&wrapper_functions);
-        other_statistics.print();
+        other_statistics.output();
 
         rustc_driver::Compilation::Continue
     }
@@ -115,6 +115,7 @@ pub struct OtherStatistics {
     pub bool_methods_not_yet_supported: usize,
     pub not_result_or_option_return_types: usize,
     pub not_local_functions: usize,
+    pub hardcoded_bool_methods_analyzed: usize,
 }
 
 impl OtherStatistics {
@@ -124,6 +125,7 @@ impl OtherStatistics {
             bool_methods_not_yet_supported: 0,
             not_result_or_option_return_types: 0,
             not_local_functions: 0,
+            hardcoded_bool_methods_analyzed: 0,
         }
     }
 }
@@ -139,7 +141,10 @@ impl Add for OtherStatistics {
                 + other.bool_methods_not_yet_supported,
             not_result_or_option_return_types: self.not_result_or_option_return_types
                 + other.not_result_or_option_return_types,
-            not_local_functions: self.not_local_functions + other.not_local_functions,
+            not_local_functions: self.not_local_functions 
+                + other.not_local_functions,
+            hardcoded_bool_methods_analyzed: self.hardcoded_bool_methods_analyzed 
+                + other.hardcoded_bool_methods_analyzed,
         }
     }
 }
@@ -151,8 +156,8 @@ impl AddAssign for OtherStatistics {
 }
 
 impl OtherStatistics {
-    pub fn print(&self) {
-        println!("Other Statistics:");
+    pub fn output(&self) {
+        println!("\nOther Statistics:");
         println!(
             "Boolean functions not yet supported: {}",
             self.bool_functions_not_yet_supported
@@ -166,5 +171,6 @@ impl OtherStatistics {
             self.not_result_or_option_return_types
         );
         println!("Not local functions: {}", self.not_local_functions);
+        println!("Hardcoded Bool functions analyzed: {}", self.hardcoded_bool_methods_analyzed);
     }
 }

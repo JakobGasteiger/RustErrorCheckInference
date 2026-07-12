@@ -193,38 +193,6 @@ pub enum ReturnType {
     Other,
 }
 
-#[derive(Debug, Clone)]
-struct IfAnalysisResult {
-    error_check: Option<ReturnValueCheck>,
-    ok_check: Option<ReturnValueCheck>,
-}
-
-impl IfAnalysisResult {
-    fn empty() -> Self {
-        Self {
-            error_check: None,
-            ok_check: None,
-        }
-    }
-
-    fn merge(&mut self, other: IfAnalysisResult) {
-        self.error_check = merge_optioned_checks(self.error_check.clone(), other.error_check);
-        self.ok_check = merge_optioned_checks(self.ok_check.clone(), other.ok_check);
-    }
-
-    // derive error from ok if possible: error = opposite of all ok conditions
-    fn finalize(self) -> Option<ReturnValueCheck> {
-        match (self.error_check, self.ok_check) {
-            // have both — use error directly (ok is just confirmation)
-            (Some(err), _) => Some(err),
-            // only have ok — derive error as opposite
-            (None, Some(ok)) => Some(ok.opposite()),
-            // have neither
-            (None, None) => None,
-        }
-    }
-}
-
 // finds the checks on return values (=RV)
 pub struct RVCheckFinder<'tcx> {
     pub tcx: rustc_middle::ty::TyCtxt<'tcx>,
@@ -761,7 +729,7 @@ pub fn find_RV_checks(
         != ReturnType::ResultOrOption
     {
         other_statistics.not_result_or_option_return_types += 1;
-        wrapper_function.return_value_check = Some(ReturnValueCheck::Indeterminate);
+        wrapper_function.return_value_check = Some(ReturnValueCheck::Empty);
         return;
     }
     // only works for local functions (no HIR body for external crates)

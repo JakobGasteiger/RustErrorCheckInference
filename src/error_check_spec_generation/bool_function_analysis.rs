@@ -113,20 +113,43 @@ impl<'tcx> RVCheckFinder<'tcx> {
             }
 
             let method_name = self.tcx.def_path_str(method_def_id);
+            println!("Checking if bollean function {} is hardcoded...", method_name);
 
             // hardcoded support for some common boolean methods from std
-            if method_name.contains("is_null") {
+            if method_name.ends_with("is_null") {
+                self.other_statistics.hardcoded_bool_methods_analyzed += 1;
                 return Some(ReturnValueCheck::EqualZero);
-            } else if method_name.contains("is_negative") {
+            } else if method_name.ends_with("is_negative") {
+                self.other_statistics.hardcoded_bool_methods_analyzed += 1;
                 return Some(ReturnValueCheck::LesserZero);
-            } else if method_name.contains("is_positive") {
+            } else if method_name.ends_with("is_positive") {
+                self.other_statistics.hardcoded_bool_methods_analyzed += 1;
                 return Some(ReturnValueCheck::GreaterZero);
             }
+                        
+            // // hardcoded support for some common boolean methods from std
+            // better to just use the more versatile ends_with option above
+            // match method_name.as_str() {
+            //     "i8::is_negative" | "i16::is_negative" |  "i32::is_negative"  | "i64::is_negative" | "i28::is_negative" | "isize::is_negative" => {
+            //         self.other_statistics.hardcoded_bool_methods_analyzed += 1;
+            //         return Some(ReturnValueCheck::LesserZero);
+            //     },
+            //     "i8::is_positive" | "i16::is_positive" |  "i32::is_positive"  | "i64::is_positive" | "i28::is_positive" | "isize::is_positive" => {
+            //         self.other_statistics.hardcoded_bool_methods_analyzed += 1;
+            //         return Some(ReturnValueCheck::GreaterZero);
+            //     },
+            //     "std::ptr::is_null" | "pointer::is_null"  => {
+            //         self.other_statistics.hardcoded_bool_methods_analyzed += 1;
+            //         return Some(ReturnValueCheck::EqualZero);
+            //     }
+            //     _ => {}
+            // }
         }
 
+        // TODO temp, actually implement function ?
+        // TODO probably not really necessary? see how often actually used
+        
         self.other_statistics.bool_methods_not_yet_supported += 1;
-        // TODO temp, actually implement function
-        // TODO possibly not really necessary? se how often actually used
         Some(ReturnValueCheck::Indeterminate)
     }
 }
