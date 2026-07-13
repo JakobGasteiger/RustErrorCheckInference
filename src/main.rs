@@ -24,11 +24,12 @@ fn main() {
 
     // cancel when we're actually bulding; we only want to run the analysis on cargo check
     let is_build = args.iter().any(|a| a.contains("link"));
-    if is_build {
-        rustc_driver::run_compiler(&args, &mut rustc_driver::TimePassesCallbacks::default());
-        return;
-    }
+    // if is_build {
+    //     rustc_driver::run_compiler(&args, &mut rustc_driver::TimePassesCallbacks::default());
+    //     return;
+    // }
 
     // callback / after_analysis will hook in
+    eprintln!("Wrapper is active");
     rustc_driver::run_compiler(&args, &mut ExternFuncCheckCallbacks);
 }

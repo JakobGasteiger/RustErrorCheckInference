@@ -351,6 +351,7 @@ impl<'tcx> RVCheckFinder<'tcx> {
                         && let rustc_hir::ExprKind::Unary(rustc_hir::UnOp::Not, _) = expr.kind
                     {
                         println!("Negation found at {:?}", expr.span);
+                        self.other_statistics.condition_negations += 1;
 
                         if let Some((_, rustc_hir::Node::Expr(expr2))) =
                             self.tcx.hir_parent_iter(expr.hir_id).next()
@@ -416,6 +417,7 @@ impl<'tcx> RVCheckFinder<'tcx> {
                                 && let rustc_hir::ExprKind::Unary(rustc_hir::UnOp::Not, _) = expr.kind
                             {
                                 println!("Negation found at {:?}", expr.span);
+                                self.other_statistics.condition_negations += 1;
 
                                 if let Some((_, rustc_hir::Node::Expr(expr2))) =
                                     self.tcx.hir_parent_iter(expr.hir_id).next()
@@ -477,6 +479,7 @@ impl<'tcx> RVCheckFinder<'tcx> {
                                 && let rustc_hir::ExprKind::Unary(rustc_hir::UnOp::Not, _) = expr.kind
                             {
                                 println!("Negation found at {:?}", expr.span);
+                                self.other_statistics.condition_negations += 1;
 
                                 if let Some((_, rustc_hir::Node::Expr(expr2))) =
                                     self.tcx.hir_parent_iter(expr.hir_id).next()

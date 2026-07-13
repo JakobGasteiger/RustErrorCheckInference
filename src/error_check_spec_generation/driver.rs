@@ -21,8 +21,9 @@ impl rustc_driver::Callbacks for ExternFuncCheckCallbacks {
         if std::env::var("CARGO_PRIMARY_PACKAGE").is_err() {
             return rustc_driver::Compilation::Continue;
         }
+        let crate_name = tcx.crate_name(rustc_hir::def_id::LOCAL_CRATE);
 
-        println!("Checker starting...");
+        println!("Checker starting; crate = {}", crate_name);
 
         let sys_crates = find_sys_crates(tcx);
 
@@ -116,6 +117,7 @@ pub struct OtherStatistics {
     pub not_result_or_option_return_types: usize,
     pub not_local_functions: usize,
     pub hardcoded_bool_methods_analyzed: usize,
+    pub condition_negations: usize,
 }
 
 impl OtherStatistics {
@@ -126,6 +128,7 @@ impl OtherStatistics {
             not_result_or_option_return_types: 0,
             not_local_functions: 0,
             hardcoded_bool_methods_analyzed: 0,
+            condition_negations:0,
         }
     }
 }
@@ -144,6 +147,7 @@ impl Add for OtherStatistics {
             not_local_functions: self.not_local_functions + other.not_local_functions,
             hardcoded_bool_methods_analyzed: self.hardcoded_bool_methods_analyzed
                 + other.hardcoded_bool_methods_analyzed,
+            condition_negations: self.condition_negations + other.condition_negations
         }
     }
 }
@@ -174,5 +178,6 @@ impl OtherStatistics {
             "Hardcoded Bool functions analyzed: {}",
             self.hardcoded_bool_methods_analyzed
         );
+        println!("Condition negations: {}", self.condition_negations);
     }
 }
