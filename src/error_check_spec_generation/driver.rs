@@ -95,17 +95,22 @@ fn find_sys_crates<'tcx>(tcx: rustc_middle::ty::TyCtxt<'tcx>) -> Vec<rustc_span:
         let name = tcx.crate_name(*cnum);
         println!("Checking crate: {}", name.as_str());
         if name.as_str().ends_with("sys") {
-            println!("Found *-sys crate: {}", name.as_str());
+            println!("Found sys crate: {}", name.as_str());
             sys_crates.push(cnum.clone());
         }
     }
 
     // if no *-sys crate found, return own crate (actually quite useful for simplified testing)
     if sys_crates.is_empty() {
-        println!("No *-sys crate found, returning local");
+        println!("No sys crate found, returning local");
         sys_crates.push(rustc_hir::def_id::LOCAL_CRATE);
     }
 
+    println!("Sys crates:");
+    for krate in &sys_crates {
+        let name = tcx.crate_name(krate.clone());
+        println!("{}", name.as_str());
+    }
     sys_crates
 }
 
