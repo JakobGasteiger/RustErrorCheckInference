@@ -23,7 +23,7 @@ impl rustc_driver::Callbacks for ExternFuncCheckCallbacks {
         }
         let crate_name = tcx.crate_name(rustc_hir::def_id::LOCAL_CRATE);
 
-        println!("Checker starting; crate = {}", crate_name);
+        println!("\n\nChecker starting; crate = {}", crate_name);
 
         let sys_crates = find_sys_crates(tcx);
 
