@@ -40,7 +40,9 @@ impl ReturnValueCheck {
     fn parse_from_bin_op(
         bin_op: &rustc_hir::BinOp,
         comparand: &rustc_hir::Expr,
+        rv_check_finder: &RVCheckFinder
     ) -> Option<ReturnValueCheck> {
+
         // is our comparand a literal?
         if let rustc_hir::ExprKind::Lit(lit) = comparand.kind {
             // an int literal?
@@ -52,6 +54,30 @@ impl ReturnValueCheck {
                     return Some(Self::Indeterminate);
                 }
             }
+        // else, is it a constant?
+        } else if let rustc_hir::ExprKind::Path(qpath) = &comparand.kind {
+            let owner = rv_check_finder.wrapper_function.wrapper_function_id.as_local()?;
+            let typeck_results = rv_check_finder.tcx.typeck(owner);
+            let res = typeck_results.qpath_res(qpath, comparand.hir_id);
+            if let rustc_hir::def::Res::Def(rustc_hir::def::DefKind::Const{..}, def_id) = res {
+                // evaluate the constant
+                if let rustc_middle::mir::interpret::EvalToConstValueResult::Ok(const_val) = rv_check_finder.tcx.const_eval_poly(def_id) {
+                    // extract the scalar value
+                    // for integer constants:
+                    if let rustc_middle::mir::ConstValue::Scalar(scalar) = const_val {
+                        if let rustc_middle::mir::interpret::Scalar::Int(scalar_int) = scalar {
+                            let value = scalar_int.to_int(scalar_int.size());
+                            if value != 0 {
+                                println!("Comparand is Const Int but not 0, patterns rv check is Indeterminate");
+                                return Some(Self::Indeterminate);
+                            }
+                        }
+                    }
+                }
+            }
+        } else {
+            println!("Comparand is not a literal or constant, patterns rv check is Indeterminate");
+            return Some(Self::Indeterminate);
         }
 
         // if coparand is 0, parse
@@ -328,7 +354,7 @@ impl<'tcx> RVCheckFinder<'tcx> {
                 rustc_hir::Node::Expr(parent_expr)
                     if let rustc_hir::ExprKind::Binary(bin_op, _ex1, ex2) = parent_expr.kind =>
                 {
-                    let mut rv_check = ReturnValueCheck::parse_from_bin_op(&bin_op, &ex2)?;
+                    let mut rv_check = ReturnValueCheck::parse_from_bin_op(&bin_op, &ex2, &self)?;
 
                     // is this part of an if stmt?
                     if let Some((_, rustc_hir::Node::Expr(expr))) =
@@ -577,7 +603,7 @@ impl<'tcx> RVCheckFinder<'tcx> {
                 let mut else_cond_parsed = ReturnValueCheck::All; // temporary value 
 
                 if let rustc_hir::ExprKind::Binary(bin_op, _ex1, ex2) = else_cond.kind {
-                    if let Some(check) = ReturnValueCheck::parse_from_bin_op(&bin_op, &ex2) {
+                    if let Some(check) = ReturnValueCheck::parse_from_bin_op(&bin_op, &ex2, &self) {
                         println!(
                             "Else If condition is Binary Operation: {:?}; parsed as {:?}",
                             bin_op.node, check
@@ -640,7 +666,7 @@ impl<'tcx> RVCheckFinder<'tcx> {
     fn parse_condition(&mut self, cond: &rustc_hir::Expr) -> Option<ReturnValueCheck> {
         match &cond.kind {
             rustc_hir::ExprKind::Binary(bin_op, _lhs, rhs) => {
-                ReturnValueCheck::parse_from_bin_op(bin_op, rhs)
+                ReturnValueCheck::parse_from_bin_op(bin_op, rhs, &self)
             }
             rustc_hir::ExprKind::MethodCall(..) => self.analyze_bool_method(cond),
             rustc_hir::ExprKind::Call(func, ..) => self.analyze_bool_function(func),
@@ -713,7 +739,7 @@ impl<'tcx> RVCheckFinder<'tcx> {
                     println!("Guard is Binary Expression...");
 
                     if let Some(check) =
-                        ReturnValueCheck::parse_from_bin_op(&arm_bin_op, &arm_bin_ex2)
+                        ReturnValueCheck::parse_from_bin_op(&arm_bin_op, &arm_bin_ex2, &self)
                     {
                         arm_guard_check = check;
                         println!("Guard is Binary Operation: {:?}", arm_bin_op.node);
