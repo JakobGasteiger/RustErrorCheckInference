@@ -22,8 +22,9 @@ fn main() {
         args.remove(1);
     }
 
+    // * for reasons i struggle to understand, this check caused problems with some libs (curl specifically); removed, maybe bring back? not really important anyway
     // cancel when we're actually bulding; we only want to run the analysis on cargo check
-    let is_build = args.iter().any(|a| a.contains("link"));
+    //let is_build = args.iter().any(|a| a.contains("link"));
     // if is_build {
     //     rustc_driver::run_compiler(&args, &mut rustc_driver::TimePassesCallbacks::default());
     //     return;
