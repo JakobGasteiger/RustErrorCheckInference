@@ -59,6 +59,9 @@ pub fn find_external_functions<'tcx>(
     let mut external_functions = Vec::new();
 
     for sys_crate in sys_crates {
+
+        println!("Looking for external functions in {}", tcx.crate_name(*sys_crate).as_str());
+
         let crate_external_functions = tcx
             .foreign_modules(*sys_crate)
             .values()
