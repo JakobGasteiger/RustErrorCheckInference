@@ -53,6 +53,9 @@ pub fn find_external_functions<'tcx>(
     tcx: rustc_middle::ty::TyCtxt<'tcx>,
     sys_crates: &Vec<rustc_span::def_id::CrateNum>,
 ) -> Vec<rustc_hir::def_id::DefId> {
+
+    println!("\nLooking for external functions...");
+
     let mut external_functions = Vec::new();
 
     for sys_crate in sys_crates {
