@@ -652,7 +652,6 @@ impl<'tcx> RVCheckFinder<'tcx> {
         }
     }
 
-    // TODO fix logic here
     fn analyze_match_stmt(self: &mut Self, arms: &[rustc_hir::Arm]) -> Option<ReturnValueCheck> {
         let mut match_total_err_check: ReturnValueCheck = ReturnValueCheck::Empty;
         let mut match_total_ok_check: ReturnValueCheck = ReturnValueCheck::Empty;
@@ -663,16 +662,44 @@ impl<'tcx> RVCheckFinder<'tcx> {
             let mut arm_pattern_check = ReturnValueCheck::All;
 
             if let rustc_hir::PatKind::Expr(pat_expr) = arm.pat.kind {
+                // teest if the pat is a literal int
                 if let rustc_hir::PatExprKind::Lit { lit, .. } = &pat_expr.kind {
                     if let rustc_ast::LitKind::Int(value, _) = lit.node {
                         if value == 0 {
                             arm_pattern_check = ReturnValueCheck::EqualZero;
-                            println!("Arm 1 pattern is 0, patterns rv check is EqualZero");
+                            println!("Arm pattern is 0, patterns rv check is EqualZero");
                         } else {
                             arm_pattern_check = ReturnValueCheck::Indeterminate;
-                            println!("Arm 1 pattern is not 0, patterns rv check is Indeterminate");
+                            println!("Arm pattern is Int but not 0, patterns rv check is Indeterminate");
                         }
-                    } // TODO support defined constants?
+                    }
+                // test if the pat is a constant
+                } else if let rustc_hir::PatExprKind::Path(qpath) = &pat_expr.kind {
+                    let owner = self.wrapper_function.wrapper_function_id.as_local()?;
+                    let typeck_results = self.tcx.typeck(owner);
+                    let res = typeck_results.qpath_res(qpath, pat_expr.hir_id);
+                    if let rustc_hir::def::Res::Def(rustc_hir::def::DefKind::Const{..}, def_id) = res {
+                        // evaluate the constant
+                        if let rustc_middle::mir::interpret::EvalToConstValueResult::Ok(const_val) = self.tcx.const_eval_poly(def_id) {
+                            // extract the scalar value
+                            // for integer constants:
+                            if let rustc_middle::mir::ConstValue::Scalar(scalar) = const_val {
+                                if let rustc_middle::mir::interpret::Scalar::Int(scalar_int) = scalar {
+                                    let value = scalar_int.to_int(scalar_int.size());
+                                    if value == 0 {
+                                        arm_pattern_check = ReturnValueCheck::EqualZero;
+                                        println!("Arm pattern is 0, patterns rv check is EqualZero");
+                                    } else {
+                                        arm_pattern_check = ReturnValueCheck::Indeterminate;
+                                        println!("Arm pattern is Const Int but not 0, patterns rv check is Indeterminate");
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    arm_pattern_check = ReturnValueCheck::Indeterminate;
+                    println!("Arm pattern is not a literal or constant, patterns rv check is Indeterminate");
                 }
             }
 

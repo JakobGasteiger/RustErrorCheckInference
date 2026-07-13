@@ -71,8 +71,7 @@ impl<'tcx> RVCheckFinder<'tcx> {
         func: &rustc_hir::Expr,
     ) -> Option<rustc_hir::def_id::DefId> {
         if let rustc_hir::ExprKind::Path(qpath) = &func.kind {
-            // TODO can panic, fix with as_local()
-            let owner = self.wrapper_function.wrapper_function_id.expect_local();
+            let owner = self.wrapper_function.wrapper_function_id.as_local()?;
             let typeck_results = self.tcx.typeck(owner);
             let res = typeck_results.qpath_res(qpath, func.hir_id);
 
