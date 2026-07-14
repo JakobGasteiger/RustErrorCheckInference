@@ -1,12 +1,12 @@
 // * contains some functions related to analyzing sub-error-check-function/methods which return bool: sorted into own file for organization
 
-use crate::error_check_spec_generation::{
+use crate::{error_check_spec_generation::{
     driver::OtherStatistics,
     spec_generation::{
-        RVCheckFinder, ResultOrOptionVariant::OptionSome, ReturnType, ReturnValueCheck,
+        RVCheckFinder, ReturnType
     },
     wrapper_func_finder::WrapperFunction,
-};
+}, utils::ReturnValueCheck};
 use crate::rustc_hir::intravisit::Visitor;
 
 impl<'tcx> RVCheckFinder<'tcx> {

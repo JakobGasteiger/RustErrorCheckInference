@@ -1,7 +1,6 @@
 // * responsible for finding external functions and their wrappers
 
-use crate::error_check_spec_generation::spec_generation::ReturnValueCheck;
-use crate::rustc_hir::intravisit::Visitor;
+use crate::{rustc_hir::intravisit::Visitor, utils::ReturnValueCheck};
 
 #[derive(PartialEq, Eq, Hash, Clone, Debug)]
 // TODO split into wrapperFunction, ErrorSpec ?

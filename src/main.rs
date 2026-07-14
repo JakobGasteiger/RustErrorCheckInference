@@ -9,6 +9,7 @@ extern crate rustc_middle;
 extern crate rustc_span;
 
 mod error_check_spec_generation;
+mod utils;
 
 use crate::error_check_spec_generation::driver::*;
 
