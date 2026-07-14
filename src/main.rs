@@ -10,8 +10,9 @@ extern crate rustc_span;
 
 mod error_check_spec_generation;
 mod utils;
+mod esss_parser;
 
-use crate::error_check_spec_generation::driver::*;
+use crate::{error_check_spec_generation::driver::*, esss_parser::driver::parse_specs};
 
 fn main() {
     let mut args: Vec<String> = std::env::args().collect();
@@ -31,7 +32,10 @@ fn main() {
     //     return;
     // }
 
+    parse_specs();
+
     // callback / after_analysis will hook in
     eprintln!("Wrapper is active");
     rustc_driver::run_compiler(&args, &mut ExternFuncCheckCallbacks);
+
 }

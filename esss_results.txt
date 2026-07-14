@@ -1,0 +1,4242 @@
+Function: git__calloc {return index 0}
+  [0, 0]
+Function: push_status_ref_cmp {return index 0}
+  [0, 0]
+Function: git_push_add_refspec {return index 0}
+  [-1, -1]
+Function: git_push_update_tips {return index 0}
+  [-1, -1]
+Function: git_push_finish {return index 0}
+  [-11, -11] U [-1, -1]
+Function: git_reader_for_tree {return index 0}
+  [-1, -1]
+Function: tree_reader_read {return index 0}
+  [-33, -1]
+Function: git_reader_for_workdir {return index 0}
+  [-1, -1]
+Function: workdir_reader_read {return index 0}
+  [-2147483648, -1]
+Function: git_reader_for_index {return index 0}
+  [-14, -1]
+Function: index_reader_read {return index 0}
+  [-33, -1]
+Function: git_rebase_open {return index 0}
+  [-14, -1]
+Function: rebase_state_type {return index 0}
+  [-1, -1]
+Function: rebase_readoid {return index 0}
+  [-14, -1]
+Function: rebase_open_merge {return index 0}
+  [-14, -1]
+Function: rebase_readint {return index 0}
+  [-14, -1]
+Function: git_rebase_init {return index 0}
+  [-1, -1]
+Function: rebase_ensure_not_dirty {return index 0}
+  [-2147483648, -1]
+Function: rebase_init_merge {return index 0}
+  [-2147483648, 0]
+Function: rebase_setupfile {return index 0}
+  [-1, -1]
+Function: git_rebase_next {return index 0}
+  [-2147483648, 0]
+Function: git_rebase_commit {return index 0}
+  [-2147483648, 0]
+Function: rebase_commit__create {return index 0}
+  [-39, -1]
+Function: git_rebase_abort {return index 0}
+  [-2147483648, 0]
+Function: git_rebase_finish {return index 0}
+  [-2147483648, 0]
+Function: git_refdb_new {return index 0}
+  [-1, -1]
+Function: git_refdb_open {return index 0}
+  [-1, -1]
+Function: git_refdb_init {return index 0}
+  [-1, -1]
+Function: git_refdb_lookup {return index 0}
+  [-1, -1]
+Function: git_refdb_resolve {return index 0}
+  [-1, 0]
+Function: git_refdb_iterator {return index 0}
+  [-1, -1]
+Function: git_refdb_write {return index 0}
+  [-1, -1]
+Function: git_refdb_rename {return index 0}
+  [-1, -1]
+Function: git_refdb_should_write_reflog {return index 0}
+  [-12, -1]
+Function: git_refdb_should_write_head_reflog {return index 0}
+  [-1, -1]
+Function: git_refdb_init_backend {return index 0}
+  [-1, -1]
+Function: git_refdb_lock {return index 0}
+  [-1, -1]
+Function: git_refdb_unlock {return index 0}
+  [-1, -1]
+Function: git_reference__lookup_loose {return index 0}
+  [-14, -1]
+Function: git_refdb_backend_fs {return index 0}
+  [-1, -1]
+Function: setup_namespace {return index 0}
+  [0, 0]
+Function: packref_cmp {return index 0}
+  [0, 0]
+Function: refdb_fs_backend__init {return index 0}
+  [-1, -1]
+Function: refdb_fs_backend__exists {return index 0}
+  [-14, -1]
+Function: refdb_fs_backend__lookup {return index 0}
+  [-2147483648, -1]
+Function: refdb_fs_backend__iterator {return index 0}
+  [-2147483648, 0]
+Function: refdb_fs_backend__write {return index 0}
+  [-2147483648, 0]
+Function: refdb_fs_backend__delete {return index 0}
+  [-2147483648, -1]
+Function: refdb_fs_backend__rename {return index 0}
+  [-2147483648, 0]
+Function: refdb_fs_backend__compress {return index 0}
+  [-14, -1]
+Function: refdb_fs_backend__lock {return index 0}
+  [-1, -1]
+Function: refdb_fs_backend__unlock {return index 0}
+  [-2147483648, -1]
+Function: refdb_reflog_fs__has_log {return index 0}
+  [0, 0]
+Function: refdb_reflog_fs__ensure_log {return index 0}
+  [-1, -1]
+Function: refdb_reflog_fs__read {return index 0}
+  [-2147483648, -1]
+Function: refdb_reflog_fs__write {return index 0}
+  [-1, 0]
+Function: refdb_reflog_fs__rename {return index 0}
+  [-3, -3] U [0, 0]
+Function: refdb_reflog_fs__delete {return index 0}
+  [-2147483648, -1]
+Function: refdb_fs_backend__prune_refs {return index 0}
+  [-1, -1]
+Function: loose_path {return index 0}
+  [-1, -1]
+Function: refdb_fs_backend__delete_tail {return index 0}
+  [-2147483648, -1]
+Function: refdb_fs_backend__write_tail {return index 0}
+  [-2147483648, 0]
+Function: cmp_old_ref {return index 0}
+  [-2147483648, -1]
+Function: reflog_append {return index 0}
+  [-2147483648, -1]
+Function: maybe_append_head {return index 0}
+  [-2147483648, -1]
+Function: loose_commit {return index 0}
+  [-1, 0]
+Function: packed_reload {return index 0}
+  [-14, -1]
+Function: packed_write {return index 0}
+  [-2147483648, 0]
+Function: loose_lock {return index 0}
+  [-2147483648, -1]
+Function: packed_set_peeling_mode {return index 0}
+  [0, 0]
+Function: _dirent_loose_load {return index 0}
+  [-1, -1]
+Function: reference_path_available {return index 0}
+  [-14, -1]
+Function: iter_load_paths {return index 0}
+  [-2147483648, 0]
+Function: refdb_fs_backend__iterator_next {return index 0}
+  [-31, -31] U [0, 0]
+Function: refdb_fs_backend__iterator_next_name {return index 0}
+  [-31, -31] U [0, 0]
+Function: git_refdb_backend_reftable {return index 0}
+  [-39, -1]
+Function: refdb_reftable_init {return index 0}
+  [-1, -1]
+Function: refdb_reftable_lookup {return index 0}
+  [-1, -1]
+Function: refdb_reftable_iterator_new {return index 0}
+  [-1, 0]
+Function: refdb_reftable_reflog_read {return index 0}
+  [-1, -1]
+Function: refdb_reftable_stack_for {return index 0}
+  [0, 0]
+Function: refdb_reftable_reflog_write_delete_table {return index 0}
+  [-21, -1]
+Function: refdb_reftable_updates_for_reflog_delete_or_rename {return index 0}
+  [-12, -1]
+Function: refdb_reftable_reflog_write_rename_table {return index 0}
+  [-21, -1]
+Function: refdb_reftable_write_reflog_table {return index 0}
+  [-21, -1]
+Function: refdb_reftable_write_log_existence_table {return index 0}
+  [-2147483648, -1]
+Function: refdb_reftable_write_delete_table {return index 0}
+  [-21, -1]
+Function: refdb_reftable_check_ref {return index 0}
+  [-1, -1]
+Function: refdb_reftable_write_rename_table {return index 0}
+  [-39, -1]
+Function: refdb_reftable_check_refname_available {return index 0}
+  [-23, -1]
+Function: refdb_reftable_reference_from_record {return index 0}
+  [-1, -1]
+Function: refdb_reftable_error {return index 0}
+  [-1, -1]
+Function: refdb_reftable_write_table {return index 0}
+  [-39, -1]
+Function: refdb_reftable_merged_iter_next {return index 0}
+  [-1, -1]
+Function: refdb_reftable_stack_iter_maybe_advance {return index 0}
+  [-1, -1]
+Function: refdb_reftable_write_head_table {return index 0}
+  [-21, -1]
+Function: reftable_git_malloc {return index 0}
+  [0, 0]
+Function: git_reflog_read {return index 0}
+  [-39, -1]
+Function: git_reflog_append {return index 0}
+  [-1, -1]
+Function: git_reflog_rename {return index 0}
+  [-1, -1]
+Function: git_reflog_delete {return index 0}
+  [-1, -1]
+Function: git_reflog_entrycount {return index 0}
+  [0, 0]
+Function: git_reflog_entry_message {return index 0}
+  [0, 0]
+Function: git_reflog_drop {return index 0}
+  [-3, -1]
+Function: git_reference__alloc_symbolic {return index 0}
+  [-2147483648, -1] U [1, 2147483647]
+Function: git_reference__alloc {return index 0}
+  [0, 0]
+Function: git_reference__realloc {return index 0}
+  [0, 0]
+Function: git_reference_dup {return index 0}
+  [-1, -1]
+Function: git_reference_delete {return index 0}
+  [-1, -1]
+Function: git_reference_remove {return index 0}
+  [-39, -4] U [-2, 0]
+Function: git_reference_lookup {return index 0}
+  [-39, -1]
+Function: git_reference_lookup_resolved {return index 0}
+  [-39, 0]
+Function: reference_normalize_for_repo {return index 0}
+  [-12, -1]
+Function: git_reference__normalize_name {return index 0}
+  [-12, 0]
+Function: git_reference_name_to_id {return index 0}
+  [-39, 0]
+Function: git_refspec_rtransform {return index 0}
+  [-1, -1]
+Function: git_refspec__rtransform {return index 0}
+  [-1, -1]
+Function: git_refspec__dwim_one {return index 0}
+  [-1, -1]
+Function: git_remote_create_with_opts {return index 0}
+  [-40, -1]
+Function: ensure_remote_name_is_valid {return index 0}
+  [-12, -1]
+Function: git_remote_lookup {return index 0}
+  [-40, -1]
+Function: apply_insteadof {return index 0}
+  [-1, -1]
+Function: add_refspec {return index 0}
+  [-1, -1]
+Function: write_add_refspec {return index 0}
+  [-12, -1]
+Function: lookup_remote_prune_config {return index 0}
+  [-12, -1]
+Function: dwim_refspecs {return index 0}
+  [-1, -1]
+Function: get_optional_config {return index 0}
+  [-40, -1]
+Function: refspec_cb {return index 0}
+  [0, 0]
+Function: download_tags_value {return index 0}
+  [-12, -1]
+Function: git_remote_create {return index 0}
+  [-12, -1]
+Function: git_remote_create_with_fetchspec {return index 0}
+  [-12, -1]
+Function: git_remote_create_anonymous {return index 0}
+  [-1, -1]
+Function: git_remote_create_detached {return index 0}
+  [-1, -1]
+Function: git_remote_dup {return index 0}
+  [-1, -1]
+Function: git_remote_set_instance_url {return index 0}
+  [-1, -1]
+Function: git_remote_set_url {return index 0}
+  [-40, -1]
+Function: set_url {return index 0}
+  [-40, -1]
+Function: git_remote_set_instance_pushurl {return index 0}
+  [-1, -1]
+Function: git_remote_set_pushurl {return index 0}
+  [-40, -1]
+Function: git_remote_connect_options_dup {return index 0}
+  [-1, -1]
+Function: git_remote_connect_options_normalize {return index 0}
+  [-1, -1]
+Function: git_remote_connect_ext {return index 0}
+  [-21, -1]
+Function: git_remote_connect {return index 0}
+  [-21, -1]
+Function: git_remote_ls {return index 0}
+  [-1, -1]
+Function: git_remote_capabilities {return index 0}
+  [-1, -1]
+Function: git_remote_oid_type {return index 0}
+  [-1, -1]
+Function: git_remote__http_proxy {return index 0}
+  [-1, -1]
+Function: git_remote_download {return index 0}
+  [-21, -1]
+Function: git_remote__download {return index 0}
+  [-1, -1]
+Function: ls_to_vector {return index 0}
+  [-1, -1]
+Function: remote_head_cmp {return index 0}
+  [0, 0]
+Function: git_remote_fetch {return index 0}
+  [-2147483648, -1]
+Function: git_remote_update_tips {return index 0}
+  [-39, 0]
+Function: git_remote_prune {return index 0}
+  [-1, -1]
+Function: find_head {return index 0}
+  [0, 0]
+Function: update_tips_for_spec {return index 0}
+  [-1, 0]
+Function: update_ref {return index 0}
+  [-39, -1]
+Function: git_remote_connected {return index 0}
+  [0, 0]
+Function: git_remote_list {return index 0}
+  [-40, -1]
+Function: remote_list_cb {return index 0}
+  [0, 0]
+Function: git_remote_set_autotag {return index 0}
+  [-40, -1]
+Function: git_remote_rename {return index 0}
+  [-40, -1]
+Function: update_config_entries_cb {return index 0}
+  [0, 0]
+Function: git_remote_name_is_valid {return index 0}
+  [-1, -1]
+Function: git_remote__matching_refspec {return index 0}
+  EMPTY
+Function: git_remote__matching_dst_refspec {return index 0}
+  [0, 0]
+Function: git_remote_add_fetch {return index 0}
+  [-12, -1]
+Function: git_remote_add_push {return index 0}
+  [-12, -1]
+Function: git_remote_get_fetch_refspecs {return index 0}
+  [-1, -1]
+Function: copy_refspecs {return index 0}
+  [-1, -1]
+Function: git_remote_get_push_refspecs {return index 0}
+  [-1, -1]
+Function: git_remote_delete {return index 0}
+  [-40, -1]
+Function: git_remote_default_branch {return index 0}
+  [-12, -1]
+Function: git_remote__default_branch {return index 0}
+  [-12, -1]
+Function: git_remote_upload {return index 0}
+  [-21, -1]
+Function: git_remote_push {return index 0}
+  [-1, -1]
+Function: git_remote_is_valid_name {return index 0}
+  [0, 0]
+Function: git_repository_new_ext {return index 0}
+  [-1, -1]
+Function: git_repository_new {return index 0}
+  [-1, -1]
+Function: git__reallocarray {return index 0}
+  [0, 0]
+Function: git__mallocarray {return index 0}
+  [0, 0]
+Function: git__strdup {return index 0}
+  [0, 0]
+Function: git__strndup {return index 0}
+  [0, 0]
+Function: git__substrdup {return index 0}
+  [0, 0]
+Function: stdalloc__realloc {return index 0}
+  [0, 0]
+Function: git_failalloc_malloc {return index 0}
+  [0, 0]
+Function: git_failalloc_realloc {return index 0}
+  EMPTY
+Function: stdalloc__malloc {return index 0}
+  [0, 0]
+Function: git_date_offset_parse {return index 0}
+  [0, 0]
+Function: git_filebuf_commit_at {return index 0}
+  [-1, -1]
+Function: git_filebuf_commit {return index 0}
+  [-1, 0]
+Function: git_filebuf_write {return index 0}
+  [-1, -1]
+Function: git_filebuf_reserve {return index 0}
+  [-1, -1]
+Function: git_filebuf_printf {return index 0}
+  [-1, -1]
+Function: git_filebuf_stats {return index 0}
+  [-1, -1]
+Function: is_date {return index 0}
+  [1, 1]
+Function: git_date_parse {return index 0}
+  [-1, -1]
+Function: git_date_rfc2822_fmt {return index 0}
+  [0, 0]
+Function: git_error_global_init {return index 0}
+  [-1, -1]
+Function: git_error_set_str {return index 0}
+  [-1, 0]
+Function: git_error_exists {return index 0}
+  [-1, -1]
+Function: git_error_last {return index 0}
+  [0, 0]
+Function: git_error_save {return index 0}
+  [-1, -1]
+Function: git_error_restore {return index 0}
+  [-1, -1]
+Function: git_fs_path_contains_file {return index 0}
+  [0, 0]
+Function: git_fs_path_find_dir {return index 0}
+  [-1, -1]
+Function: git_fs_path_resolve_relative {return index 0}
+  [-1, -1]
+Function: git_fs_path_apply_relative {return index 0}
+  [1, 1]
+Function: git_fs_path_cmp {return index 0}
+  EMPTY
+Function: git_fs_path_common_dirlen {return index 0}
+  EMPTY
+Function: git_fs_path_make_relative {return index 0}
+  [-3, -1]
+Function: giterr_last {return index 0}
+  [0, 0]
+Function: git_filebuf_flush {return index 0}
+  [-1, -1]
+Function: git_filebuf_open {return index 0}
+  [-2147483648, -1]
+Function: git_filebuf_open_withsize {return index 0}
+  [-2147483648, -1]
+Function: deflateInit_ {return index 0}
+  [-2147483648, -1] U [1, 2147483647]
+Function: write_deflate {return index 0}
+  [-1, -1]
+Function: write_normal {return index 0}
+  [-1, -1]
+Function: llvm.uadd.with.overflow.i64 {return index 0}
+  [4097, 2147483647]
+Function: lock_file {return index 0}
+  [-14, -1]
+Function: deflate {return index 0}
+  [-2, -2]
+Function: git_filebuf_hash {return index 0}
+  [-1, -1]
+Function: git_futils_readbuffer_fd_full {return index 0}
+  [-1, -1]
+Function: git_futils_readbuffer_updated {return index 0}
+  [-14, -1]
+Function: git_futils_readbuffer {return index 0}
+  [-14, -1]
+Function: git_futils_writebuffer {return index 0}
+  [-1, -1]
+Function: git_futils_fsync_parent {return index 0}
+  [-1, -1]
+Function: git_futils_mv_withpath {return index 0}
+  [-1, -1]
+Function: git_futils_mmap_ro {return index 0}
+  [-1, -1]
+Function: git_futils_mmap_ro_file {return index 0}
+  [-14, -1]
+Function: git_futils_mkdir_r {return index 0}
+  [-2147483648, -1]
+Function: git_futils_rmdir_r {return index 0}
+  [-2147483648, -1]
+Function: futils__rmdir_recurs_foreach {return index 0}
+  [-2147483648, -1] U [1, 2147483646]
+Function: futils__rmdir_empty_parent {return index 0}
+  [-14, -1]
+Function: git_futils_fake_symlink {return index 0}
+  [-1, -1]
+Function: git_futils_cp {return index 0}
+  [-14, -1]
+Function: git_fs_path_basename_r {return index 0}
+  [-1, -1]
+Function: git_fs_path_dirname_r {return index 0}
+  [-2147483648, -1]
+Function: git_fs_path_dirname {return index 0}
+  [0, 0]
+Function: git_fs_path_basename {return index 0}
+  [0, 0]
+Function: git_fs_path_root {return index 0}
+  [0, 5]
+Function: git_fs_path_join_unrooted {return index 0}
+  [-1, -1]
+Function: git_fs_path_prettify {return index 0}
+  [-3, -1]
+Function: git_fs_path_prettify_dir {return index 0}
+  [-3, -1]
+Function: git_fs_path_to_dir {return index 0}
+  [-1, -1]
+Function: git__percent_decode {return index 0}
+  [-1, -1]
+Function: git_fs_path_is_local_file_url {return index 0}
+  [0, 0]
+Function: git_fs_path_fromurl {return index 0}
+  [-1, -1]
+Function: git_fs_path_walk_up {return index 0}
+  [-2147483648, -1]
+Function: git_fs_path_exists {return index 0}
+  [0, 0]
+Function: git_fs_path_isfile {return index 0}
+  [0, 0]
+Function: git_fs_path_isexecutable {return index 0}
+  [0, 0]
+Function: git_fs_path_is_empty_dir {return index 0}
+  [0, 0]
+Function: path_found_entry {return index 0}
+  [1, 1]
+Function: git_fs_path_direach {return index 0}
+  [-1, -1]
+Function: git_fs_path_set_error {return index 0}
+  [-14, -1]
+Function: git_fs_path_lstat {return index 0}
+  [-14, -1]
+Function: git_fs_path_contains {return index 0}
+  [0, 0]
+Function: git_fs_path_contains_dir {return index 0}
+  [0, 0]
+Function: git_pool_init {return index 0}
+  [-1, -1]
+Function: git_pool_malloc {return index 0}
+  [0, 0]
+Function: git_pool_mallocz {return index 0}
+  [0, 0]
+Function: git_pool_strndup {return index 0}
+  [0, 0]
+Function: git_pool_strdup {return index 0}
+  [0, 0]
+Function: git_pool_strdup_safe {return index 0}
+  [0, 0]
+Function: git_pool_strcat {return index 0}
+  [0, 0]
+Function: p_open {return index 0}
+  [-1, -1]
+Function: git_fs_path_diriter_init {return index 0}
+  EMPTY
+Function: git_fs_path_diriter_next {return index 0}
+  [0, 0]
+Function: git_fs_path_diriter_stat {return index 0}
+  [-3, -3] U [0, 0]
+Function: git_fs_path_dirload {return index 0}
+  [-31, -1]
+Function: git_fs_path_from_url_or_path {return index 0}
+  [-1, -1]
+Function: git_fs_path_validate_str_length_with_suffix {return index 0}
+  EMPTY
+Function: git_fs_path_normalize_slashes {return index 0}
+  [-1, -1]
+Function: git_fs_path_supports_symlinks {return index 0}
+  [0, 0]
+Function: git_fs_path_owner_is {return index 0}
+  [-3, -1]
+Function: git_fs_path_find_executable {return index 0}
+  [-3, 0]
+Function: git_futils_mkpath2file {return index 0}
+  [-2147483648, -1]
+Function: git_futils_mkdir {return index 0}
+  [-2147483648, -1]
+Function: mkdir_validate_dir {return index 0}
+  [-4, -1]
+Function: git_futils_mkdir_relative {return index 0}
+  [-4, -1]
+Function: git_str_putcn {return index 0}
+  [0, 0]
+Function: git_str_put {return index 0}
+  [-1, -1]
+Function: git_str_puts {return index 0}
+  [-1, -1]
+Function: git_str_encode_hexstr {return index 0}
+  [-1, -1]
+Function: git_str_encode_base64 {return index 0}
+  [-1, -1]
+Function: git_str_decode_base64 {return index 0}
+  [-1, -1]
+Function: git_str_encode_base85 {return index 0}
+  [-1, -1]
+Function: git_str_decode_base85 {return index 0}
+  [-1, -1]
+Function: git_str_decode_percent {return index 0}
+  [-1, -1]
+Function: git_hashset_str__resize {return index 0}
+  [-1, -1]
+Function: git_futils_mktmp {return index 0}
+  [-1, -1]
+Function: git_futils_creat_withpath {return index 0}
+  [-1, -1]
+Function: git_futils_creat_locked {return index 0}
+  [-1, -1]
+Function: git_futils_creat_locked_withpath {return index 0}
+  [-1, -1]
+Function: git_futils_open_ro {return index 0}
+  [-14, -1]
+Function: git_futils_truncate {return index 0}
+  [-14, -1]
+Function: git_futils_filesize {return index 0}
+  [-1, -1]
+Function: git_futils_readbuffer_fd {return index 0}
+  [-1, -1]
+Function: git_str_contains_nul {return index 0}
+  [0, 0]
+Function: git_strlist_copy {return index 0}
+  [-1, -1]
+Function: git_strlist_copy_with_null {return index 0}
+  [-1, -1]
+Function: git_tlsdata_get {return index 0}
+  [-2147483648, -1] U [1, 2147483647]
+Function: git__strntol64 {return index 0}
+  [-1, -1]
+Function: git__strntol32 {return index 0}
+  [-1, -1]
+Function: git__strcasecmp {return index 0}
+  EMPTY
+Function: git__strncasecmp {return index 0}
+  EMPTY
+Function: git_futils_touch {return index 0}
+  [-14, -1]
+Function: git_futils_cp_r {return index 0}
+  [-1, -1]
+Function: _cp_r_callback {return index 0}
+  [-2147483648, -1] U [1, 2147483646]
+Function: _cp_r_mkdir {return index 0}
+  [-2147483648, -1]
+Function: cp_link {return index 0}
+  [-1, -1]
+Function: git_futils_filestamp_check {return index 0}
+  [-3, 0]
+Function: git_futils_fsync_dir {return index 0}
+  [-1, -1]
+Function: git_hash_ctx_init {return index 0}
+  [-1, -1]
+Function: git_hash_init {return index 0}
+  [-1, -1]
+Function: git_hash_update {return index 0}
+  [-1, -1]
+Function: git_hash_final {return index 0}
+  [-1, -1]
+Function: git_hash_buf {return index 0}
+  [-1, -1]
+Function: git_hash_fmt {return index 0}
+  EMPTY
+Function: git_net_url_dup {return index 0}
+  [-1, -1]
+Function: git_net_url_parse {return index 0}
+  [-12, -1]
+Function: url_parse_finalize {return index 0}
+  [-1, -1]
+Function: default_port_for_scheme {return index 0}
+  [-2147483648, -1] U [1, 2147483647]
+Function: git_net_url_parse_http {return index 0}
+  [-12, -1]
+Function: git_net_url_parse_scp {return index 0}
+  [-1, -1]
+Function: git_net_url_parse_standard_or_scp {return index 0}
+  [-12, -1]
+Function: git_net_url_joinpath {return index 0}
+  [-1, -1]
+Function: git_net_url_apply_redirect {return index 0}
+  [-1, -1]
+Function: git_net_url_is_default_port {return index 0}
+  [1, 1]
+Function: git_net_url_is_ipv6 {return index 0}
+  [0, 0]
+Function: git_net_url_fmt {return index 0}
+  [-1, -1]
+Function: p_mmap {return index 0}
+  [-1, -1]
+Function: git_process_new {return index 0}
+  [-1, -1]
+Function: git_process_new_from_cmdline {return index 0}
+  [-1, -1]
+Function: git_process_read {return index 0}
+  [-1, -1]
+Function: git_process_read_err {return index 0}
+  [-1, -1]
+Function: git_process_write {return index 0}
+  [-1, -1]
+Function: git_process_result_msg {return index 0}
+  [-1, -1]
+Function: p_creat {return index 0}
+  [-1, -1]
+Function: p_getcwd {return index 0}
+  [-1, -1]
+Function: p_rename {return index 0}
+  [-1, -1]
+Function: p_read {return index 0}
+  EMPTY
+Function: p_write {return index 0}
+  [-1, -1]
+Function: git_pqueue_init {return index 0}
+  [-1, -1]
+Function: git_pqueue_insert {return index 0}
+  [-1, -1]
+Function: git_pqueue_pop {return index 0}
+  [0, 0]
+Function: git_regexp_compile {return index 0}
+  [-12, -1]
+Function: git_regexp_match {return index 0}
+  EMPTY
+Function: git_regexp_search {return index 0}
+  [-12, -1]
+Function: git_runtime_shutdown_register {return index 0}
+  [-1, -1]
+Function: git_sortedcache_new {return index 0}
+  [-1, -1]
+Function: git_sortedcache_copy {return index 0}
+  [-1, -1]
+Function: git_sortedcache_upsert {return index 0}
+  [-1, -1]
+Function: git_hashmap_str__resize {return index 0}
+  [-1, -1]
+Function: git_sortedcache_rlock {return index 0}
+  [-1, -1]
+Function: git_sortedcache_wlock {return index 0}
+  [-1, -1]
+Function: git_sortedcache_lockandload {return index 0}
+  [-14, -4] U [-2, 1]
+Function: git_sortedcache_clear {return index 0}
+  [0, 0]
+Function: git_sortedcache_lookup {return index 0}
+  [0, 0]
+Function: git_sortedcache_entrycount {return index 0}
+  EMPTY
+Function: git_sortedcache_entry {return index 0}
+  [0, 0]
+Function: git_sortedcache_lookup_index {return index 0}
+  EMPTY
+Function: sortedcache_magic_cmp {return index 0}
+  [0, 0]
+Function: git_str_init {return index 0}
+  [-1, -1]
+Function: git_str_try_grow {return index 0}
+  [-21, -1]
+Function: git_str_grow {return index 0}
+  [-21, -1]
+Function: git_str_grow_by {return index 0}
+  [-21, -1]
+Function: git_str_set {return index 0}
+  [-1, -1]
+Function: git_str_sets {return index 0}
+  [-1, -1]
+Function: git_str_putc {return index 0}
+  [-1, -1]
+Function: paths_cmp {return index 0}
+  [0, 0]
+Function: hunk_byfinalline_search_cmp {return index 0}
+  EMPTY
+Function: git_blame_file {return index 0}
+  [-33, -1]
+Function: git_blame_buffer {return index 0}
+  [-1, -1]
+Function: buffer_hunk_cb {return index 0}
+  [-1, -1]
+Function: buffer_line_cb {return index 0}
+  [-1, -1]
+Function: ptrs_equal_cmp {return index 0}
+  EMPTY
+Function: git_str_vprintf {return index 0}
+  [-1, -1]
+Function: git_str_printf {return index 0}
+  [-1, -1]
+Function: git_str_detach {return index 0}
+  [0, 0]
+Function: git_str_attach {return index 0}
+  [-1, -1]
+Function: git_str_join_n {return index 0}
+  [-1, -1]
+Function: git_str_join {return index 0}
+  [-1, -1]
+Function: git_str_join3 {return index 0}
+  [-1, -1]
+Function: git_str_splice {return index 0}
+  [-1, -1]
+Function: git_str_quote {return index 0}
+  [0, 0]
+Function: git_str_unquote {return index 0}
+  [-1, -1]
+Function: git_str_puts_escaped {return index 0}
+  [-1, -1]
+Function: git_str_crlf_to_lf {return index 0}
+  [-1, 0]
+Function: git_str_lf_to_crlf {return index 0}
+  [-1, -1]
+Function: git_str_common_prefix {return index 0}
+  [-1, -1]
+Function: git_str_is_binary {return index 0}
+  [1, 1]
+Function: mkpath2file {return index 0}
+  [-2147483648, -1]
+Function: checkout_write_content {return index 0}
+  [-2147483648, -1] U [1, 2147483646]
+Function: checkout_stream_write {return index 0}
+  [-1, -1]
+Function: checkout_stream_close {return index 0}
+  [-1, -1]
+Function: checkout_blob {return index 0}
+  [-2147483648, -1]
+Function: checkout_conflictdata_cmp {return index 0}
+  [-1, 1]
+Function: checkout_conflict_append_update {return index 0}
+  [-33, -1]
+Function: checkout_conflicts_cmp_ancestor {return index 0}
+  [0, 0]
+Function: checkout_is_workdir_modified {return index 0}
+  [-1, 0]
+Function: checkout_queue_remove {return index 0}
+  [-1, -1]
+Function: git_checkout_index {return index 0}
+  [-2147483648, 0]
+Function: git_checkout_tree {return index 0}
+  [-2147483648, 0]
+Function: git_checkout_head {return index 0}
+  [-2147483648, -1]
+Function: git_cherrypick_commit {return index 0}
+  [-2147483648, -1]
+Function: git_cherrypick {return index 0}
+  [-1, 0]
+Function: git_clone__should_clone_local {return index 0}
+  [-1, -1]
+Function: git_clone {return index 0}
+  [-1, -1]
+Function: clone_repo {return index 0}
+  [-1, -1]
+Function: default_repository_create {return index 0}
+  [-1, -1]
+Function: default_remote_create {return index 0}
+  [-1, -1]
+Function: clone_local_into {return index 0}
+  [-2147483648, 131]
+Function: clone_into {return index 0}
+  [-2147483648, 131]
+Function: checkout_branch {return index 0}
+  [-2147483648, 131]
+Function: update_head_to_new_branch {return index 0}
+  [0, 131]
+Function: update_remote_head {return index 0}
+  [-39, -1]
+Function: setup_tracking_config {return index 0}
+  [-1, -1]
+Function: git_clone__submodule {return index 0}
+  [-2147483648, -1]
+Function: git_commit_create_from_callback {return index 0}
+  [-39, -1] U [1, 131]
+Function: git_commit__create_internal {return index 0}
+  [-39, -1] U [1, 131]
+Function: validate_tree_and_parents {return index 0}
+  [-15, -1]
+Function: git_commit__create_buffer_internal {return index 0}
+  [-1, -1]
+Function: git_commit_create_v {return index 0}
+  [-39, -1] U [1, 131]
+Function: commit_parent_from_varargs {return index 0}
+  [0, 0]
+Function: git_commit_create_from_ids {return index 0}
+  [-39, -1] U [1, 131]
+Function: commit_parent_from_ids {return index 0}
+  [0, 0]
+Function: git_commit_create {return index 0}
+  [-39, -1] U [1, 131]
+Function: commit_parent_from_array {return index 0}
+  [0, 0]
+Function: git_commit_amend {return index 0}
+  [-39, 131]
+Function: commit_parent_for_amend {return index 0}
+  [0, 0]
+Function: git_commit_message {return index 0}
+  [0, 0]
+Function: git_commit_tree {return index 0}
+  [-33, -1]
+Function: git_commit__parse {return index 0}
+  [-21, -1]
+Function: git_commit__parse_ext {return index 0}
+  [-21, -1]
+Function: commit_parse {return index 0}
+  [-21, -1]
+Function: git_commit__parse_raw {return index 0}
+  [-21, -1]
+Function: git_commit_parentcount {return index 0}
+  [0, 0]
+Function: git_commit_summary {return index 0}
+  [0, 0]
+Function: git_commit_body {return index 0}
+  [0, 0]
+Function: git__prefixcmp {return index 0}
+  [-255, -1] U [1, 255]
+Function: git__prefixncmp {return index 0}
+  [-255, -1] U [1, 255]
+Function: git__prefixcmp_icase {return index 0}
+  [0, 0]
+Function: git__suffixcmp {return index 0}
+  [-255, -1] U [1, 255]
+Function: git__strtok {return index 0}
+  [0, 0]
+Function: git__strsep {return index 0}
+  [-2147483648, -1] U [1, 2147483647]
+Function: git__memmem {return index 0}
+  [0, 0]
+Function: git__strcmp_cb {return index 0}
+  [0, 0]
+Function: git__strcasecmp_cb {return index 0}
+  EMPTY
+Function: git__parse_bool {return index 0}
+  [0, 0]
+Function: git__getenv {return index 0}
+  [-1, -1]
+Function: git__online_cpus {return index 0}
+  [2, 2147483646]
+Function: git_encode_varint {return index 0}
+  [-1, 0]
+Function: git_vector_size_hint {return index 0}
+  [-1, -1]
+Function: git_vector_dup {return index 0}
+  [-1, -1]
+Function: git_vector_init {return index 0}
+  [-1, -1]
+Function: git_vector_insert {return index 0}
+  [-1, -1]
+Function: git_vector_insert_sorted {return index 0}
+  [-4, -1]
+Function: git_vector_bsearch2 {return index 0}
+  EMPTY
+Function: git_vector_search2 {return index 0}
+  [-3, -1]
+Function: git_vector_search {return index 0}
+  [-3, -1]
+Function: strict_comparison {return index 0}
+  EMPTY
+Function: git_vector_remove {return index 0}
+  [-3, -1]
+Function: git_vector_resize_to {return index 0}
+  [-1, -1]
+Function: git_vector_insert_null {return index 0}
+  [-1, -1]
+Function: git_vector_set {return index 0}
+  [-1, -1]
+Function: wildmatch {return index 0}
+  [0, 0]
+Function: dowild {return index 0}
+  [0, 0]
+Function: git_zstream_init {return index 0}
+  [-1, -1]
+Function: deflateReset {return index 0}
+  [-2147483648, -1] U [1, 2147483647]
+Function: git_zstream_set_input {return index 0}
+  EMPTY
+Function: git_zstream_get_output_chunk {return index 0}
+  [-1, -1]
+Function: inflate {return index 0}
+  [-2147483648, 0] U [2, 2147483647]
+Function: git_zstream_get_output {return index 0}
+  [-1, -1]
+Function: git_zstream_deflatebuf {return index 0}
+  [-21, -1]
+Function: zstream_buf {return index 0}
+  [-1, -1]
+Function: git_zstream_inflatebuf {return index 0}
+  [-21, -1]
+Function: p_realpath {return index 0}
+  EMPTY
+Function: git_annotated_commit_lookup {return index 0}
+  [-33, -1]
+Function: annotated_commit_init_from_id {return index 0}
+  [-33, -1]
+Function: annotated_commit_init {return index 0}
+  [-1, -1]
+Function: git_annotated_commit_from_commit {return index 0}
+  [-1, -1]
+Function: git_annotated_commit_from_revspec {return index 0}
+  [-40, -1]
+Function: git_annotated_commit_from_ref {return index 0}
+  [-39, -1]
+Function: git_annotated_commit_from_head {return index 0}
+  [-39, -1]
+Function: git_annotated_commit_from_fetchhead {return index 0}
+  [-1, -1]
+Function: git_annotated_commit_id {return index 0}
+  [0, 0]
+Function: git_apply__patch {return index 0}
+  [0, 0]
+Function: apply_binary_delta {return index 0}
+  EMPTY
+Function: git_apply_to_tree {return index 0}
+  [-35, -1]
+Function: apply_deltas {return index 0}
+  [-35, -1]
+Function: duplicate_level {return index 0}
+  [-4, -4]
+Function: git_config_open_ondisk {return index 0}
+  [-1, -1]
+Function: git_config_snapshot {return index 0}
+  [-1, -1]
+Function: git_config_set_writeorder {return index 0}
+  [-1, -1]
+Function: git_config_open_global {return index 0}
+  [-1, -1]
+Function: git_config_open_level {return index 0}
+  [0, 0]
+Function: git_config_iterator_new {return index 0}
+  [-1, -1]
+Function: all_iter_next {return index 0}
+  [-31, -1]
+Function: git_config_iterator_glob_new {return index 0}
+  [-1, -1]
+Function: all_iter_glob_next {return index 0}
+  [-31, -1]
+Function: git_config_foreach {return index 0}
+  [-40, -1]
+Function: git_config_foreach_match {return index 0}
+  [-40, -1]
+Function: git_config_backend_foreach_match {return index 0}
+  [-40, -1]
+Function: git_config_next {return index 0}
+  EMPTY
+Function: git_config_delete_entry {return index 0}
+  EMPTY
+Function: git_config_set_string {return index 0}
+  [-40, -1]
+Function: git_config_set_int32 {return index 0}
+  [-40, -1]
+Function: git_config_set_bool {return index 0}
+  [-40, -1]
+Function: git_config__update_entry {return index 0}
+  [-40, -1]
+Function: git_config__lookup_entry {return index 0}
+  [-12, -1]
+Function: get_entry {return index 0}
+  [-12, -1]
+Function: git_config__normalize_name {return index 0}
+  [-12, -1]
+Function: git_config_get_entry {return index 0}
+  [-12, -1]
+Function: git_config_get_mapped {return index 0}
+  [-12, -1]
+Function: git_config_lookup_map_value {return index 0}
+  [-1, -1]
+Function: git_config_parse_int64 {return index 0}
+  [-1, -1]
+Function: git_config_get_int64 {return index 0}
+  [-12, 0]
+Function: git_config_get_int32 {return index 0}
+  [-12, -1]
+Function: git_config_parse_int32 {return index 0}
+  [-1, -1]
+Function: git_config_get_bool {return index 0}
+  [-12, -1]
+Function: git_config_parse_bool {return index 0}
+  EMPTY
+Function: git_config_parse_path {return index 0}
+  [-1, 0]
+Function: git_config_get_path {return index 0}
+  [-12, -1]
+Function: git_config__get_path {return index 0}
+  [-12, -1]
+Function: git_config_get_string {return index 0}
+  [-12, -1]
+Function: git_config_get_string_buf {return index 0}
+  [-1, -1]
+Function: git_config__get_string_buf {return index 0}
+  [-1, -1]
+Function: git_config__get_string_force {return index 0}
+  [0, 0]
+Function: git_config__get_bool_force {return index 0}
+  [0, 0]
+Function: git_config_get_multivar_foreach {return index 0}
+  [0, 0]
+Function: git_config_multivar_iterator_new {return index 0}
+  [0, 0]
+Function: multivar_iter_next {return index 0}
+  [0, 0]
+Function: git_config__find_global {return index 0}
+  EMPTY
+Function: git_config_find_xdg {return index 0}
+  [-1, 0]
+Function: git_config__find_xdg {return index 0}
+  [0, 0]
+Function: git_config__find_system {return index 0}
+  EMPTY
+Function: git_config_find_programdata {return index 0}
+  [-3, -1]
+Function: git_config__find_programdata {return index 0}
+  [-1, -1]
+Function: git_config__global_location {return index 0}
+  [0, 0]
+Function: git_config_open_default {return index 0}
+  [-4, -1]
+Function: git_config_lock {return index 0}
+  [-1, -1]
+Function: git_config_lookup_map_enum {return index 0}
+  [-3, -1]
+Function: git_config_rename_section {return index 0}
+  [-40, -1]
+Function: rename_config_entries_cb {return index 0}
+  [0, 0]
+Function: git_apply {return index 0}
+  [-2147483648, 0]
+Function: git_apply__to_workdir {return index 0}
+  [-2147483648, 0]
+Function: git_apply__to_index {return index 0}
+  [-4, -1]
+Function: git_attr_value {return index 0}
+  EMPTY
+Function: git_attr_get_ext {return index 0}
+  [-1, -1]
+Function: collect_attr_files {return index 0}
+  [-39, 131]
+Function: system_attr_file {return index 0}
+  [-3, -3] U [0, 0]
+Function: preload_attr_source {return index 0}
+  [0, 0]
+Function: push_one_attr {return index 0}
+  [-39, 131]
+Function: push_attr_file {return index 0}
+  [-39, 131]
+Function: git_attr_get {return index 0}
+  [-2147483648, -1]
+Function: git_attr_get_many_with_session {return index 0}
+  [-2147483648, -1]
+Function: git_attr_get_many {return index 0}
+  [-2147483648, -1]
+Function: git_attr_get_many_ext {return index 0}
+  [-2147483648, -1]
+Function: git_attr_foreach {return index 0}
+  [-1, -1]
+Function: git_attr_foreach_ext {return index 0}
+  [-1, -1]
+Function: git_attr_add_macro {return index 0}
+  [-12, -1]
+Function: git_attr_file__new {return index 0}
+  [-1, -1]
+Function: git_attr_file__clear_rules {return index 0}
+  [-1, -1]
+Function: git_attr_file__load {return index 0}
+  [-39, -1]
+Function: git_attr_file__out_of_date {return index 0}
+  [-39, 1]
+Function: git_attr_file__parse_buffer {return index 0}
+  [-12, -1]
+Function: git_attr_fnmatch__parse {return index 0}
+  EMPTY
+Function: git_attr_assignment__parse {return index 0}
+  [-4, 0]
+Function: sort_by_hash_and_name {return index 0}
+  [0, 0]
+Function: merge_assignments {return index 0}
+  [-4, -4]
+Function: git_attr_fnmatch__match {return index 0}
+  [0, 0]
+Function: git_attr_file__load_standalone {return index 0}
+  [-14, -1]
+Function: git_attr_path__init {return index 0}
+  [-1, -1]
+Function: git_attr_cache_attributesfile {return index 0}
+  [-2147483648, -1] U [1, 2147483647]
+Function: git_attr_cache__alloc_file_entry {return index 0}
+  [-1, -1]
+Function: git_attr_cache__get {return index 0}
+  [-39, 131]
+Function: git_attr_cache_filemap__resize {return index 0}
+  [-1, -1]
+Function: git_attr_cache__is_cached {return index 0}
+  [0, 0]
+Function: git_attr_cache__init {return index 0}
+  [-12, -1]
+Function: attr_cache__lookup_path {return index 0}
+  [-12, -1]
+Function: git_attr_cache__insert_macro {return index 0}
+  [-1, -1]
+Function: git_attr_cache_macromap__resize {return index 0}
+  [-1, -1]
+Function: git_attr_cache__lookup_macro {return index 0}
+  [0, 0]
+Function: git_blame__alloc {return index 0}
+  [0, 0]
+Function: hunk_cmp {return index 0}
+  EMPTY
+Function: git_diff_get_stats {return index 0}
+  [-1, -1]
+Function: git_diff_stats_to_buf {return index 0}
+  [-1, -1]
+Function: git_diff__stats_to_buf {return index 0}
+  [-1, -1]
+Function: git_diff__delta_dup {return index 0}
+  [0, 0]
+Function: git_diff__merge_like_cgit {return index 0}
+  [0, 0]
+Function: git_diff__merge {return index 0}
+  [-1, 0]
+Function: git_diff_merge {return index 0}
+  [-1, -1]
+Function: git_diff_find_similar__hashsig_for_file {return index 0}
+  [-1, -1]
+Function: git_diff_find_similar__hashsig_for_buf {return index 0}
+  [-1, -1]
+Function: git_diff_find_similar {return index 0}
+  [-33, -1]
+Function: calc_self_similarity {return index 0}
+  [-33, -1]
+Function: similarity_measure {return index 0}
+  [-33, -1]
+Function: insert_delete_side_of_split {return index 0}
+  [-1, -1]
+Function: apply_splits_and_deletes {return index 0}
+  [-1, 0]
+Function: similarity_init {return index 0}
+  [-33, -1]
+Function: git_xdiff {return index 0}
+  [-1, -1]
+Function: git_xdiff_cb {return index 0}
+  [-1, -1]
+Function: git_email__append_from_diff {return index 0}
+  [-2147483648, -1] U [1, 2147483646]
+Function: append_body {return index 0}
+  [-1, -1]
+Function: append_diffstat {return index 0}
+  [-1, -1]
+Function: append_patches {return index 0}
+  [-2147483648, -1] U [1, 2147483646]
+Function: git_email_create_from_diff {return index 0}
+  [-2147483648, -1] U [1, 2147483646]
+Function: git_email_create_from_commit {return index 0}
+  [-2147483648, -1] U [1, 2147483646]
+Function: git_fetch_negotiate {return index 0}
+  [-1, -1]
+Function: git_fetch_download_pack {return index 0}
+  [-2147483648, -1]
+Function: git_blame__get_origin {return index 0}
+  [0, 131]
+Function: make_origin {return index 0}
+  [-1, -1]
+Function: git_blame__like_git {return index 0}
+  [-1, -1]
+Function: my_emit {return index 0}
+  [-1, -1]
+Function: blame_chunk {return index 0}
+  [-1, -1]
+Function: git_blob_rawsize {return index 0}
+  EMPTY
+Function: git_blob__getbuf {return index 0}
+  [-1, -1]
+Function: git_blob__parse_raw {return index 0}
+  [-1, -1]
+Function: git_blob__parse {return index 0}
+  [-1, -1]
+Function: git_blob_create_from_buffer {return index 0}
+  [-3, 0]
+Function: git_blob__create_from_paths {return index 0}
+  [-2147483648, -1]
+Function: write_file_stream {return index 0}
+  [-1, 0]
+Function: write_file_filtered {return index 0}
+  [-21, -1]
+Function: git_blob_create_from_workdir {return index 0}
+  [-2147483648, -1]
+Function: git_blob_create_from_disk {return index 0}
+  [-2147483648, -1]
+Function: git_blob_create_from_stream {return index 0}
+  [-2147483648, -1]
+Function: blob_writestream_write {return index 0}
+  [-1, -1]
+Function: git_blob_create_from_stream_commit {return index 0}
+  [-2147483648, -1]
+Function: git_blob_is_binary {return index 0}
+  [1, 1]
+Function: git_blob_data_is_binary {return index 0}
+  [1, 1]
+Function: git_blob_filter {return index 0}
+  [-2147483648, -1] U [1, 2147483646]
+Function: git_blob_create_frombuffer {return index 0}
+  EMPTY
+Function: git_blob_create_fromworkdir {return index 0}
+  [-2147483648, -1]
+Function: git_blob_create_fromdisk {return index 0}
+  [-2147483648, -1]
+Function: git_blob_create_fromstream {return index 0}
+  [-2147483648, -1]
+Function: git_blob_create_fromstream_commit {return index 0}
+  [-2147483648, -1]
+Function: git_branch_create {return index 0}
+  [-39, -1]
+Function: create_branch {return index 0}
+  [-1, -1]
+Function: git_branch_lookup {return index 0}
+  [-39, -1]
+Function: git_branch_is_head {return index 0}
+  [-1, -1] U [1, 1]
+Function: git_branch_create_from_annotated {return index 0}
+  [-1, -1]
+Function: git_branch_is_checked_out {return index 0}
+  [-1, -1] U [1, 1]
+Function: branch_is_checked_out {return index 0}
+  [-39, -1] U [1, 1]
+Function: git_branch_delete {return index 0}
+  [-1, -1] U [1, 1]
+Function: git_branch_iterator_new {return index 0}
+  [-1, -1]
+Function: git_branch_move {return index 0}
+  [-40, -1]
+Function: git_branch_name {return index 0}
+  [-1, -1]
+Function: git_branch_upstream_name {return index 0}
+  [-40, -1]
+Function: git_branch__upstream_name {return index 0}
+  [-40, -1]
+Function: git_branch_upstream_remote {return index 0}
+  [-12, -1]
+Function: git_branch_upstream_with_format {return index 0}
+  [-12, -1]
+Function: git_branch__upstream_remote {return index 0}
+  [-12, -1]
+Function: git_branch_upstream_merge {return index 0}
+  [-12, -1]
+Function: git_branch__upstream_merge {return index 0}
+  [-12, -1]
+Function: git_branch_remote_name {return index 0}
+  [-40, -1] U [1, 1]
+Function: git_branch__remote_name {return index 0}
+  [-40, -1] U [1, 1]
+Function: git_branch_upstream {return index 0}
+  [0, 1]
+Function: git_branch_set_upstream {return index 0}
+  [-1, -1]
+Function: git_branch_name_is_valid {return index 0}
+  [-12, -1]
+Function: git_buf_tostr {return index 0}
+  [-1, -1]
+Function: git_buf_fromstr {return index 0}
+  [-1, -1]
+Function: git_buf_grow {return index 0}
+  [-1, -1]
+Function: git_buf_set {return index 0}
+  [-1, -1]
+Function: git_buf_is_binary {return index 0}
+  [1, 1]
+Function: git_buf_contains_nul {return index 0}
+  [0, 0]
+Function: git_cache_init {return index 0}
+  [-1, -1]
+Function: git_cache_oidmap_put {return index 0}
+  EMPTY
+Function: git_cache_oidmap__resize {return index 0}
+  [-1, -1]
+Function: git_cache_get_raw {return index 0}
+  [-2147483648, -1] U [1, 2147483647]
+Function: git_checkout_iterator {return index 0}
+  [-2147483648, 0]
+Function: checkout_lookup_head_tree {return index 0}
+  [-39, -1]
+Function: checkout_action_no_wd {return index 0}
+  EMPTY
+Function: checkout_notify {return index 0}
+  EMPTY
+Function: checkout_action_wd_only {return index 0}
+  [-33, 2147483646]
+Function: git_iterator_advance {return index 0}
+  [-33, -32] U [-30, 2147483646]
+Function: git_iterator_advance_into {return index 0}
+  [-33, -32] U [-30, 2147483646]
+Function: checkout_target_fullpath {return index 0}
+  [-1, -1]
+Function: checkout_conflict_append_remove {return index 0}
+  [-1, -1]
+Function: checkout_conflicts_foreach {return index 0}
+  [-1, -1]
+Function: checkout_get_update_conflicts {return index 0}
+  [-3, -1]
+Function: checkout_remove_the_old {return index 0}
+  [-2147483648, -1]
+Function: checkout_remove_conflicts {return index 0}
+  [-1, -1]
+Function: checkout_create_the_new {return index 0}
+  [-2147483648, -1]
+Function: checkout_create_submodules {return index 0}
+  [-40, -1]
+Function: checkout_create_conflicts {return index 0}
+  [-2147483648, -1]
+Function: checkout_extensions_update_index {return index 0}
+  [-4, -1]
+Function: checkout_write_entry {return index 0}
+  [-2147483648, -1]
+Function: checkout_path_suffixed {return index 0}
+  [-4, -1]
+Function: git_merge_driver__builtin_apply {return index 0}
+  [-33, -1]
+Function: merge_driver_binary_apply {return index 0}
+  [-24, -24]
+Function: git_merge_driver_global_init {return index 0}
+  [-4, -1]
+Function: merge_driver_entry_cmp {return index 0}
+  [0, 0]
+Function: git_merge_driver_register {return index 0}
+  [-1, -1]
+Function: merge_driver_entry_search {return index 0}
+  [0, 0]
+Function: git_merge_driver_lookup {return index 0}
+  [-2147483648, -1] U [1, 2147483647]
+Function: git_merge_driver_for_source {return index 0}
+  [-2147483648, -1]
+Function: git_merge_file {return index 0}
+  [-1, 0]
+Function: merge_file__from_inputs {return index 0}
+  [-1, 0]
+Function: git_merge_file_from_index {return index 0}
+  [-33, -1]
+Function: git_message_prettify {return index 0}
+  [-1, -1]
+Function: git_midx_parse {return index 0}
+  [-1, -1]
+Function: midx_parse_packfile_names {return index 0}
+  [-1, -1]
+Function: midx_parse_oid_fanout {return index 0}
+  [-1, -1]
+Function: midx_parse_oid_lookup {return index 0}
+  [-1, -1]
+Function: midx_parse_object_offsets {return index 0}
+  [-1, -1]
+Function: git_midx_open {return index 0}
+  [-14, -1]
+Function: git_midx_needs_refresh {return index 0}
+  [-1, -1]
+Function: git_midx_entry_find {return index 0}
+  [-5, -5]
+Function: git_midx_foreach_entry {return index 0}
+  [-33, -1] U [1, 131]
+Function: git_midx_close {return index 0}
+  [0, 0]
+Function: git_midx_writer_new {return index 0}
+  [-1, -1]
+Function: packfile__cmp {return index 0}
+  [0, 0]
+Function: git_midx_writer_add {return index 0}
+  [-3, -1]
+Function: git_midx_writer_commit {return index 0}
+  [-2147483648, -1]
+Function: midx_write_filebuf {return index 0}
+  [-1, -1]
+Function: midx_write {return index 0}
+  [-30, -1]
+Function: object_entry__cb.2099 {return index 0}
+  [-1, -1]
+Function: object_entry__cmp {return index 0}
+  [-255, -1] U [1, 255]
+Function: midx_write_buf {return index 0}
+  [-1, -1]
+Function: git_midx_writer_dump {return index 0}
+  [-30, -1]
+Function: git_mwindow_packmap_remove {return index 0}
+  [-3, -3] U [0, 0]
+Function: git_mwindow_packmap_get {return index 0}
+  [-3, -3] U [0, 0]
+Function: git_mwindow_packmap_put {return index 0}
+  [0, 0]
+Function: git_mwindow_packmap__resize {return index 0}
+  [-1, -1]
+Function: git_mwindow_global_init {return index 0}
+  [-1, -1]
+Function: git_mwindow_get_pack {return index 0}
+  [-3, 0]
+Function: git_mwindow_free_all {return index 0}
+  [-1, -1]
+Function: git_mwindow_open {return index 0}
+  [0, 0]
+Function: git_mwindow_close_lru_window_locked {return index 0}
+  [-1, -1]
+Function: git_mwindow_file_register {return index 0}
+  [0, 131]
+Function: git_note_commit_read {return index 0}
+  [-33, -1]
+Function: find_subtree_r {return index 0}
+  [-33, -1]
+Function: find_subtree_in_current_level {return index 0}
+  [-33, -1]
+Function: git_note_read {return index 0}
+  [-39, -1]
+Function: retrieve_note_commit {return index 0}
+  [-39, -1]
+Function: git_note_commit_create {return index 0}
+  [-39, 131]
+Function: insert_note_in_tree_enotfound_cb {return index 0}
+  [-33, -1]
+Function: manipulate_note_in_tree_r {return index 0}
+  [-33, -1]
+Function: remove_note_in_tree_eexists_cb {return index 0}
+  [-33, -1]
+Function: tree_write {return index 0}
+  [-33, -1]
+Function: git_note_create {return index 0}
+  [-39, 131]
+Function: git_note_commit_remove {return index 0}
+  [-39, -1]
+Function: git_note_remove {return index 0}
+  [-39, 0]
+Function: git_note_default_ref {return index 0}
+  [-12, -1]
+Function: git_note_foreach {return index 0}
+  [0, 131]
+Function: git_note_iterator_new {return index 0}
+  [0, 131]
+Function: git_note_next {return index 0}
+  [-31, -31] U [-1, -1]
+Function: git_note_commit_iterator_new {return index 0}
+  [-33, -1]
+Function: git_object__from_raw {return index 0}
+  [-1, -1]
+Function: git_object_id_from_buffer {return index 0}
+  [-1, -1]
+Function: git_object__init_from_odb_object {return index 0}
+  [-1, -1]
+Function: git_object__from_odb_object {return index 0}
+  [-1, -1]
+Function: git_object_lookup_prefix {return index 0}
+  [-33, -4] U [-2, 131]
+Function: git_object_lookup {return index 0}
+  [-33, -1]
+Function: git_object_id {return index 0}
+  [0, 0]
+Function: git_object_type {return index 0}
+  [-1, -1]
+Function: git_object_type_is_valid {return index 0}
+  [0, 0]
+Function: git_object_peel {return index 0}
+  [-33, -1]
+Function: git_object_lookup_bypath {return index 0}
+  [-33, -1]
+Function: git_object_short_id {return index 0}
+  [-21, -1]
+Function: git_object__is_valid {return index 0}
+  [0, 0]
+Function: git_object_id_from_fd {return index 0}
+  [-1, -1]
+Function: git_object_id_from_symlink {return index 0}
+  [-1, -1]
+Function: git_object_id_from_file {return index 0}
+  [-14, -1]
+Function: git_object_rawcontent_is_valid {return index 0}
+  [-1, 0]
+Function: git_object__parse_oid_header {return index 0}
+  [-1, -1]
+Function: git_object__write_oid_header {return index 0}
+  [-1, -1]
+Function: git_commit_lookup {return index 0}
+  [-33, -1]
+Function: git_commit_lookup_prefix {return index 0}
+  [-33, -4] U [-2, 131]
+Function: git_commit_id {return index 0}
+  [0, 0]
+Function: git_commit_dup {return index 0}
+  EMPTY
+Function: git_tree_lookup {return index 0}
+  [-33, -1]
+Function: git_tree_lookup_prefix {return index 0}
+  [-33, -4] U [-2, 131]
+Function: git_commit_parent {return index 0}
+  [-33, -1]
+Function: git_commit_nth_gen_ancestor {return index 0}
+  [-33, -1]
+Function: git_commit_header_field {return index 0}
+  [-3, -1]
+Function: git_commit__header_field {return index 0}
+  [-3, -1]
+Function: git_commit_extract_signature {return index 0}
+  [-33, -1]
+Function: git_commit__extract_signature {return index 0}
+  [-33, -1]
+Function: git_commit__create_buffer {return index 0}
+  [-15, -1]
+Function: git_commit_create_with_signature {return index 0}
+  [-21, -1]
+Function: git_commit_create_from_stage {return index 0}
+  [-1, -1]
+Function: git_commit_committer_with_mailmap {return index 0}
+  [-1, -1]
+Function: git_commit_author_with_mailmap {return index 0}
+  [-1, -1]
+Function: git_commit_graph_file_parse {return index 0}
+  [0, 0]
+Function: commit_graph_parse_oid_fanout {return index 0}
+  [-1, -1]
+Function: commit_graph_parse_oid_lookup {return index 0}
+  [-1, -1]
+Function: commit_graph_parse_commit_data {return index 0}
+  [-1, -1]
+Function: git_commit_graph_new {return index 0}
+  [-14, -1]
+Function: git_commit_graph_file_open {return index 0}
+  [-14, -1]
+Function: git_commit_graph_validate {return index 0}
+  [-1, -1]
+Function: git_commit_graph_open {return index 0}
+  [-14, -1]
+Function: git_commit_graph_get_file {return index 0}
+  [-14, -1]
+Function: git_commit_graph_file_needs_refresh {return index 0}
+  [-1, -1]
+Function: git_commit_graph_entry_find {return index 0}
+  [-3, -3]
+Function: git_commit_graph_entry_parent {return index 0}
+  [-3, -1]
+Function: git_commit_graph_writer_new {return index 0}
+  [-1, -1]
+Function: packed_commit__cmp {return index 0}
+  [-255, -1] U [1, 255]
+Function: git_commit_graph_writer_add_index_file {return index 0}
+  [-33, -1] U [1, 131]
+Function: object_entry__cb {return index 0}
+  [0, 0]
+Function: packed_commit_new {return index 0}
+  [0, 0]
+Function: git_commit_graph_writer_add_revwalk {return index 0}
+  [-33, -1]
+Function: git_commit_graph_writer_commit {return index 0}
+  [-2147483648, 0]
+Function: commit_graph_write_filebuf {return index 0}
+  [-1, -1]
+Function: commit_graph_write {return index 0}
+  [-30, -1]
+Function: git_commit_graph_oidmap__resize {return index 0}
+  [-1, -1]
+Function: write_chunk_header {return index 0}
+  [-30, -1]
+Function: git_commit_graph_writer_dump {return index 0}
+  [-30, -1]
+Function: commit_graph_write_buf {return index 0}
+  [-1, -1]
+Function: git_commit_graph__writer_dump {return index 0}
+  [-30, -1]
+Function: git_commit_list_generation_cmp {return index 0}
+  EMPTY
+Function: git_commit_list_time_cmp {return index 0}
+  EMPTY
+Function: git_commit_list_create {return index 0}
+  [0, 0]
+Function: git_commit_list_insert {return index 0}
+  [0, 0]
+Function: git_commit_list_insert_by_date {return index 0}
+  [0, 0]
+Function: git_commit_list_alloc_node {return index 0}
+  [0, 0]
+Function: git_commit_list_pop {return index 0}
+  [0, 0]
+Function: git_commit_list_parse {return index 0}
+  [-33, 0]
+Function: git_config_new {return index 0}
+  [-1, -1]
+Function: reader_cmp {return index 0}
+  EMPTY
+Function: writer_cmp {return index 0}
+  EMPTY
+Function: git_config_add_file_ondisk {return index 0}
+  [-4, -1]
+Function: git_config_add_backend {return index 0}
+  [-4, -1]
+Function: git_config__add_instance {return index 0}
+  [0, 0]
+Function: git_blob_id {return index 0}
+  [0, 0]
+Function: git_odb__format_object_header {return index 0}
+  [-1, -1]
+Function: git_odb_hash {return index 0}
+  [-1, -1]
+Function: git_odb_new_ext {return index 0}
+  [-1, -1]
+Function: backend_sort_cmp {return index 0}
+  EMPTY
+Function: git_odb_new {return index 0}
+  [-1, -1]
+Function: git_odb_add_backend {return index 0}
+  [-1, -1]
+Function: add_backend_internal {return index 0}
+  [-1, -1]
+Function: git_odb_add_alternate {return index 0}
+  [-1, -1]
+Function: git_odb__add_default_backends {return index 0}
+  [-1, -1]
+Function: load_alternates {return index 0}
+  [-1, -1]
+Function: git_odb_add_disk_alternate {return index 0}
+  [-1, -1]
+Function: git_odb_open_ext {return index 0}
+  [-1, -1]
+Function: git_odb_open {return index 0}
+  [-1, -1]
+Function: git_odb__set_caps {return index 0}
+  [-1, -1]
+Function: git_odb__get_commit_graph_file {return index 0}
+  [-14, -1]
+Function: git_odb__freshen {return index 0}
+  [-1, -1]
+Function: odb_freshen_1 {return index 0}
+  [1, 131]
+Function: git_odb_refresh {return index 0}
+  [-1, -1] U [1, 131]
+Function: git_odb_exists {return index 0}
+  [0, 0]
+Function: git_odb_exists_ext {return index 0}
+  [0, 0]
+Function: git_odb_exists_prefix {return index 0}
+  EMPTY
+Function: odb_exists_prefix_1 {return index 0}
+  EMPTY
+Function: git_odb__error_notfound {return index 0}
+  [-3, -3]
+Function: odb_read_header_1 {return index 0}
+  [-30, -4] U [-2, 131]
+Function: odb_read_1 {return index 0}
+  [-33, -4] U [-2, 131]
+Function: git_odb_read_header {return index 0}
+  [-33, -1]
+Function: git_odb__read_header_or_object {return index 0}
+  [-33, 131]
+Function: git_odb_read {return index 0}
+  [-33, -1]
+Function: read_prefix_1 {return index 0}
+  EMPTY
+Function: git_odb_write {return index 0}
+  [-21, -1]
+Function: git_odb_open_wstream {return index 0}
+  [-1, -1]
+Function: git_odb_stream_write {return index 0}
+  [-1, -1]
+Function: git_odb_stream_finalize_write {return index 0}
+  [0, 0]
+Function: git_odb_write_pack {return index 0}
+  [-1, -1] U [1, 131]
+Function: git_odb_backend_data_alloc {return index 0}
+  [0, 0]
+Function: git_odb_backend_malloc {return index 0}
+  [0, 0]
+Function: git_odb__backend_loose {return index 0}
+  [-1, -1]
+Function: loose_backend__read {return index 0}
+  [-21, -1]
+Function: loose_backend__write {return index 0}
+  [-1, -1]
+Function: loose_backend__read_prefix {return index 0}
+  [-2147483648, -1] U [1, 2147483646]
+Function: loose_backend__read_header {return index 0}
+  [-14, -1]
+Function: loose_backend__writestream {return index 0}
+  [-1, -1]
+Function: loose_backend__readstream {return index 0}
+  [-14, -1]
+Function: loose_backend__exists {return index 0}
+  [0, 0]
+Function: loose_backend__exists_prefix {return index 0}
+  [-2147483648, -1] U [1, 2147483646]
+Function: loose_backend__foreach {return index 0}
+  [-1, -1]
+Function: loose_backend__freshen {return index 0}
+  [-1, -1]
+Function: foreach_cb {return index 0}
+  EMPTY
+Function: foreach_object_dir_cb {return index 0}
+  [-33, -1] U [1, 131]
+Function: locate_object_short_oid {return index 0}
+  [-2147483648, -1] U [1, 2147483646]
+Function: fn_locate_object_short_oid {return index 0}
+  [-5, -1]
+Function: locate_object {return index 0}
+  [-3, -1]
+Function: loose_backend__readstream_packlike {return index 0}
+  [-1, -1]
+Function: loose_backend__readstream_standard {return index 0}
+  [-1, -1]
+Function: loose_backend__readstream_read {return index 0}
+  [-1, -1]
+Function: parse_header {return index 0}
+  [-1, -1]
+Function: loose_backend__writestream_write {return index 0}
+  [-1, -1]
+Function: loose_backend__writestream_finalize {return index 0}
+  [-1, -1]
+Function: read_loose {return index 0}
+  [-21, -1]
+Function: git_odb_backend_loose {return index 0}
+  [-1, -1]
+Function: git_mempack_write_thin_pack {return index 0}
+  [-33, -1]
+Function: git_mempack_dump {return index 0}
+  [-33, -1] U [1, 131]
+Function: git_mempack_new {return index 0}
+  [-1, -1]
+Function: impl__read {return index 0}
+  [-3, -3] U [-1, -1]
+Function: impl__write {return index 0}
+  [-1, -1]
+Function: impl__read_header {return index 0}
+  [-3, -3]
+Function: impl__exists {return index 0}
+  [0, 0]
+Function: git_odb_mempack_oidmap__resize {return index 0}
+  [-1, -1]
+Function: git_odb_backend_one_pack {return index 0}
+  [-1, -1]
+Function: pack_backend__alloc {return index 0}
+  [-1, -1]
+Function: packfile_sort__cb {return index 0}
+  EMPTY
+Function: pack_backend__read_header {return index 0}
+  [-3, -1]
+Function: pack_backend__exists {return index 0}
+  [0, 0]
+Function: pack_backend__exists_prefix {return index 0}
+  [-14, -1] U [1, 131]
+Function: pack_backend__refresh {return index 0}
+  [-2147483648, -1] U [1, 2147483646]
+Function: pack_backend__foreach {return index 0}
+  [-2147483648, -1] U [1, 2147483646]
+Function: pack_backend__writepack {return index 0}
+  [-1, -1]
+Function: pack_backend__writemidx {return index 0}
+  [-2147483648, -1]
+Function: pack_backend__freshen {return index 0}
+  [-14, -1]
+Function: pack_entry_find {return index 0}
+  [-3, -1]
+Function: refresh_multi_pack_index {return index 0}
+  [-14, -1]
+Function: packfile_byname_search_cmp {return index 0}
+  [-255, -1] U [1, 255]
+Function: pack_backend__writepack_append {return index 0}
+  [-1, 0]
+Function: pack_backend__writepack_commit {return index 0}
+  [-1, -1]
+Function: packfile_load__cb {return index 0}
+  [-3, -1]
+Function: pack_entry_find_prefix {return index 0}
+  [-14, -1] U [1, 131]
+Function: git_odb_backend_pack {return index 0}
+  [-2147483648, -1]
+Function: git_oid_from_prefix {return index 0}
+  [-1, -1]
+Function: git_oid_from_string {return index 0}
+  [-1, -1]
+Function: git_oid_from_raw {return index 0}
+  [-1, -1]
+Function: git_oid_fromstrn {return index 0}
+  [-1, -1]
+Function: git_oid_fromstrp {return index 0}
+  [-1, -1]
+Function: git_config__configmap_lookup {return index 0}
+  [-12, -1]
+Function: git_repository__configmap_lookup {return index 0}
+  [-12, -1]
+Function: git_config_backend_from_file {return index 0}
+  [-1, -1]
+Function: config_file_open {return index 0}
+  [-2147483648, -1]
+Function: config_file_get {return index 0}
+  [-2147483648, -1]
+Function: config_file_set {return index 0}
+  [-12, -1]
+Function: config_file_set_multivar {return index 0}
+  [-12, -1]
+Function: config_file_delete {return index 0}
+  [-12, -1]
+Function: config_file_delete_multivar {return index 0}
+  [-12, -1]
+Function: config_file_iterator {return index 0}
+  [-2147483648, -1]
+Function: config_file_snapshot {return index 0}
+  [-1, -1]
+Function: config_file_lock {return index 0}
+  [-2147483648, -1]
+Function: config_file_unlock {return index 0}
+  [-1, 0]
+Function: config_file_refresh {return index 0}
+  [-2147483648, -1]
+Function: config_file_is_modified {return index 0}
+  [-14, -1]
+Function: config_file_read {return index 0}
+  [-2147483648, -1]
+Function: read_on_variable {return index 0}
+  [-2147483648, 0]
+Function: parse_include {return index 0}
+  [-2147483648, 0]
+Function: parse_conditional_include {return index 0}
+  [-2147483648, 0]
+Function: conditional_match_onbranch {return index 0}
+  [-1, -1]
+Function: do_match_gitdir {return index 0}
+  [-3, -1]
+Function: config_file_write {return index 0}
+  [-1, -1]
+Function: write_on_section {return index 0}
+  [-1, -1]
+Function: write_on_variable {return index 0}
+  [-1, -1]
+Function: write_on_comment {return index 0}
+  [-1, -1]
+Function: write_on_eof {return index 0}
+  [-1, -1]
+Function: escape_value {return index 0}
+  [-2147483648, -1] U [1, 2147483647]
+Function: git_config_list_new {return index 0}
+  [-1, -1]
+Function: git_config_list_dup_entry {return index 0}
+  [-1, -1]
+Function: git_config_list_add_string {return index 0}
+  [0, 0]
+Function: git_config_list_append {return index 0}
+  [-1, -1]
+Function: git_config_list_headmap__resize {return index 0}
+  [-1, -1]
+Function: git_config_list_pathmap__resize {return index 0}
+  [-1, -1]
+Function: git_config_list_dup {return index 0}
+  [-1, -1]
+Function: git_config_list_get {return index 0}
+  [-3, -1]
+Function: git_config_list_get_unique {return index 0}
+  [0, 0]
+Function: git_config_list_iterator_new {return index 0}
+  [-1, -1]
+Function: git_config_backend_from_string {return index 0}
+  [-1, -1]
+Function: config_backend_new {return index 0}
+  [0, 0]
+Function: config_memory_open {return index 0}
+  [-1, -1]
+Function: config_memory_get {return index 0}
+  [-3, -1]
+Function: config_memory_iterator {return index 0}
+  [-1, -1]
+Function: read_variable_cb {return index 0}
+  [-1, -1]
+Function: git_config_backend_from_values {return index 0}
+  [-1, -1]
+Function: git_config_parser_init {return index 0}
+  EMPTY
+Function: git_config_parse {return index 0}
+  [-2147483648, -1]
+Function: unescape_line {return index 0}
+  EMPTY
+Function: git_config_backend_snapshot {return index 0}
+  [-1, -1]
+Function: config_snapshot_get {return index 0}
+  [-3, -1]
+Function: config_snapshot_iterator {return index 0}
+  [-1, -1]
+Function: git_crlf_filter_new {return index 0}
+  [0, 0]
+Function: crlf_check {return index 0}
+  [-30, -1]
+Function: crlf_stream {return index 0}
+  [-1, -1]
+Function: crlf_apply {return index 0}
+  [-30, 0]
+Function: git_delta_index_init {return index 0}
+  [-1, -1]
+Function: git_delta_create_from_index {return index 0}
+  [-6, -1]
+Function: hdr_sz {return index 0}
+  [0, 0]
+Function: git_delta_read_header_fromstream {return index 0}
+  [-1, -1]
+Function: git_delta_apply {return index 0}
+  [-1, -1]
+Function: git_describe_commit {return index 0}
+  [-2147483648, -1]
+Function: get_name {return index 0}
+  [-39, 1]
+Function: compare_pt {return index 0}
+  EMPTY
+Function: find_commit_name {return index 0}
+  [0, 0]
+Function: finish_depth_computation {return index 0}
+  [-33, 0]
+Function: possible_tag_dup {return index 0}
+  [-1, -1]
+Function: git_describe_oidmap__resize {return index 0}
+  [-1, -1]
+Function: git_describe_workdir {return index 0}
+  [-39, 0]
+Function: git_describe_format {return index 0}
+  [-5, -1]
+Function: display_name {return index 0}
+  [-1, -1]
+Function: show_suffix {return index 0}
+  [-5, -1]
+Function: git_diff_delta__cmp {return index 0}
+  [0, 0]
+Function: git_diff_delta__casecmp {return index 0}
+  EMPTY
+Function: git_diff__entry_cmp {return index 0}
+  [0, 0]
+Function: git_diff_num_deltas {return index 0}
+  EMPTY
+Function: git_diff_is_sorted_icase {return index 0}
+  EMPTY
+Function: git_diff_foreach {return index 0}
+  [0, 0]
+Function: git_diff_format_email {return index 0}
+  [-2147483648, -1] U [1, 2147483646]
+Function: git_diff_commit_as_email {return index 0}
+  [-2147483648, -1] U [1, 2147483646]
+Function: git_diff_options_init {return index 0}
+  [-1, -1]
+Function: git_diff_patchid {return index 0}
+  [-2147483648, -1]
+Function: diff_patchid_print_callback_to_buf {return index 0}
+  [-1, -1]
+Function: git_diff_driver_registry_new {return index 0}
+  [0, 0]
+Function: git_diff_driver_lookup {return index 0}
+  [-1, -1]
+Function: diff_driver_xfuncname {return index 0}
+  [0, 0]
+Function: diff_driver_funcname {return index 0}
+  [0, 0]
+Function: git_diff_driver_map_put {return index 0}
+  EMPTY
+Function: diff_driver_add_patterns {return index 0}
+  [-1, -1]
+Function: git_diff_driver_map__resize {return index 0}
+  [-1, -1]
+Function: git_diff_driver_content_is_binary {return index 0}
+  [0, 1]
+Function: diff_context_find {return index 0}
+  EMPTY
+Function: diff_context_line__pattern_match {return index 0}
+  [0, 0]
+Function: diff_context_line__simple {return index 0}
+  [0, 0]
+Function: git_diff_file_content__init_from_diff {return index 0}
+  [-1, -1]
+Function: diff_file_content_init_common {return index 0}
+  [-1, -1]
+Function: git_diff_file_content__init_from_src {return index 0}
+  [-1, -1]
+Function: git_diff_file_content__load {return index 0}
+  [-2147483648, -1]
+Function: git_diff__oid_for_file {return index 0}
+  [-2147483648, -1]
+Function: git_diff__oid_for_entry {return index 0}
+  [-2147483648, -1]
+Function: git_diff__from_iterators {return index 0}
+  [-2147483648, -1]
+Function: diff_delta__from_one {return index 0}
+  [0, 0]
+Function: diff_delta__last_for_item {return index 0}
+  EMPTY
+Function: iterator_advance {return index 0}
+  [-33, -1] U [1, 2147483646]
+Function: git_diff_tree_to_tree {return index 0}
+  [-2147483648, -1]
+Function: git_diff_tree_to_index {return index 0}
+  [-2147483648, -1]
+Function: git_diff_index_to_workdir {return index 0}
+  [-2147483648, 0]
+Function: git_diff_tree_to_workdir {return index 0}
+  [-2147483648, -1] U [1, 1]
+Function: git_diff_tree_to_workdir_with_index {return index 0}
+  [-2147483648, 0]
+Function: git_diff_index_to_index {return index 0}
+  [-2147483648, -1]
+Function: git_diff__paired_foreach {return index 0}
+  [-1, -1]
+Function: diff_delta_i2w_casecmp {return index 0}
+  EMPTY
+Function: diff_delta_i2w_cmp {return index 0}
+  [0, 0]
+Function: git_diff__commit {return index 0}
+  [-2147483648, -1]
+Function: git_diff_from_buffer {return index 0}
+  [-1, -1]
+Function: git_diff_from_buffer_ext {return index 0}
+  [-1, -1]
+Function: git_diff_delta__format_file_header {return index 0}
+  [-1, -1]
+Function: git_diff_print {return index 0}
+  [-2147483648, -1]
+Function: diff_print_patch_line {return index 0}
+  [-1, -1]
+Function: diff_print_patch_hunk {return index 0}
+  [-1, -1]
+Function: diff_print_patch_binary {return index 0}
+  [0, 0]
+Function: diff_print_patch_file_binary_noshow {return index 0}
+  [-1, 0]
+Function: diff_print_patch_file {return index 0}
+  [-1, -1]
+Function: diff_print_one_raw {return index 0}
+  [-1, -1]
+Function: diff_print_one_name_only {return index 0}
+  [-1, -1]
+Function: diff_print_one_name_status {return index 0}
+  [-1, -1]
+Function: git_diff_print_callback__to_buf {return index 0}
+  [-1, -1]
+Function: git_diff_to_buf {return index 0}
+  [-2147483648, -1]
+Function: git_patch_print {return index 0}
+  [-2147483648, -1] U [1, 2147483646]
+Function: git_patch_to_buf {return index 0}
+  [-2147483648, -1] U [1, 2147483646]
+Function: git_patch__to_buf {return index 0}
+  [-2147483648, -1] U [1, 2147483646]
+Function: git_reference__is_pseudoref {return index 0}
+  [1, 1]
+Function: git_reference_type {return index 0}
+  EMPTY
+Function: git_reference_dwim {return index 0}
+  [-39, 0]
+Function: git_reference_name_is_valid {return index 0}
+  [-12, -1]
+Function: git_reference_symbolic_target {return index 0}
+  [0, 0]
+Function: git_reference__log_signature {return index 0}
+  [-1, -1]
+Function: git_reference_create_matching {return index 0}
+  [0, 0]
+Function: reference__create {return index 0}
+  [-39, -1]
+Function: git_reference_create {return index 0}
+  [0, 0]
+Function: git_reference_symbolic_create_matching {return index 0}
+  [0, 0]
+Function: git_reference_symbolic_create {return index 0}
+  [0, 0]
+Function: git_reference_set_target {return index 0}
+  [0, 0]
+Function: git_reference_symbolic_set_target {return index 0}
+  [0, 0]
+Function: git_reference_rename {return index 0}
+  [-40, -1]
+Function: refs_update_head {return index 0}
+  [-39, -1]
+Function: git_reference_resolve {return index 0}
+  [-39, 0]
+Function: git_reference_foreach {return index 0}
+  [-33, -1] U [1, 131]
+Function: git_reference_iterator_new {return index 0}
+  [-1, -1]
+Function: git_reference_next {return index 0}
+  EMPTY
+Function: git_reference_foreach_name {return index 0}
+  [-1, -1]
+Function: git_reference_next_name {return index 0}
+  EMPTY
+Function: git_reference_foreach_glob {return index 0}
+  [-1, -1]
+Function: git_reference_iterator_glob_new {return index 0}
+  [-1, -1]
+Function: git_reference_list {return index 0}
+  [-1, -1]
+Function: cb__reflist_add {return index 0}
+  [-1, -1]
+Function: git_reference_normalize_name {return index 0}
+  [-12, 0]
+Function: git_reference_cmp {return index 0}
+  [-255, 255]
+Function: git_reference__update_for_commit {return index 0}
+  [-39, -1]
+Function: git_reference__is_branch {return index 0}
+  [0, 0]
+Function: git_reference_is_branch {return index 0}
+  [-1, -1] U [1, 1]
+Function: git_reference__is_remote {return index 0}
+  [0, 0]
+Function: git_reference_is_remote {return index 0}
+  [0, 0]
+Function: git_reference__is_tag {return index 0}
+  [1, 1]
+Function: git_reference_is_tag {return index 0}
+  [-1, -1] U [1, 1]
+Function: git_reference__is_note {return index 0}
+  [0, 0]
+Function: git_reference_is_note {return index 0}
+  [0, 0]
+Function: git_reference__is_per_worktree_ref {return index 0}
+  [0, 0]
+Function: git_reference_peel {return index 0}
+  [-39, 0]
+Function: git_reference__name_is_valid {return index 0}
+  [-12, -1]
+Function: git_reference__is_unborn_head {return index 0}
+  [-39, -1]
+Function: git_reference_is_valid_name {return index 0}
+  [1, 1]
+Function: git_refspec__parse {return index 0}
+  [-1, -1]
+Function: git_refspec_parse {return index 0}
+  [-1, -1]
+Function: git_refspec_src_matches_negative {return index 0}
+  [0, 0]
+Function: git_refspec_src_matches {return index 0}
+  [0, 0]
+Function: git_refspec_dst_matches {return index 0}
+  [0, 0]
+Function: git_refspec_transform {return index 0}
+  [-1, -1]
+Function: git_refspec__transform {return index 0}
+  [-1, -1]
+Function: refspec_transform {return index 0}
+  [-1, -1]
+Function: git_fetchhead_ref_cmp {return index 0}
+  [0, 0]
+Function: git_fetchhead_ref_create {return index 0}
+  [-1, -1]
+Function: git_fetchhead_write {return index 0}
+  [-1, -1]
+Function: git_repository_fetchhead_foreach {return index 0}
+  [-1, -1]
+Function: git_filter_global_init {return index 0}
+  [-1, -1]
+Function: filter_def_priority_cmp {return index 0}
+  EMPTY
+Function: filter_registry_insert {return index 0}
+  [-1, -1]
+Function: git_filter_register {return index 0}
+  [-1, -1]
+Function: filter_def_name_key_check {return index 0}
+  [0, 0]
+Function: git_filter_unregister {return index 0}
+  [-1, -1]
+Function: git_filter_source_id {return index 0}
+  [0, 0]
+Function: git_filter_list_new {return index 0}
+  [-1, -1]
+Function: git_filter_list__load {return index 0}
+  [1, 2147483647]
+Function: git_filter_list_load_ext {return index 0}
+  [-2147483648, -1] U [1, 2147483646]
+Function: git_filter_list_load {return index 0}
+  [-2147483648, -1]
+Function: git_filter_list_contains {return index 0}
+  [1, 1]
+Function: git_filter_list_push {return index 0}
+  [-1, -1]
+Function: filter_def_filter_key_check {return index 0}
+  EMPTY
+Function: git_filter_list_apply_to_buffer {return index 0}
+  [-1, -1]
+Function: git_filter_list__apply_to_buffer {return index 0}
+  [-1, -1]
+Function: buf_stream_write {return index 0}
+  [-1, -1]
+Function: stream_list_init {return index 0}
+  [0, 0]
+Function: buffered_stream_write {return index 0}
+  [-1, -1]
+Function: git_filter_list__convert_buf {return index 0}
+  [-1, -1]
+Function: git_filter_list_apply_to_file {return index 0}
+  [-1, -1]
+Function: git_filter_list_stream_file {return index 0}
+  [-1, -1]
+Function: git_filter_list__apply_to_file {return index 0}
+  [-1, -1]
+Function: git_filter_list_apply_to_blob {return index 0}
+  [-1, -1]
+Function: git_filter_list_stream_blob {return index 0}
+  [-1, -1]
+Function: git_filter_list__apply_to_blob {return index 0}
+  [-1, -1]
+Function: git_filter_buffered_stream_new {return index 0}
+  [-1, -1]
+Function: git_filter_list_apply_to_data {return index 0}
+  [-1, -1]
+Function: git_grafts_new {return index 0}
+  [-1, -1]
+Function: git_grafts_open {return index 0}
+  [-1, -1]
+Function: git_grafts_refresh {return index 0}
+  [-14, -1]
+Function: git_grafts_parse {return index 0}
+  [-1, -1]
+Function: git_grafts_add {return index 0}
+  [-3, -1]
+Function: git_grafts_remove {return index 0}
+  [-3, -3]
+Function: git_grafts_oidmap__resize {return index 0}
+  [-1, -1]
+Function: git_grafts_open_or_refresh {return index 0}
+  [-14, -1]
+Function: git_grafts_get {return index 0}
+  [-3, -1]
+Function: git_grafts_oids {return index 0}
+  [-1, -1]
+Function: git_graph_ahead_behind {return index 0}
+  [-1, -1]
+Function: git_graph_descendant_of {return index 0}
+  [-33, -1] U [1, 131]
+Function: git_graph_reachable_from_any {return index 0}
+  [-33, 0]
+Function: git_hashsig_create {return index 0}
+  [-1, -1]
+Function: git_hashsig_create_fromfile {return index 0}
+  [-1, -1]
+Function: git_ident_filter_new {return index 0}
+  [0, 0]
+Function: ident_stream {return index 0}
+  [-1, -1]
+Function: ident_apply {return index 0}
+  [-30, -30] U [-1, -1]
+Function: git_ignore__for_path {return index 0}
+  [-2147483648, -1]
+Function: parse_ignore_file {return index 0}
+  [-3, -1]
+Function: push_one_ignore {return index 0}
+  [-39, 131]
+Function: push_ignore_file {return index 0}
+  [-39, -1]
+Function: git_ignore__push_dir {return index 0}
+  [-39, 131]
+Function: git_ignore__lookup {return index 0}
+  [-1, -1]
+Function: git_ignore_add_rule {return index 0}
+  [-12, -1]
+Function: git_ignore_clear_internal_rules {return index 0}
+  [-12, -1]
+Function: git_ignore_path_is_ignored {return index 0}
+  [-2147483648, -1]
+Function: git_ignore__check_pathspec_for_exact_ignores {return index 0}
+  [-2147483648, -1]
+Function: git_index_entry_srch {return index 0}
+  EMPTY
+Function: git_index_entry_isrch {return index 0}
+  EMPTY
+Function: git_index_entry_cmp {return index 0}
+  [0, 0]
+Function: git_index_entry_icmp {return index 0}
+  EMPTY
+Function: index_entry_srch_path {return index 0}
+  [0, 0]
+Function: index_entry_isrch_path {return index 0}
+  EMPTY
+Function: reuc_srch {return index 0}
+  [0, 0]
+Function: reuc_isrch {return index 0}
+  EMPTY
+Function: reuc_cmp {return index 0}
+  [0, 0]
+Function: reuc_icmp {return index 0}
+  EMPTY
+Function: git_index_open_ext {return index 0}
+  [-1, -1]
+Function: conflict_name_cmp {return index 0}
+  [0, 0]
+Function: git_index_read {return index 0}
+  [-14, -1]
+Function: git_index_clear {return index 0}
+  [-3, -1]
+Function: index_remove_entry {return index 0}
+  [-3, -1]
+Function: index_entry_size {return index 0}
+  [0, 0]
+Function: index_entry_create {return index 0}
+  [-1, -1]
+Function: git_index_open {return index 0}
+  [-1, -1]
+Function: git_index_new {return index 0}
+  [-1, -1]
+Function: git_index_new_ext {return index 0}
+  [-14, -1]
+Function: git_index_read_safely {return index 0}
+  [-34, -1]
+Function: git_index_write {return index 0}
+  [-2147483648, 0]
+Function: git_indexwriter_commit {return index 0}
+  [-1, 0]
+Function: git_indexwriter_init {return index 0}
+  [-2147483648, -1]
+Function: git_index_write_tree {return index 0}
+  [0, 131]
+Function: git_index_write_tree_to {return index 0}
+  [-33, -1]
+Function: git_index_entrycount {return index 0}
+  [-1, -1]
+Function: git_index_get_byindex {return index 0}
+  [0, 0]
+Function: git_index_get_bypath {return index 0}
+  [0, 0]
+Function: git_index__conflict_to_reuc {return index 0}
+  [-4, -4] U [-2, 0]
+Function: git_index_conflict_get {return index 0}
+  [-3, -1]
+Function: git_index_reuc_add {return index 0}
+  [-4, -1]
+Function: git_index_conflict_remove {return index 0}
+  [-3, -1]
+Function: git_index_find {return index 0}
+  EMPTY
+Function: index_reuc_on_dup {return index 0}
+  [-4, -4]
+Function: git_index_add_from_buffer {return index 0}
+  [-4, 0]
+Function: index_insert {return index 0}
+  [-4, -1]
+Function: index_no_dups {return index 0}
+  [-4, -4]
+Function: git_index_add_bypath {return index 0}
+  [-2147483648, -1]
+Function: git_index_remove_bypath {return index 0}
+  [-4, 0]
+Function: git_index_remove {return index 0}
+  [-3, -1]
+Function: git_index__fill {return index 0}
+  [-1, -1]
+Function: git_index_add {return index 0}
+  [-4, -1]
+Function: git_index_remove_directory {return index 0}
+  [-3, -1]
+Function: git_index_find_prefix {return index 0}
+  [-3, -3] U [0, 0]
+Function: git_index__find_pos {return index 0}
+  [-3, -1]
+Function: git_index_conflict_add {return index 0}
+  [-4, -1]
+Function: git_index_conflict_cleanup {return index 0}
+  [-3, -1]
+Function: git_index_has_conflicts {return index 0}
+  [-1, -1] U [1, 1]
+Function: git_index_iterator_new {return index 0}
+  [-1, -1]
+Function: git_index_snapshot_new {return index 0}
+  [-1, -1]
+Function: git_index_conflict_iterator_new {return index 0}
+  [-1, -1]
+Function: git_index_conflict_next {return index 0}
+  [-31, -1]
+Function: git_index_entry_is_conflict {return index 0}
+  EMPTY
+Function: git_index_name_add {return index 0}
+  [-1, -1]
+Function: git_index_reuc_find {return index 0}
+  EMPTY
+Function: git_index_reuc_get_bypath {return index 0}
+  [0, 0]
+Function: git_index_reuc_remove {return index 0}
+  [-3, -1]
+Function: git_index_read_tree {return index 0}
+  [-33, -1]
+Function: read_tree_cb {return index 0}
+  [-1, -1]
+Function: git_index_read_index {return index 0}
+  [-33, 0]
+Function: git_index_owner {return index 0}
+  [-2147483648, -1] U [1, 2147483647]
+Function: git_index_add_all {return index 0}
+  [-2147483648, 0]
+Function: index_apply_to_wd_diff {return index 0}
+  [0, 0]
+Function: apply_each_file {return index 0}
+  [-2147483648, -1]
+Function: git_index_remove_all {return index 0}
+  [0, 0]
+Function: git_index_update_all {return index 0}
+  [0, 0]
+Function: git_indexwriter_init_for_operation {return index 0}
+  [-2147483648, -1]
+Function: git_index_add_frombuffer {return index 0}
+  [-4, 0]
+Function: git_index_entrymap_put {return index 0}
+  [-1, -1]
+Function: git_index_entrymap_icase__resize {return index 0}
+  [-1, -1]
+Function: git_index_entrymap_default__resize {return index 0}
+  [-1, -1]
+Function: git_index_entrymap_icase__idx {return index 0}
+  EMPTY
+Function: git_index_entrymap_default__idx {return index 0}
+  EMPTY
+Function: git_index_entrymap_resize {return index 0}
+  [-1, -1]
+Function: git_indexer_new {return index 0}
+  [-1, -1]
+Function: git_indexer_append {return index 0}
+  [-1, 0]
+Function: objects_cmp {return index 0}
+  [-255, -1] U [1, 255]
+Function: do_progress_callback {return index 0}
+  EMPTY
+Function: check_object_connectivity {return index 0}
+  EMPTY
+Function: add_expected_oid {return index 0}
+  [-1, -1]
+Function: git_indexer_oidmap__resize {return index 0}
+  [-1, -1]
+Function: git_indexer_commit {return index 0}
+  [-1, -1]
+Function: resolve_deltas {return index 0}
+  [-1, -1]
+Function: update_header_and_rehash {return index 0}
+  [-1, -1]
+Function: write_at {return index 0}
+  [-1, -1]
+Function: index_path {return index 0}
+  [-1, -1]
+Function: git_iterator_for_nothing {return index 0}
+  [-1, -1]
+Function: empty_iterator_noop {return index 0}
+  [-31, -31]
+Function: empty_iterator_advance_over {return index 0}
+  [-31, -31]
+Function: git_iterator_for_tree {return index 0}
+  [-14, -1]
+Function: iterator_init_common {return index 0}
+  [-14, -1]
+Function: tree_iterator_frame_init {return index 0}
+  [-1, -1]
+Function: tree_iterator_entry_sort_icase {return index 0}
+  EMPTY
+Function: tree_iterator_current {return index 0}
+  [-31, -31]
+Function: tree_iterator_advance {return index 0}
+  [-33, -1]
+Function: tree_iterator_advance_into {return index 0}
+  [-33, -1] U [1, 131]
+Function: tree_iterator_advance_over {return index 0}
+  [-31, -31] U [0, 2147483646]
+Function: tree_iterator_reset {return index 0}
+  [-1, -1]
+Function: tree_iterator_frame_pop {return index 0}
+  [0, 0]
+Function: tree_iterator_frame_push {return index 0}
+  [-33, -1]
+Function: git_iterator_current_workdir_path {return index 0}
+  [-1, -1]
+Function: git_iterator_for_filesystem {return index 0}
+  [-2147483648, 2147483646]
+Function: iterator_for_filesystem {return index 0}
+  [-2147483648, -1]
+Function: filesystem_iterator_frame_push {return index 0}
+  [-31, -1]
+Function: filesystem_iterator_entry_cmp {return index 0}
+  [0, 0]
+Function: filesystem_iterator_entry_cmp_icase {return index 0}
+  EMPTY
+Function: filesystem_iterator_entry_init {return index 0}
+  [0, 2147483646]
+Function: filesystem_iterator_current {return index 0}
+  [-31, -31]
+Function: filesystem_iterator_advance {return index 0}
+  [-31, -1] U [1, 2147483646]
+Function: filesystem_iterator_advance_into {return index 0}
+  [-31, -1] U [1, 2147483646]
+Function: filesystem_iterator_advance_over {return index 0}
+  [-31, -31] U [0, 2147483646]
+Function: filesystem_iterator_reset {return index 0}
+  [-2147483648, -1]
+Function: git_iterator_for_workdir_ext {return index 0}
+  [-2147483648, -1]
+Function: git_iterator_for_index {return index 0}
+  [-14, -1]
+Function: index_iterator_current {return index 0}
+  [-31, -31]
+Function: index_iterator_advance {return index 0}
+  [-31, -1]
+Function: index_iterator_advance_into {return index 0}
+  [-31, -31] U [-3, -3]
+Function: index_iterator_advance_over {return index 0}
+  [-31, -31] U [0, 2147483646]
+Function: git_iterator_reset_range {return index 0}
+  [-2147483648, -1]
+Function: git_iterator_set_ignore_case {return index 0}
+  [0, 0]
+Function: git_iterator_walk {return index 0}
+  [-33, -1]
+Function: git_mailmap_new {return index 0}
+  [-1, -1]
+Function: mailmap_entry_cmp {return index 0}
+  [0, 0]
+Function: git_mailmap_add_entry {return index 0}
+  [-4, -1]
+Function: mailmap_add_entry_unterminated {return index 0}
+  [-4, -1]
+Function: mailmap_entry_replace {return index 0}
+  [-4, -4]
+Function: git_mailmap_from_buffer {return index 0}
+  [-1, 0]
+Function: mailmap_add_buffer {return index 0}
+  [0, 0]
+Function: git_mailmap_from_repository {return index 0}
+  [-1, -1]
+Function: git_mailmap_entry_lookup {return index 0}
+  [0, 0]
+Function: git_mailmap_resolve {return index 0}
+  [0, 0]
+Function: git_mailmap_resolve_signature {return index 0}
+  [-1, -1]
+Function: git_merge_base_many {return index 0}
+  [-3, -1]
+Function: merge_bases_many {return index 0}
+  [-3, -1]
+Function: git_merge__bases_many {return index 0}
+  [-33, 0]
+Function: paint_down_to_common {return index 0}
+  [-33, 0]
+Function: clear_commit_marks {return index 0}
+  [-1, -1]
+Function: clear_commit_marks_many {return index 0}
+  [-1, -1]
+Function: remove_redundant {return index 0}
+  [-33, -1]
+Function: git_merge_bases_many {return index 0}
+  [-3, -1]
+Function: git_merge_base_octopus {return index 0}
+  [-3, -1]
+Function: merge_bases {return index 0}
+  [-3, -1]
+Function: git_merge_base {return index 0}
+  [-3, 0]
+Function: git_merge_bases {return index 0}
+  [-1, -1]
+Function: git_repository_mergehead_foreach {return index 0}
+  [-14, 0]
+Function: git_merge_diff_list__find_renames {return index 0}
+  [-33, -1]
+Function: deletes_by_oid_enqueue {return index 0}
+  [0, 0]
+Function: deletes_by_oid_dequeue {return index 0}
+  [-3, -3]
+Function: index_entry_similarity_calc {return index 0}
+  [-33, -1]
+Function: git_merge_deletes_oidmap__resize {return index 0}
+  [-1, -1]
+Function: git_merge_diff_list__find_differences {return index 0}
+  [-33, -1]
+Function: queue_difference {return index 0}
+  [-1, -1]
+Function: git_merge_diff_list__alloc {return index 0}
+  [0, 0]
+Function: git_merge__iterators {return index 0}
+  [-14, -1]
+Function: merge_conflict_invoke_driver {return index 0}
+  [-24, -24] U [-21, -1]
+Function: index_from_diff_list {return index 0}
+  [-14, -1]
+Function: git_merge_trees {return index 0}
+  [-2147483648, -1]
+Function: git_merge_commits {return index 0}
+  [-2147483648, -1]
+Function: merge_annotated_commits {return index 0}
+  [-2147483648, -1]
+Function: insert_head_ids {return index 0}
+  [-1, -1]
+Function: iterator_for_annotated_commit {return index 0}
+  [-33, -1]
+Function: git_merge__setup {return index 0}
+  [-2147483648, -1]
+Function: write_merge_msg {return index 0}
+  [-1, -1]
+Function: merge_msg_write_entries {return index 0}
+  [-1, -1]
+Function: msg_entry_is_tracking {return index 0}
+  [0, 0]
+Function: merge_msg_entries {return index 0}
+  EMPTY
+Function: msg_entry_is_tag {return index 0}
+  [0, 0]
+Function: git_merge__check_result {return index 0}
+  [-2147483648, -1]
+Function: git_merge__append_conflicts_to_merge_msg {return index 0}
+  [-2147483648, 0]
+Function: git_merge_analysis_for_ref {return index 0}
+  [-39, -1]
+Function: merge_heads {return index 0}
+  [-39, -1]
+Function: git_merge_analysis {return index 0}
+  [-39, -1]
+Function: git_merge {return index 0}
+  [-2147483648, 0]
+Function: llhttp__internal__run {return index 0}
+  [0, 0]
+Function: llparse__match_sequence_id {return index 0}
+  [0, 0] U [2, 2]
+Function: _pcre_find_bracket {return index 0}
+  EMPTY
+Function: compile_regex {return index 0}
+  [0, 0]
+Function: find_fixedlength {return index 0}
+  [-4, -1]
+Function: is_anchored {return index 0}
+  [0, 0]
+Function: is_startline {return index 0}
+  [0, 0]
+Function: get_chr_property_list {return index 0}
+  [0, 0]
+Function: compare_opcodes {return index 0}
+  [0, 0]
+Function: compile_branch {return index 0}
+  [0, 0]
+Function: check_escape {return index 0}
+  EMPTY
+Function: check_posix_syntax {return index 0}
+  [1, 1]
+Function: is_counted_repeat {return index 0}
+  [0, 0]
+Function: expand_workspace {return index 0}
+  [1, 72]
+Function: could_be_empty {return index 0}
+  [1, 1]
+Function: internal_dfa_exec {return index 0}
+  [-26, 1]
+Function: match {return index 0}
+  [-999, -999] U [-996, -995] U [-993, -992] U [0, 1]
+Function: match_ref {return index 0}
+  EMPTY
+Function: pcre_fullinfo {return index 0}
+  [-33, -1]
+Function: pcre_get_stringnumber {return index 0}
+  [-33, -1]
+Function: pcre_get_stringtable_entries {return index 0}
+  [-2147483648, 0]
+Function: pcre_copy_named_substring {return index 0}
+  [-2147483648, 0]
+Function: pcre_get_named_substring {return index 0}
+  [-2147483648, 0]
+Function: _pcre_is_newline {return index 0}
+  [1, 1]
+Function: _pcre_was_newline {return index 0}
+  EMPTY
+Function: pcre_study {return index 0}
+  [0, 0]
+Function: set_start_bits {return index 0}
+  [0, 0] U [3, 3]
+Function: find_minlength {return index 0}
+  [-3, -1]
+Function: xdl_do_diff {return index 0}
+  [-1, -1]
+Function: xdl_change_compact {return index 0}
+  [-1, -1]
+Function: xdl_build_script {return index 0}
+  [-1, -1]
+Function: xdl_diff {return index 0}
+  [-1, -1]
+Function: get_func_line {return index 0}
+  [-1, -1]
+Function: xdl_do_histogram_diff {return index 0}
+  [-1, -1]
+Function: histogram_diff {return index 0}
+  [-1, -1]
+Function: xdl_merge {return index 0}
+  [-1, -1]
+Function: xdl_do_merge {return index 0}
+  [-1, -1]
+Function: xdl_do_patience_diff {return index 0}
+  [-1, -1]
+Function: patience_diff {return index 0}
+  [-1, -1]
+Function: xdl_prepare_env {return index 0}
+  [-1, -1]
+Function: xdl_prepare_ctx {return index 0}
+  [-1, -1]
+Function: xdl_emit_diffrec {return index 0}
+  EMPTY
+Function: xdl_mmfile_first {return index 0}
+  [0, 0]
+Function: xdl_cha_init {return index 0}
+  EMPTY
+Function: xdl_cha_alloc {return index 0}
+  [0, 0]
+Function: xdl_recmatch {return index 0}
+  EMPTY
+Function: xdl_emit_hunk_hdr {return index 0}
+  EMPTY
+Function: xdl_fall_back_diff {return index 0}
+  [-1, -1]
+Function: xdl_alloc_grow_helper {return index 0}
+  [0, 0]
+Function: reftable_malloc {return index 0}
+  [0, 0]
+Function: reftable_realloc {return index 0}
+  [0, 0]
+Function: reftable_calloc {return index 0}
+  [0, 0]
+Function: reftable_strdup {return index 0}
+  [0, 0]
+Function: reftable_buf_setlen {return index 0}
+  [-1, -1]
+Function: reftable_buf_cmp {return index 0}
+  [-255, -1] U [1, 255]
+Function: reftable_buf_add {return index 0}
+  [-13, -1]
+Function: reftable_buf_addstr {return index 0}
+  [-13, -1]
+Function: binsearch {return index 0}
+  [0, 0]
+Function: names_length {return index 0}
+  [0, 0]
+Function: names_equal {return index 0}
+  [0, 0]
+Function: block_writer_init {return index 0}
+  [-13, -1]
+Function: block_writer_type {return index 0}
+  EMPTY
+Function: block_writer_add {return index 0}
+  [-21, -1]
+Function: block_writer_finish {return index 0}
+  [-13, -7]
+Function: reftable_block_init {return index 0}
+  [0, 1]
+Function: reftable_block_first_key {return index 0}
+  [-13, -1]
+Function: block_iter_next {return index 0}
+  [-3, 0]
+Function: block_iter_seek_key {return index 0}
+  [-13, -1]
+Function: restart_needle_less {return index 0}
+  [-1, -1] U [1, 1]
+Function: block_iter_seek_void {return index 0}
+  [-13, -1]
+Function: block_iter_next_void {return index 0}
+  [-3, -1] U [1, 1]
+Function: block_source_read_data {return index 0}
+  [-1, -1]
+Function: reftable_buf_read_data {return index 0}
+  [-1, -1]
+Function: reftable_block_source_from_file {return index 0}
+  [-13, -1]
+Function: table_check_name {return index 0}
+  [0, 0]
+Function: iterator_seek {return index 0}
+  [-13, -1] U [1, 1]
+Function: iterator_next {return index 0}
+  [-13, -1] U [1, 1]
+Function: empty_iterator_next {return index 0}
+  [1, 1]
+Function: filtering_ref_iterator_seek {return index 0}
+  [-13, 1]
+Function: filtering_ref_iterator_next {return index 0}
+  [-13, -1] U [1, 1]
+Function: indexed_table_ref_iter_new {return index 0}
+  [-13, -1]
+Function: indexed_table_ref_iter_next {return index 0}
+  [-13, -1] U [1, 1]
+Function: reftable_iterator_seek_ref {return index 0}
+  [-13, -1]
+Function: reftable_iterator_next_ref {return index 0}
+  [1, 1]
+Function: reftable_iterator_seek_log_at {return index 0}
+  [-13, 1]
+Function: reftable_iterator_seek_log {return index 0}
+  [-13, -1]
+Function: reftable_iterator_next_log {return index 0}
+  [1, 1]
+Function: reftable_merged_table_new {return index 0}
+  [-13, -1]
+Function: merged_table_init_iter {return index 0}
+  [-13, -1]
+Function: merged_iter_seek_void {return index 0}
+  [-13, 1]
+Function: merged_iter_next_void {return index 0}
+  [-13, -1] U [1, 1]
+Function: reftable_merged_table_init_ref_iterator {return index 0}
+  [-13, -1]
+Function: reftable_merged_table_init_log_iterator {return index 0}
+  [-13, -1]
+Function: pq_less {return index 0}
+  [-1, -1]
+Function: merged_iter_pqueue_remove {return index 0}
+  [-1, -1]
+Function: merged_iter_pqueue_add {return index 0}
+  [0, 0]
+Function: get_var_int {return index 0}
+  [-2147483648, -1]
+Function: reftable_is_block_type {return index 0}
+  [0, 0]
+Function: reftable_ref_record_val1 {return index 0}
+  [0, 0]
+Function: reftable_ref_record_val2 {return index 0}
+  [0, 0]
+Function: reftable_encode_key {return index 0}
+  [-11, -11]
+Function: reftable_decode_key {return index 0}
+  [-13, -1]
+Function: reftable_log_record_equal {return index 0}
+  [0, 1]
+Function: reftable_record_key {return index 0}
+  [-13, -1]
+Function: reftable_ref_record_key {return index 0}
+  [-13, -1]
+Function: reftable_ref_record_copy_from {return index 0}
+  [-13, -13]
+Function: reftable_ref_record_encode {return index 0}
+  [-11, -11]
+Function: reftable_ref_record_decode {return index 0}
+  [-13, -13] U [-3, -3]
+Function: reftable_ref_record_equal_void {return index 0}
+  [0, 1]
+Function: reftable_ref_record_cmp_void {return index 0}
+  [0, 0]
+Function: reftable_ref_record_equal {return index 0}
+  [0, 1]
+Function: reftable_log_record_key {return index 0}
+  [-13, -1]
+Function: reftable_log_record_copy_from {return index 0}
+  [-13, -13]
+Function: reftable_log_record_encode {return index 0}
+  [-11, -1]
+Function: reftable_log_record_decode {return index 0}
+  [-13, -13] U [-3, -3]
+Function: reftable_log_record_equal_void {return index 0}
+  [0, 1]
+Function: reftable_log_record_cmp_void {return index 0}
+  [0, 0]
+Function: decode_string {return index 0}
+  [-13, -1]
+Function: reftable_index_record_key {return index 0}
+  [-13, -1]
+Function: reftable_index_record_copy_from {return index 0}
+  [-13, -1]
+Function: reftable_index_record_encode {return index 0}
+  [-11, -1]
+Function: reftable_index_record_decode {return index 0}
+  [-13, -1]
+Function: reftable_index_record_equal {return index 0}
+  [1, 1]
+Function: reftable_index_record_cmp {return index 0}
+  [0, 255]
+Function: reftable_obj_record_key {return index 0}
+  [-13, -1]
+Function: reftable_obj_record_copy_from {return index 0}
+  [-13, -13]
+Function: reftable_obj_record_encode {return index 0}
+  [-11, -11]
+Function: reftable_obj_record_decode {return index 0}
+  [-13, -13]
+Function: reftable_obj_record_cmp_void {return index 0}
+  EMPTY
+Function: reftable_record_encode {return index 0}
+  [-21, -1]
+Function: reftable_record_copy_from {return index 0}
+  [-13, -13]
+Function: reftable_record_decode {return index 0}
+  [-2147483648, -1]
+Function: reftable_record_is_deletion {return index 0}
+  [0, 0]
+Function: reftable_record_cmp {return index 0}
+  [-1, -1]
+Function: reftable_record_equal {return index 0}
+  [-13, -13]
+Function: reftable_ref_record_compare_name {return index 0}
+  [0, 0]
+Function: reftable_ref_record_is_deletion {return index 0}
+  [1, 1]
+Function: reftable_log_record_compare_key {return index 0}
+  [-1, -1]
+Function: reftable_log_record_is_deletion {return index 0}
+  [1, 1]
+Function: reftable_record_init {return index 0}
+  [-6, -1]
+Function: read_lines {return index 0}
+  [-2, -2]
+Function: git_tree_id {return index 0}
+  [0, 0]
+Function: git_tree_dup {return index 0}
+  EMPTY
+Function: git_tag_lookup {return index 0}
+  [-33, -1]
+Function: git_tag_lookup_prefix {return index 0}
+  [-33, -4] U [-2, 131]
+Function: git_tag_id {return index 0}
+  [0, 0]
+Function: git_tag_dup {return index 0}
+  EMPTY
+Function: git_blob_lookup {return index 0}
+  [-33, -1]
+Function: git_blob_lookup_prefix {return index 0}
+  [-33, -4] U [-2, 131]
+Function: fd_read_lines {return index 0}
+  [-13, -1]
+Function: reftable_stack_init_ref_iterator {return index 0}
+  [-13, -1]
+Function: reftable_stack_merged_table {return index 0}
+  [0, 0]
+Function: reftable_stack_init_log_iterator {return index 0}
+  [-13, -1]
+Function: reftable_new_stack {return index 0}
+  [0, 0]
+Function: reftable_stack_reload_maybe_reuse {return index 0}
+  [-13, -1]
+Function: reftable_stack_reload {return index 0}
+  [0, 1]
+Function: stack_uptodate {return index 0}
+  [-13, -1]
+Function: reftable_stack_add {return index 0}
+  [-2147483648, -1]
+Function: reftable_stack_init_addition {return index 0}
+  [-13, -1]
+Function: reftable_addition_add {return index 0}
+  [-13, -13] U [0, 2]
+Function: reftable_addition_commit {return index 0}
+  [-2147483648, -1]
+Function: reftable_stack_auto_compact {return index 0}
+  [-21, -1]
+Function: update_segment_if_compaction_required {return index 0}
+  [-13, -13]
+Function: stack_compact_locked {return index 0}
+  [-21, -1]
+Function: format_name {return index 0}
+  [-13, -1]
+Function: stack_filename {return index 0}
+  [-13, -1]
+Function: reftable_write_data {return index 0}
+  [-2, -2]
+Function: fd_writer_write {return index 0}
+  [-2, -1]
+Function: fd_writer_flush {return index 0}
+  [-1, -1]
+Function: reftable_alloc_grow {return index 0}
+  [0, 0]
+Function: reftable_stack_new_addition {return index 0}
+  [-13, -13] U [0, 0]
+Function: reftable_stack_compaction_required {return index 0}
+  [-13, -13]
+Function: reftable_stack_read_ref {return index 0}
+  [-13, -1] U [1, 1]
+Function: reftable_stack_read_log {return index 0}
+  [-13, -1] U [1, 1]
+Function: reftable_stack_clean {return index 0}
+  [-13, -13] U [0, 0]
+Function: tmpfile_from_pattern {return index 0}
+  [-13, -1]
+Function: tmpfile_close {return index 0}
+  [-2, -1]
+Function: tmpfile_delete {return index 0}
+  [-2, -2]
+Function: tmpfile_rename {return index 0}
+  [-6, -1]
+Function: flock_acquire {return index 0}
+  [-13, -1]
+Function: flock_close {return index 0}
+  [-2, -1]
+Function: flock_release {return index 0}
+  [-2, -1]
+Function: flock_commit {return index 0}
+  [-6, -1]
+Function: reftable_mmap {return index 0}
+  [-13, -1]
+Function: table_init_block {return index 0}
+  [-13, -1] U [1, 1]
+Function: table_init_iter {return index 0}
+  [-13, -1]
+Function: table_iter_seek_void {return index 0}
+  [-13, 1]
+Function: table_iter_next_void {return index 0}
+  [-13, -1] U [1, 1]
+Function: table_iter_next_block {return index 0}
+  [-13, -1] U [1, 1]
+Function: table_iter_seek_to {return index 0}
+  [0, 1]
+Function: table_iter_seek_linear {return index 0}
+  [-13, -1]
+Function: reftable_table_init_ref_iterator {return index 0}
+  [-13, -13]
+Function: reftable_table_init_log_iterator {return index 0}
+  [-13, -13]
+Function: reftable_table_new {return index 0}
+  [-13, -1]
+Function: parse_footer {return index 0}
+  [0, 0]
+Function: reftable_table_refs_for {return index 0}
+  [-13, -1] U [1, 1]
+Function: reftable_table_iterator_init {return index 0}
+  [-13, -13]
+Function: reftable_table_iterator_next {return index 0}
+  [-13, -1] U [1, 1]
+Function: tree_insert {return index 0}
+  [0, 0]
+Function: reftable_writer_new {return index 0}
+  [-13, -1]
+Function: reftable_writer_set_limits {return index 0}
+  [-6, -1]
+Function: reftable_writer_add_ref {return index 0}
+  [-21, -1]
+Function: writer_add_record {return index 0}
+  [-21, -1]
+Function: writer_index_hash {return index 0}
+  [-13, -1]
+Function: obj_index_tree_node_compare {return index 0}
+  [0, 255]
+Function: writer_flush_block {return index 0}
+  [-13, -1]
+Function: writer_reinit_block_writer {return index 0}
+  [-13, -1]
+Function: reftable_writer_add_refs {return index 0}
+  [-21, -1]
+Function: reftable_writer_add_log {return index 0}
+  [-21, -1]
+Function: writer_finish_public_section {return index 0}
+  [-21, -1]
+Function: writer_finish_section {return index 0}
+  [-21, -1]
+Function: reftable_writer_add_logs {return index 0}
+  [-21, -1]
+Function: reftable_writer_close {return index 0}
+  [-21, -1]
+Function: git_oid_global_init {return index 0}
+  [-1, -1]
+Function: git_oid_tostr_s {return index 0}
+  [0, 0]
+Function: git_oid_allocfmt {return index 0}
+  [0, 0]
+Function: git_oid_cpy {return index 0}
+  EMPTY
+Function: git_oid_cmp {return index 0}
+  [-255, -1] U [1, 255]
+Function: git_oid_equal {return index 0}
+  [0, 0]
+Function: git_oid_is_zero {return index 0}
+  [0, 0]
+Function: git_oid_iszero {return index 0}
+  [0, 0]
+Function: git_oid_shorten_new {return index 0}
+  [0, 0]
+Function: git_oid_shorten_add {return index 0}
+  [-1, -1]
+Function: git_oidarray__add {return index 0}
+  [-1, -1]
+Function: git_packbuilder_new {return index 0}
+  [-1, -1]
+Function: git_packbuilder_insert {return index 0}
+  [-33, -1]
+Function: rehash {return index 0}
+  [-1, -1]
+Function: git_packbuilder_pobjectmap_put {return index 0}
+  [-1, -1]
+Function: git_packbuilder_pobjectmap__resize {return index 0}
+  [-1, -1]
+Function: git_packbuilder__prepare {return index 0}
+  [-1, -1]
+Function: find_deltas {return index 0}
+  [-1, -1]
+Function: report_delta_progress {return index 0}
+  [0, 0]
+Function: git_packbuilder_foreach {return index 0}
+  [-1, -1]
+Function: write_pack {return index 0}
+  [-1, -1]
+Function: cb_tag_foreach {return index 0}
+  [0, 0]
+Function: write_one {return index 0}
+  [-33, -1]
+Function: git_packbuilder__write_buf {return index 0}
+  [-33, -1] U [1, 131]
+Function: write_pack_buf {return index 0}
+  [-1, -1]
+Function: git_packbuilder_write_buf {return index 0}
+  [-1, -1]
+Function: git_packbuilder_write {return index 0}
+  [-33, -1]
+Function: write_cb {return index 0}
+  [-30, -1]
+Function: git_packbuilder_insert_commit {return index 0}
+  [-1, -1]
+Function: git_packbuilder_insert_tree {return index 0}
+  [-33, -1]
+Function: cb_tree_walk {return index 0}
+  [-33, -1]
+Function: git_packbuilder_insert_recur {return index 0}
+  [-33, -1]
+Function: git_packbuilder_insert_walk {return index 0}
+  [-33, -1]
+Function: mark_tree_uninteresting {return index 0}
+  [-33, -1]
+Function: retrieve_object {return index 0}
+  [-1, -1]
+Function: pack_objects_insert_tree {return index 0}
+  [-33, -1]
+Function: git_packbuilder_walk_objectmap__resize {return index 0}
+  [-1, -1]
+Function: git_packbuilder_set_callbacks {return index 0}
+  [-1, -1]
+Function: git_pack_oidmap_contains {return index 0}
+  [0, 0]
+Function: git_pack_oidmap_remove {return index 0}
+  [-3, -3]
+Function: git_pack_oidmap_get {return index 0}
+  [-3, -3]
+Function: git_pack_oidmap_put {return index 0}
+  [-1, -1]
+Function: git_pack_oidmap__resize {return index 0}
+  [-1, -1]
+Function: git_pack_oidmap_iterate {return index 0}
+  [-31, -1]
+Function: git_packfile__object_header {return index 0}
+  [-1, -1]
+Function: git_packfile_unpack_header {return index 0}
+  [-6, -1]
+Function: packfile_open_locked {return index 0}
+  [-3, -3]
+Function: pack_index_open_locked {return index 0}
+  [-14, -1]
+Function: git_packfile_resolve_header {return index 0}
+  [-1, -1]
+Function: get_delta_base {return index 0}
+  [-30, -1]
+Function: pack_window_open {return index 0}
+  [0, 0]
+Function: pack_entry_find_offset {return index 0}
+  [-14, -1]
+Function: git_oid_raw_ncmp {return index 0}
+  [0, 0]
+Function: git_packfile_stream_open {return index 0}
+  [-1, -1]
+Function: git_packfile_unpack {return index 0}
+  EMPTY
+Function: packfile_unpack_compressed {return index 0}
+  [-1, -1]
+Function: git_pack_offsetmap__resize {return index 0}
+  [-1, -1]
+Function: git_packfile_stream_read {return index 0}
+  [-6, -6] U [0, 0]
+Function: git_packfile__name {return index 0}
+  [-3, -1]
+Function: git_packfile_alloc {return index 0}
+  [-3, -3]
+Function: cache_init {return index 0}
+  [-1, -1]
+Function: git_pack_foreach_entry {return index 0}
+  [-33, -1] U [1, 131]
+Function: git__memcmp4 {return index 0}
+  [-255, -1] U [1, 255]
+Function: git_pack_foreach_entry_offset {return index 0}
+  [-14, -1]
+Function: git_pack_entry_find {return index 0}
+  [-5, -5] U [0, 0]
+Function: git_parse_ctx_init {return index 0}
+  EMPTY
+Function: git_parse_advance_expected {return index 0}
+  [-1, -1]
+Function: git_parse_advance_ws {return index 0}
+  [-1, -1]
+Function: git_parse_advance_nl {return index 0}
+  [-1, -1]
+Function: git_parse_advance_digit {return index 0}
+  [-1, -1]
+Function: git_parse_advance_oid {return index 0}
+  EMPTY
+Function: git_parse_peek {return index 0}
+  [0, 0]
+Function: git_patch__invoke_callbacks {return index 0}
+  [-1, 0]
+Function: git_patch_from_diff {return index 0}
+  [-1, -1]
+Function: git_diff_blobs {return index 0}
+  [-2147483648, -1] U [1, 2147483646]
+Function: patch_generated_from_sources {return index 0}
+  [-2147483648, -1] U [1, 2147483646]
+Function: patch_generated_normalize_options {return index 0}
+  [-1, -1]
+Function: patch_generated_create {return index 0}
+  [-21, 0]
+Function: create_binary {return index 0}
+  [-21, -1]
+Function: git_patch_from_blobs {return index 0}
+  [-1, -1]
+Function: patch_from_sources {return index 0}
+  [-1, -1]
+Function: patch_generated_binary_cb {return index 0}
+  [-1, -1]
+Function: git_patch_hunk_cb {return index 0}
+  [-1, -1]
+Function: patch_generated_line_cb {return index 0}
+  [-1, -1]
+Function: git_diff_blob_to_buffer {return index 0}
+  [-2147483648, -1] U [1, 2147483646]
+Function: git_patch_from_blob_and_buffer {return index 0}
+  [-1, -1]
+Function: git_diff_buffers {return index 0}
+  [-2147483648, -1] U [1, 2147483646]
+Function: git_patch_from_buffers {return index 0}
+  [-1, -1]
+Function: git_patch_generated_from_diff {return index 0}
+  [-21, 0]
+Function: git_patch_generated_old_data {return index 0}
+  [-1, -1]
+Function: git_patch_generated_new_data {return index 0}
+  [-1, -1]
+Function: git_patch_parse_ctx_init {return index 0}
+  [0, 0]
+Function: git_patch_parse {return index 0}
+  [-2, 0]
+Function: parse_hunk_header {return index 0}
+  [-1, -1]
+Function: parse_patch_binary_side {return index 0}
+  [-1, -1]
+Function: parse_header_start {return index 0}
+  [-1, -1]
+Function: parse_header_git_deletedfilemode {return index 0}
+  [-1, -1]
+Function: parse_header_git_newfilemode {return index 0}
+  [-1, -1]
+Function: parse_header_git_oldmode {return index 0}
+  [-1, -1]
+Function: parse_header_git_newmode {return index 0}
+  [-1, -1]
+Function: parse_header_git_index {return index 0}
+  [-1, -1]
+Function: parse_header_git_oldpath {return index 0}
+  [-1, -1]
+Function: parse_header_git_newpath {return index 0}
+  [-1, -1]
+Function: parse_header_similarity {return index 0}
+  [-1, -1]
+Function: parse_header_dissimilarity {return index 0}
+  [-1, -1]
+Function: parse_header_renamefrom {return index 0}
+  [-1, -1]
+Function: parse_header_copyfrom {return index 0}
+  [-1, -1]
+Function: parse_header_renameto {return index 0}
+  [-1, -1]
+Function: parse_header_copyto {return index 0}
+  [-1, -1]
+Function: parse_header_rename {return index 0}
+  [-1, -1]
+Function: parse_header_path_buf {return index 0}
+  [-1, -1]
+Function: parse_header_oid {return index 0}
+  [-1, -1]
+Function: parse_header_path {return index 0}
+  [-1, -1]
+Function: git_patch_from_buffer {return index 0}
+  [-1, -1]
+Function: validate_repo_component {return index 0}
+  [0, 0]
+Function: next_hfs_char {return index 0}
+  [-1, 0]
+Function: git_path_is_gitfile {return index 0}
+  [1, 1]
+Function: git_pathspec_prefix {return index 0}
+  [0, 0]
+Function: git_pathspec__vinit {return index 0}
+  [-3, -1]
+Function: git_pathspec__init {return index 0}
+  [-3, -1]
+Function: git_pathspec_new {return index 0}
+  [-3, -1]
+Function: git_pathspec_match_workdir {return index 0}
+  [-2147483648, -1]
+Function: pathspec_match_from_iterator {return index 0}
+  [-1, -1]
+Function: pathspec_build_failure_array {return index 0}
+  [-1, -1]
+Function: git_pathspec_match_index {return index 0}
+  [-14, -1]
+Function: git_pathspec_match_tree {return index 0}
+  [-14, -1]
+Function: git_pathspec_match_diff {return index 0}
+  [-1, -1]
+Function: git_proxy_options_dup {return index 0}
+  [-1, -1]
+Function: git_push_new {return index 0}
+  [-1, -1]
+Function: push_spec_rref_cmp {return index 0}
+  [0, 0]
+Function: git_repository_open_bare {return index 0}
+  [-40, 0]
+Function: is_valid_repository_path {return index 0}
+  [-14, -1]
+Function: read_repository_format {return index 0}
+  [-40, 0]
+Function: git_repository__item_path {return index 0}
+  [-3, -1]
+Function: check_valid_extension {return index 0}
+  [0, 0]
+Function: git_repository_open_ext {return index 0}
+  [-40, -1]
+Function: find_repo {return index 0}
+  [0, 2147483646]
+Function: load_grafts {return index 0}
+  [-14, -1]
+Function: git_repository_config_snapshot {return index 0}
+  [-12, -1]
+Function: load_config_data {return index 0}
+  [0, 0]
+Function: load_workdir {return index 0}
+  [-12, -1]
+Function: repo_load_namespace {return index 0}
+  [-1, -1]
+Function: load_config {return index 0}
+  [-12, -1]
+Function: validate_ownership_cb {return index 0}
+  [0, 0]
+Function: git_repository_config__weakptr {return index 0}
+  [-12, -1]
+Function: git_repository_open {return index 0}
+  [-40, -1]
+Function: git_repository_open_from_worktree {return index 0}
+  [-40, -1]
+Function: git_repository_wrap_odb {return index 0}
+  [-1, -1]
+Function: git_repository_discover {return index 0}
+  [-1, 2147483646]
+Function: git_repository_config {return index 0}
+  [-1, -1]
+Function: git_repository_odb__weakptr {return index 0}
+  [-3, -1]
+Function: git_repository_odb {return index 0}
+  [-1, -1]
+Function: git_repository_refdb__weakptr {return index 0}
+  [-39, -1]
+Function: git_repository_refdb {return index 0}
+  [-1, -1]
+Function: git_repository_index__weakptr {return index 0}
+  [-14, -1]
+Function: git_repository_index {return index 0}
+  [-1, -1]
+Function: git_repository_set_index {return index 0}
+  [0, 0]
+Function: git_repository_set_namespace {return index 0}
+  [-1, -1]
+Function: git_repository__set_objectformat {return index 0}
+  [-1, -1]
+Function: git_repository_is_empty {return index 0}
+  [0, 0]
+Function: git_repository_initialbranch {return index 0}
+  [-12, -1]
+Function: git_repository__extensions {return index 0}
+  [-1, -1]
+Function: git_repository__set_extensions {return index 0}
+  [-1, 0]
+Function: dup_ext_err {return index 0}
+  [-4, -4]
+Function: git_repository_reinit_filesystem {return index 0}
+  [-40, -1]
+Function: repo_local_config {return index 0}
+  [-12, -1]
+Function: repo_init_fs_configs {return index 0}
+  [-40, -1]
+Function: git_repository_workdir {return index 0}
+  [0, 0]
+Function: git_repository_init {return index 0}
+  [-1, -1]
+Function: git_repository_init_ext {return index 0}
+  [-2147483648, -1]
+Function: repo_init_config {return index 0}
+  [-40, -1]
+Function: get_initial_head {return index 0}
+  [-1, -1]
+Function: repo_write_gitlink {return index 0}
+  [-3, -1]
+Function: repo_write_template {return index 0}
+  [-1, -1]
+Function: repo_init_create_origin {return index 0}
+  [-1, -1]
+Function: git_repository_head_detached {return index 0}
+  [-1, -1]
+Function: git_repository_head_detached_for_worktree {return index 0}
+  [-40, 0]
+Function: git_repository_head_for_worktree {return index 0}
+  [-40, 0]
+Function: git_repository_head {return index 0}
+  [-39, -1]
+Function: git_repository_foreach_worktree {return index 0}
+  [1, 1]
+Function: git_repository_head_unborn {return index 0}
+  [-1, -1] U [1, 1]
+Function: git_repository_item_path {return index 0}
+  [-3, -1]
+Function: git_repository_workdir_path {return index 0}
+  [-8, -1]
+Function: git_repository_set_workdir {return index 0}
+  [-1, 0]
+Function: git_repository_is_bare {return index 0}
+  [-1, -1]
+Function: git_repository_is_worktree {return index 0}
+  EMPTY
+Function: git_repository_set_bare {return index 0}
+  [-40, -1]
+Function: git_repository_head_commit {return index 0}
+  [-39, -1]
+Function: git_repository_head_tree {return index 0}
+  [-39, -1]
+Function: git_repository__set_orig_head {return index 0}
+  [-39, -1]
+Function: git_repository_message {return index 0}
+  [-14, -1]
+Function: git_repository_message_remove {return index 0}
+  [-1, -1]
+Function: git_repository_hashfile {return index 0}
+  [-2147483648, -1]
+Function: git_repository_set_head {return index 0}
+  [-39, 0]
+Function: checkout_message {return index 0}
+  [-1, -1]
+Function: detach {return index 0}
+  [-39, 0]
+Function: git_repository_set_head_detached {return index 0}
+  [-39, -1]
+Function: git_repository_set_head_detached_from_annotated {return index 0}
+  [-1, -1]
+Function: git_repository_detach_head {return index 0}
+  [-39, -1]
+Function: git_repository_state {return index 0}
+  [1, 1]
+Function: git_repository__cleanup_files {return index 0}
+  [-2147483648, -1]
+Function: git_repository_state_cleanup {return index 0}
+  [-2147483648, -1]
+Function: git_repository__shallow_roots {return index 0}
+  [-14, -1]
+Function: git_repository__shallow_roots_write {return index 0}
+  [-2147483648, -1]
+Function: git_repository_is_shallow {return index 0}
+  [0, 0]
+Function: git_repository_set_ident {return index 0}
+  [-1, -1]
+Function: git_repository_submodule_cache_all {return index 0}
+  [-1, -1]
+Function: git_repository_commit_parents {return index 0}
+  [0, 131]
+Function: insert_mergehead {return index 0}
+  [0, 0]
+Function: git_repository__abbrev_length {return index 0}
+  [-12, -1]
+Function: git_reset_default {return index 0}
+  [-2147483648, 0]
+Function: git_reset {return index 0}
+  [-2147483648, -1]
+Function: reset {return index 0}
+  [-10, -10]
+Function: git_reset_from_annotated {return index 0}
+  [-10, -10]
+Function: git_revert_commit {return index 0}
+  [-2147483648, -1]
+Function: git_revert {return index 0}
+  [-1, 0]
+Function: git_revparse_ext {return index 0}
+  [-40, -1]
+Function: ensure_base_rev_loaded {return index 0}
+  [0, 131]
+Function: handle_grep_syntax {return index 0}
+  [-33, -1]
+Function: extract_how_many {return index 0}
+  [0, 0]
+Function: retrieve_revobject_from_reflog {return index 0}
+  [-39, 0]
+Function: git_revparse_single {return index 0}
+  [-40, -1]
+Function: git_revparse {return index 0}
+  [-40, -1] U [1, 131]
+Function: git_revwalk__commit_lookup {return index 0}
+  [0, 0]
+Function: git_revwalk_oidmap__resize {return index 0}
+  [-1, -1]
+Function: git_revwalk__push_commit {return index 0}
+  [-33, -1] U [1, 131]
+Function: git_revwalk_push {return index 0}
+  [-33, -1]
+Function: git_revwalk_hide {return index 0}
+  [-33, -1] U [1, 131]
+Function: git_revwalk__push_ref {return index 0}
+  [-33, -1] U [1, 131]
+Function: git_revwalk__push_glob {return index 0}
+  [-33, -1]
+Function: git_revwalk_push_glob {return index 0}
+  [-33, -1]
+Function: git_revwalk_hide_glob {return index 0}
+  [-33, -1]
+Function: git_revwalk_push_head {return index 0}
+  [-33, -1] U [1, 131]
+Function: git_revwalk_hide_head {return index 0}
+  [-33, -1] U [1, 131]
+Function: git_revwalk_push_ref {return index 0}
+  [-33, -1] U [1, 131]
+Function: git_revwalk_push_range {return index 0}
+  [-40, -1] U [1, 131]
+Function: git_revwalk_hide_ref {return index 0}
+  [-33, -1] U [1, 131]
+Function: git_revwalk_new {return index 0}
+  [-1, -1]
+Function: revwalk_next_unsorted {return index 0}
+  [-31, -31]
+Function: revwalk_enqueue_unsorted {return index 0}
+  [-1, -1]
+Function: add_parents_to_list {return index 0}
+  [-33, -1]
+Function: revwalk_next_timesort {return index 0}
+  [-31, -31]
+Function: revwalk_enqueue_timesort {return index 0}
+  [-1, -1]
+Function: git_revwalk_next {return index 0}
+  [-33, 0]
+Function: revwalk_next_toposort {return index 0}
+  [-31, -31]
+Function: git_settings_global_init {return index 0}
+  [-1, -1]
+Function: git_libgit2_opts {return index 0}
+  [-1, 0]
+Function: config_level_to_sysdir {return index 0}
+  [-1, -1]
+Function: git_signature_new {return index 0}
+  [-1, -1]
+Function: git_signature_dup {return index 0}
+  [-1, -1]
+Function: git_signature__pdup {return index 0}
+  [-1, -1]
+Function: git_signature_now {return index 0}
+  [-1, -1]
+Function: git_signature_default {return index 0}
+  [-12, -1]
+Function: git_signature_default_from_env {return index 0}
+  [-12, -1]
+Function: user_from_env {return index 0}
+  [-12, -1]
+Function: git_signature__parse {return index 0}
+  [-21, -1]
+Function: git_signature_from_buffer {return index 0}
+  [-1, -1]
+Function: git_signature__equal {return index 0}
+  [0, 0]
+Function: git_stash_save {return index 0}
+  [-2147483648, 0]
+Function: git_stash_save_with_opts {return index 0}
+  [-2147483648, 0]
+Function: is_dirty_cb {return index 0}
+  [-30, -30]
+Function: has_changes_cb {return index 0}
+  [-3, -1]
+Function: commit_untracked {return index 0}
+  [-2147483648, -1]
+Function: prepare_worktree_commit_message {return index 0}
+  [-1, -1]
+Function: commit_worktree {return index 0}
+  [-2147483648, -1]
+Function: retrieve_head {return index 0}
+  [-39, -1]
+Function: stash_update_index_from_paths {return index 0}
+  [-2147483648, -1]
+Function: build_stash_commit_from_index {return index 0}
+  [-39, -1]
+Function: update_reflog {return index 0}
+  [-39, -1]
+Function: reset_index_and_workdir {return index 0}
+  [-2147483648, -1]
+Function: stash_to_index {return index 0}
+  [-2147483648, -1]
+Function: stash_delta_merge {return index 0}
+  [0, 0]
+Function: stash_update_index_from_diff {return index 0}
+  [0, 1]
+Function: git_stash_apply {return index 0}
+  [-2147483648, 0]
+Function: merge_index_and_tree {return index 0}
+  [-2147483648, -1]
+Function: stage_new_files {return index 0}
+  [-33, -1]
+Function: merge_indexes {return index 0}
+  [-2147483648, -1]
+Function: stage_new_file {return index 0}
+  [-4, -1]
+Function: git_stash_foreach {return index 0}
+  [0, 0]
+Function: git_stash_drop {return index 0}
+  [-39, 0]
+Function: git_status_list_new {return index 0}
+  [-2147483648, -1]
+Function: status_entry_cmp {return index 0}
+  [0, 0]
+Function: status_entry_icmp {return index 0}
+  EMPTY
+Function: status_collect {return index 0}
+  [-1, -1]
+Function: git_status_list_entrycount {return index 0}
+  [0, 0]
+Function: git_status_foreach_ext {return index 0}
+  [-2147483648, -1]
+Function: git_status_foreach {return index 0}
+  [-2147483648, -1]
+Function: git_status_file {return index 0}
+  [-1, -1]
+Function: get_one_status {return index 0}
+  [-5, -1]
+Function: git_status_should_ignore {return index 0}
+  [-2147483648, -1]
+Function: git_strarray_copy {return index 0}
+  [-1, -1]
+Function: git_stream_registry_global_init {return index 0}
+  [-1, -1]
+Function: git_stream_registry_lookup {return index 0}
+  [-3, -3] U [0, 0]
+Function: git_socket_stream_new {return index 0}
+  [-3, -1]
+Function: default_socket_stream_new {return index 0}
+  [-1, -1]
+Function: socket_connect {return index 0}
+  [-1, -1]
+Function: socket_read {return index 0}
+  [-1, -1]
+Function: socket_close {return index 0}
+  [-1, -1]
+Function: git_submodule_cache_init {return index 0}
+  [-1, -1]
+Function: git_submodule__map {return index 0}
+  [-40, -1]
+Function: gitmodules_snapshot {return index 0}
+  [-8, -1]
+Function: submodule_load_each {return index 0}
+  [0, 0]
+Function: load_submodule_names {return index 0}
+  [-1, -1] U [1, 1]
+Function: submodule_get_or_create {return index 0}
+  [-1, -1]
+Function: git_submodule_cache_put {return index 0}
+  [-1, -1]
+Function: git_submodule_cache__resize {return index 0}
+  [-1, -1]
+Function: git_submodule_name_is_valid {return index 0}
+  [-1, 0]
+Function: git_submodule_namemap__resize {return index 0}
+  [-1, -1]
+Function: submodule_read_config {return index 0}
+  [-12, -1]
+Function: git_submodule_lookup {return index 0}
+  [-40, -1]
+Function: git_submodule__lookup_with_cache {return index 0}
+  [-40, -1]
+Function: git_submodule_reload {return index 0}
+  [-12, -1]
+Function: open_gitmodules {return index 0}
+  [0, 0]
+Function: find_by_path {return index 0}
+  [0, 0]
+Function: git_path_validate_str_length.3823 {return index 0}
+  [-1, -1]
+Function: git_submodule_foreach {return index 0}
+  [-1, -1]
+Function: submodule_cmp {return index 0}
+  [0, 0]
+Function: git_submodule_resolve_url {return index 0}
+  [-40, -1]
+Function: git_submodule__resolve_url {return index 0}
+  [-1, 1]
+Function: lookup_default_remote {return index 0}
+  [-40, -1]
+Function: lookup_head_remote_key {return index 0}
+  [-40, -1] U [1, 1]
+Function: git_submodule_add_setup {return index 0}
+  [-1, -1]
+Function: submodule_config_key_trunc_puts {return index 0}
+  [-1, -1]
+Function: submodule_repo_init {return index 0}
+  [-2147483648, -1]
+Function: git_submodule_init {return index 0}
+  [-40, -1]
+Function: git_submodule_repo_init {return index 0}
+  [-2147483648, -1]
+Function: git_submodule_clone {return index 0}
+  [-2147483648, -1]
+Function: clone_return_repo {return index 0}
+  [-40, -1]
+Function: clone_return_origin {return index 0}
+  [-40, -1]
+Function: git_submodule__open {return index 0}
+  [-40, -1]
+Function: git_submodule_add_finalize {return index 0}
+  [-2147483648, 0]
+Function: git_submodule_add_to_index {return index 0}
+  [-2147483648, 0]
+Function: git_submodule_open {return index 0}
+  [-40, -1]
+Function: git_submodule_set_branch {return index 0}
+  [-1, -1]
+Function: git_submodule_set_url {return index 0}
+  [-1, -1]
+Function: git_submodule_head_id {return index 0}
+  [-2147483648, -1] U [1, 2147483647]
+Function: git_submodule_wd_id {return index 0}
+  EMPTY
+Function: git_submodule_open_bare {return index 0}
+  [-40, -1]
+Function: git_submodule_ignore {return index 0}
+  EMPTY
+Function: git_submodule_set_ignore {return index 0}
+  [-1, -1]
+Function: write_mapped_var {return index 0}
+  [-1, -1]
+Function: git_submodule_set_update {return index 0}
+  [-1, -1]
+Function: git_submodule_set_fetch_recurse_submodules {return index 0}
+  [-1, -1]
+Function: git_submodule_update {return index 0}
+  [-2147483648, 0]
+Function: git_submodule_status {return index 0}
+  [-40, -1]
+Function: git_submodule_update_repo_init_cb {return index 0}
+  [-2147483648, -1]
+Function: git_submodule__status {return index 0}
+  [-1, -1]
+Function: git_submodule_sync {return index 0}
+  [-40, -1]
+Function: git_submodule_parse_ignore {return index 0}
+  [-1, -1]
+Function: git_submodule_parse_update {return index 0}
+  [-1, -1]
+Function: git_sysdir_global_init {return index 0}
+  [-1, -1]
+Function: git_sysdir_guess_system_dirs {return index 0}
+  [-1, -1]
+Function: git_sysdir_guess_global_dirs {return index 0}
+  [-1, 0]
+Function: git_sysdir_guess_xdg_dirs {return index 0}
+  [-1, -1]
+Function: git_sysdir_guess_template_dirs {return index 0}
+  [-1, -1]
+Function: git_sysdir_guess_home_dirs {return index 0}
+  [-1, 0]
+Function: get_passwd_home {return index 0}
+  [0, 0]
+Function: git_sysdir_get {return index 0}
+  [-1, -1]
+Function: git_sysdir_find_system_file {return index 0}
+  EMPTY
+Function: git_sysdir_find_in_dirlist {return index 0}
+  [-1, -1]
+Function: git_sysdir_find_global_file {return index 0}
+  EMPTY
+Function: git_sysdir_find_xdg_file {return index 0}
+  [0, 0]
+Function: git_sysdir_find_programdata_file {return index 0}
+  [-3, -1]
+Function: git_sysdir_find_template_dir {return index 0}
+  [-1, -1]
+Function: git_sysdir_find_homedir {return index 0}
+  [-1, -1]
+Function: git_sysdir_expand_global_file {return index 0}
+  [-1, -1]
+Function: git_sysdir_expand_homedir_file {return index 0}
+  [0, 0]
+Function: git_tag_target {return index 0}
+  [-33, -1]
+Function: git_tag_name {return index 0}
+  [0, 0]
+Function: git_tag__parse_raw {return index 0}
+  [-21, -1]
+Function: tag_parse {return index 0}
+  [-21, -1]
+Function: git_tag__parse {return index 0}
+  [-21, -1]
+Function: git_tag_create {return index 0}
+  [-1, -1]
+Function: git_tag_create__internal {return index 0}
+  [-39, 0]
+Function: write_tag_annotation {return index 0}
+  [-1, -1]
+Function: git_tag_annotation_create {return index 0}
+  [-1, -1]
+Function: git_tag_create_lightweight {return index 0}
+  [-1, -1]
+Function: git_tag_create_from_buffer {return index 0}
+  [-39, 0]
+Function: git_tag_delete {return index 0}
+  [-39, -1]
+Function: git_tag_foreach {return index 0}
+  [-2147483648, -1]
+Function: tags_cb {return index 0}
+  [-39, 0]
+Function: git_tag_list_match {return index 0}
+  [0, 0]
+Function: tag_list_cb {return index 0}
+  [-1, -1]
+Function: git_tag_list {return index 0}
+  [0, 0]
+Function: git_tag_peel {return index 0}
+  [-33, -1] U [1, 131]
+Function: git_tag_name_is_valid {return index 0}
+  [-12, -1]
+Function: git_tag_create_frombuffer {return index 0}
+  [-39, 0]
+Function: git_message_trailers {return index 0}
+  [-1, -1]
+Function: git_transaction_config_new {return index 0}
+  [-1, -1]
+Function: git_transaction_new {return index 0}
+  [-1, -1]
+Function: git_transaction_lock_ref {return index 0}
+  [-1, -1]
+Function: git_transaction_nodemap__resize {return index 0}
+  [-1, -1]
+Function: git_transaction_set_target {return index 0}
+  [0, 0]
+Function: find_locked {return index 0}
+  [-3, -1]
+Function: copy_common {return index 0}
+  [-1, -1]
+Function: git_transaction_set_symbolic_target {return index 0}
+  [-3, -1]
+Function: git_transaction_remove {return index 0}
+  [0, 0]
+Function: git_transaction_set_reflog {return index 0}
+  [-3, -1]
+Function: git_transaction_commit {return index 0}
+  [-1, -1]
+Function: git_transport_new {return index 0}
+  [0, 0]
+Function: transport_find_by_url {return index 0}
+  EMPTY
+Function: git_transport_register {return index 0}
+  [-1, -1]
+Function: git_transport_unregister {return index 0}
+  [-3, -1]
+Function: git_http_auth_basic {return index 0}
+  EMPTY
+Function: basic_next_token {return index 0}
+  [-16, -1]
+Function: git_http_auth_dummy {return index 0}
+  [-30, -30]
+Function: git_credential_userpass_plaintext_new {return index 0}
+  [-1, -1]
+Function: git_credential_ssh_key_new {return index 0}
+  [-1, -1]
+Function: git_credential_ssh_interactive_new {return index 0}
+  [-1, -1]
+Function: git_credential_ssh_key_from_agent {return index 0}
+  [-1, -1]
+Function: git_credential_ssh_custom_new {return index 0}
+  [-1, -1]
+Function: git_credential_default_new {return index 0}
+  [-1, -1]
+Function: git_credential_username_new {return index 0}
+  [-1, -1]
+Function: git_cred_userpass_plaintext_new {return index 0}
+  [-1, -1]
+Function: git_cred_default_new {return index 0}
+  [-1, -1]
+Function: git_cred_username_new {return index 0}
+  [-1, -1]
+Function: git_cred_ssh_key_new {return index 0}
+  [-1, -1]
+Function: git_cred_ssh_interactive_new {return index 0}
+  [-1, -1]
+Function: git_cred_ssh_key_from_agent {return index 0}
+  [-1, -1]
+Function: git_cred_ssh_custom_new {return index 0}
+  [-1, -1]
+Function: git_credential_userpass {return index 0}
+  [-1, -1]
+Function: git_cred_userpass {return index 0}
+  [-1, -1]
+Function: git_smart_subtransport_git {return index 0}
+  [-1, -1]
+Function: _git_action {return index 0}
+  [-1, -1]
+Function: git_proto_stream_read {return index 0}
+  [-1, -1]
+Function: git_proto_stream_write {return index 0}
+  [-1, -1]
+Function: send_command {return index 0}
+  [-1, -1]
+Function: git_smart_subtransport_http {return index 0}
+  [-1, -1]
+Function: http_action {return index 0}
+  [-1, -1]
+Function: http_stream_write {return index 0}
+  [-32, -1]
+Function: http_stream_read_response {return index 0}
+  [-16, -1]
+Function: http_stream_read {return index 0}
+  [-32, -1]
+Function: generate_request {return index 0}
+  [-12, -1]
+Function: handle_response {return index 0}
+  [-16, -1]
+Function: handle_auth {return index 0}
+  [0, 1]
+Function: handle_proxy_auth {return index 0}
+  [0, 1]
+Function: git_http_client_send_request {return index 0}
+  [-32, -1]
+Function: client_read_and_parse {return index 0}
+  [-1, -1]
+Function: server_setup_from_url {return index 0}
+  [-1, 0]
+Function: on_header_field {return index 0}
+  [2, 2]
+Function: on_header_value {return index 0}
+  [2, 2]
+Function: on_headers_complete {return index 0}
+  [2, 2]
+Function: server_connect_stream {return index 0}
+  [0, 0]
+Function: apply_credentials {return index 0}
+  [-16, -1]
+Function: git_http_client_read_response {return index 0}
+  [-1, -1]
+Function: git_http_client_skip_body {return index 0}
+  [-1, -1]
+Function: on_header_complete {return index 0}
+  [-1, -1]
+Function: git_http_client_send_body {return index 0}
+  [-1, -1]
+Function: stream_write {return index 0}
+  [-1, -1]
+Function: git_http_client_read_body {return index 0}
+  [-1, 0]
+Function: git_http_client_new {return index 0}
+  [-1, -1]
+Function: git_http_parser_execute {return index 0}
+  [0, 0]
+Function: git_transport_local {return index 0}
+  [-1, -1]
+Function: local_connect {return index 0}
+  [-1, -1]
+Function: local_set_connect_opts {return index 0}
+  [-1, -1]
+Function: local_negotiate_fetch {return index 0}
+  [-40, -1]
+Function: local_push {return index 0}
+  [-40, -1]
+Function: transfer_to_push_transfer {return index 0}
+  [0, 0]
+Function: foreach_reference_cb {return index 0}
+  [0, 0]
+Function: foreach_cb.4211 {return index 0}
+  EMPTY
+Function: add_ref {return index 0}
+  [-39, -1]
+Function: git_smart__recv {return index 0}
+  [-2147483648, 0]
+Function: git_smart__update_heads {return index 0}
+  [-1, -1]
+Function: git_smart__negotiation_step {return index 0}
+  [-1, -1]
+Function: git_smart__get_push_stream {return index 0}
+  [-1, -1]
+Function: git_transport_remote_connect_options {return index 0}
+  [-1, -1]
+Function: git_transport_smart {return index 0}
+  [-1, -1]
+Function: git_smart__connect {return index 0}
+  [-2147483648, 0]
+Function: git_smart__set_connect_opts {return index 0}
+  [-1, -1]
+Function: ref_name_cmp {return index 0}
+  [0, 0]
+Function: git_pkt_parse_line {return index 0}
+  [-1, -1]
+Function: data_pkt {return index 0}
+  [-1, -1]
+Function: sideband_progress_pkt {return index 0}
+  [-1, -1]
+Function: sideband_error_pkt {return index 0}
+  [-1, -1]
+Function: ack_pkt {return index 0}
+  [-1, -1]
+Function: err_pkt {return index 0}
+  [-1, -1]
+Function: comment_pkt {return index 0}
+  [-1, -1]
+Function: ok_pkt {return index 0}
+  [-1, -1]
+Function: ng_pkt {return index 0}
+  [-1, -1]
+Function: unpack_pkt {return index 0}
+  [-1, -1]
+Function: shallow_pkt {return index 0}
+  [-1, -1]
+Function: unshallow_pkt {return index 0}
+  [-1, -1]
+Function: ref_pkt {return index 0}
+  [-1, -1]
+Function: git_pkt_buffer_flush {return index 0}
+  [-1, -1]
+Function: git_pkt_buffer_wants {return index 0}
+  [-1, -1]
+Function: git_pkt_buffer_have {return index 0}
+  [-1, -1]
+Function: git_pkt_buffer_done {return index 0}
+  [-1, -1]
+Function: git_smart__store_refs {return index 0}
+  [-2147483648, -1]
+Function: git_smart__detect_caps {return index 0}
+  [-3, -3] U [0, 0]
+Function: git_smart__negotiate_fetch {return index 0}
+  [-2147483648, -1]
+Function: recv_pkt {return index 0}
+  [-2147483648, 0]
+Function: wait_while_ack {return index 0}
+  [-2147483648, -1]
+Function: git_smart__shallow_roots {return index 0}
+  [0, 0]
+Function: network_packetsize {return index 0}
+  [0, 0]
+Function: git_smart__push {return index 0}
+  [-20, -20] U [-1, -1]
+Function: stream_thunk {return index 0}
+  EMPTY
+Function: add_push_report_pkt {return index 0}
+  [-1, -1]
+Function: git_smart_subtransport_ssh {return index 0}
+  [-1, -1]
+Function: git_transport_ssh_with_paths {return index 0}
+  [-1, -1]
+Function: git_tree_cache_get {return index 0}
+  [0, 0]
+Function: git_tree_cache_read {return index 0}
+  [-1, -1]
+Function: read_tree_internal {return index 0}
+  [-1, -1]
+Function: git_tree_cache_read_tree {return index 0}
+  [-1, -1]
+Function: read_tree_recursive {return index 0}
+  [-33, -1]
+Function: git_tree_cache_new {return index 0}
+  [-1, -1]
+Function: git_tree_cache_write {return index 0}
+  [-1, -1]
+Function: git_tree_entry_cmp {return index 0}
+  EMPTY
+Function: git_tree_entry_dup {return index 0}
+  [-1, -1]
+Function: alloc_entry {return index 0}
+  [0, 0]
+Function: git_tree_entry_filemode {return index 0}
+  [16385, 57344]
+Function: git_tree_entry_type {return index 0}
+  [2, 3]
+Function: git_tree_entry_to_object {return index 0}
+  [-33, -1]
+Function: git_tree_entry_byname {return index 0}
+  [-2147483648, -1] U [1, 2147483647]
+Function: entry_fromname {return index 0}
+  [-2147483648, -1] U [1, 2147483647]
+Function: git_tree_entry_byid {return index 0}
+  [0, 0]
+Function: git_tree_entrycount {return index 0}
+  [0, 0]
+Function: git_tree__parse_raw {return index 0}
+  [-21, -1]
+Function: git_tree__parse {return index 0}
+  [-21, -1]
+Function: git_tree__write_index {return index 0}
+  [-33, -1]
+Function: write_tree.4413 {return index 0}
+  [-1, -1]
+Function: append_entry {return index 0}
+  [-1, -1]
+Function: git_treebuilder__write_with_buffer {return index 0}
+  [-21, -1]
+Function: entry_sort_cmp {return index 0}
+  EMPTY
+Function: check_entry {return index 0}
+  [-1, -1]
+Function: git_treebuilder_entrymap_put {return index 0}
+  [-1, -1]
+Function: git_treebuilder_entrymap__resize {return index 0}
+  [-1, -1]
+Function: git_treebuilder_new {return index 0}
+  [-1, -1]
+Function: git_treebuilder_insert {return index 0}
+  [-1, -1]
+Function: git_treebuilder_get {return index 0}
+  EMPTY
+Function: treebuilder_get {return index 0}
+  EMPTY
+Function: git_treebuilder_remove {return index 0}
+  [-1, -1]
+Function: git_treebuilder_write {return index 0}
+  [-21, -1]
+Function: git_tree_entry_bypath {return index 0}
+  [-3, -1]
+Function: git_tree_walk {return index 0}
+  [0, 131]
+Function: tree_walk {return index 0}
+  [-33, -1] U [1, 131]
+Function: git_tree_create_updated {return index 0}
+  [-21, -1]
+Function: compare_entries {return index 0}
+  [0, 0]
+Function: on_dup_entry {return index 0}
+  [-1, -1]
+Function: create_popped_tree {return index 0}
+  [-21, -1]
+Function: git_treebuilder_write_with_buffer {return index 0}
+  [-21, -1]
+Function: git_worktree_list {return index 0}
+  [-31, -1]
+Function: git_worktree__read_link {return index 0}
+  [0, 0]
+Function: git_worktree_lookup {return index 0}
+  EMPTY
+Function: open_worktree_dir {return index 0}
+  [-14, -1]
+Function: git_worktree_is_locked {return index 0}
+  [-14, -1]
+Function: git_worktree__is_locked {return index 0}
+  [-14, -1] U [1, 1]
+Function: git_worktree_open_from_repository {return index 0}
+  [0, 1]
+Function: git_worktree_validate {return index 0}
+  [0, 0]
+Function: write_wtfile {return index 0}
+  [-1, -1]
+Function: git_worktree_lock {return index 0}
+  [-1, 0]
+Function: git_worktree_unlock {return index 0}
+  [-1, -1] U [1, 1]
+Function: git_worktree_is_prunable {return index 0}
+  [0, 0]
+Function: git_worktree_prune {return index 0}
+  [-2147483648, -1]
+Function: llhttp__on_message_begin {return index 0}
+  EMPTY
+Function: llhttp__on_url {return index 0}
+  [1, 24]
+Function: llhttp__on_url_complete {return index 0}
+  EMPTY
+Function: llhttp__on_status {return index 0}
+  [1, 24]
+Function: llhttp__on_status_complete {return index 0}
+  EMPTY
+Function: llhttp__on_method {return index 0}
+  [1, 24]
+Function: llhttp__on_method_complete {return index 0}
+  EMPTY
+Function: llhttp__on_version {return index 0}
+  [0, 0]
+Function: llhttp__on_version_complete {return index 0}
+  EMPTY
+Function: llhttp__on_header_field {return index 0}
+  [1, 24]
+Function: llhttp__on_header_field_complete {return index 0}
+  [0, 0]
+Function: llhttp__on_header_value {return index 0}
+  EMPTY
+Function: llhttp__on_header_value_complete {return index 0}
+  EMPTY
+Function: llhttp__on_headers_complete {return index 0}
+  [0, 0]
+Function: llhttp__on_message_complete {return index 0}
+  [0, 0]
+Function: llhttp__on_body {return index 0}
+  [1, 24]
+Function: llhttp__on_chunk_header {return index 0}
+  EMPTY
+Function: llhttp__on_chunk_extension_name {return index 0}
+  [1, 24]
+Function: llhttp__on_chunk_extension_name_complete {return index 0}
+  EMPTY
+Function: llhttp__on_chunk_extension_value {return index 0}
+  [1, 24]
+Function: llhttp__on_chunk_extension_value_complete {return index 0}
+  EMPTY
+Function: llhttp__on_chunk_complete {return index 0}
+  [0, 0]
+Function: llhttp__on_reset {return index 0}
+  EMPTY
+Function: llhttp__after_headers_complete {return index 0}
+  [1, 1] U [5, 5]
