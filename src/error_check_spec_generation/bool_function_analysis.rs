@@ -6,7 +6,7 @@ use crate::{error_check_spec_generation::{
         RVCheckFinder, ReturnType
     },
     wrapper_func_finder::WrapperFunction,
-}, utils::ReturnValueCheck};
+}, utils::ret_val_check::ReturnValueCheck};
 use crate::rustc_hir::intravisit::Visitor;
 
 impl<'tcx> RVCheckFinder<'tcx> {

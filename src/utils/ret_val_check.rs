@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use crate::{error_check_spec_generation::spec_generation::RVCheckFinder, utils::ReturnValueCheck::*};
+use crate::{error_check_spec_generation::spec_generation::RVCheckFinder, utils::ret_val_check::ReturnValueCheck::*};
 
 
 #[derive(PartialEq, Eq, Hash, Clone, Copy, Debug)]

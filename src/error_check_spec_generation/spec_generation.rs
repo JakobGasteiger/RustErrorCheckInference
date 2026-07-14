@@ -8,7 +8,7 @@ use crate::error_check_spec_generation::{
     wrapper_func_finder::WrapperFunction,
 };
 use crate::rustc_hir::intravisit::Visitor;
-use crate::utils::ReturnValueCheck;
+use crate::utils::ret_val_check::ReturnValueCheck;
 
 #[derive(PartialEq, Eq, Debug, Clone, Copy, Hash)]
 pub enum ResultOrOptionVariant {
