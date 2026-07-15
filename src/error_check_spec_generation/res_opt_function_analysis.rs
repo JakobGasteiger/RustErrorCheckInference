@@ -4,7 +4,7 @@ use crate::{error_check_spec_generation::{
     driver::OtherStatistics,
     spec_generation::{RVCheckFinder, ReturnType},
     wrapper_func_finder::WrapperFunction,
-}, utils::ret_val_check::ReturnValueCheck};
+}, utils::error_spec::ErrorSpec};
 use crate::rustc_hir::intravisit::Visitor;
 
 impl<'tcx> RVCheckFinder<'tcx> {
@@ -15,7 +15,7 @@ impl<'tcx> RVCheckFinder<'tcx> {
         tcx: rustc_middle::ty::TyCtxt<'tcx>,
         error_check_function_id: rustc_hir::def_id::DefId,
         arg_index: usize,
-    ) -> Option<ReturnValueCheck> {
+    ) -> Option<ErrorSpec> {
         println!(
             "\nFor Sub Error Check Function {}",
             tcx.def_path_str(error_check_function_id)
@@ -25,17 +25,17 @@ impl<'tcx> RVCheckFinder<'tcx> {
         let Some(local_def_id) = error_check_function_id.as_local() else {
             println!("Not local!");
             self.other_statistics.not_local_functions += 1;
-            return Some(ReturnValueCheck::Indeterminate);
+            return Some(ErrorSpec::Indeterminate);
         };
         // abort if function has no body
         let Some(body) = tcx.hir_maybe_body_owned_by(local_def_id) else {
             println!("No body!");
-            return Some(ReturnValueCheck::Indeterminate);
+            return Some(ErrorSpec::Indeterminate);
         };
 
         // get the parameter at arg_index
         let Some(param) = body.params.get(arg_index) else {
-            return Some(ReturnValueCheck::Indeterminate);
+            return Some(ErrorSpec::Indeterminate);
         };
 
         // that parameter's binding hir id becomes the new tracked identity
@@ -87,7 +87,7 @@ impl<'tcx> RVCheckFinder<'tcx> {
         func: &rustc_hir::Expr,
         args: &[rustc_hir::Expr],
         expr_being_checked: &rustc_hir::Expr,
-    ) -> Option<ReturnValueCheck> {
+    ) -> Option<ErrorSpec> {
         if let Some(function_def_id) = &self.get_function_def_id(func) {
             // abort if we a re analyzing a method that doesn't return result or option
             // if self.get_function_or_method_return_type(function_def_id) != ReturnType::ResultOrOption {
@@ -116,7 +116,7 @@ impl<'tcx> RVCheckFinder<'tcx> {
                 // if we find a recursion loop, we terminate analysis for this wrapper
                 if self.already_visited_functions.contains(&function_def_id) {
                     println!("Recursion loop found, aborting!");
-                    return Some(ReturnValueCheck::Indeterminate);
+                    return Some(ErrorSpec::Indeterminate);
                 }
 
                 return self.analyze_sub_error_check_function(
@@ -149,7 +149,7 @@ impl<'tcx> RVCheckFinder<'tcx> {
         self: &mut Self,
         method: &rustc_hir::Expr,
         expr_being_checked: &rustc_hir::Expr,
-    ) -> Option<ReturnValueCheck> {
+    ) -> Option<ErrorSpec> {
         // technically redundant with callsite, but it's no big deal
         if let Some(method_def_id) = self.get_method_def_id(method)
             && let rustc_hir::ExprKind::MethodCall(_method, receiver, args, ..) = method.kind
@@ -177,7 +177,7 @@ impl<'tcx> RVCheckFinder<'tcx> {
                 // if we find a recursion loop, we terminate analysis for this wrapper
                 if self.already_visited_functions.contains(&method_def_id) {
                     println!("Recursion loop found, aborting!");
-                    return Some(ReturnValueCheck::Indeterminate);
+                    return Some(ErrorSpec::Indeterminate);
                 }
 
                 return self.analyze_sub_error_check_function(

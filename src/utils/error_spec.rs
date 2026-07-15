@@ -1,10 +1,10 @@
-use std::collections::HashSet;
+use std::{collections::HashSet, ops::ControlFlow::Continue};
 
-use crate::{error_check_spec_generation::spec_generation::RVCheckFinder, utils::ret_val_check::ReturnValueCheck::*};
+use crate::{error_check_spec_generation::spec_generation::RVCheckFinder, utils::error_spec::ErrorSpec::*};
 
 
 #[derive(PartialEq, Eq, Hash, Clone, Copy, Debug)]
-pub enum ReturnValueCheck {
+pub enum ErrorSpec {
     Empty,
     LesserZero,
     GreaterZero,
@@ -16,9 +16,9 @@ pub enum ReturnValueCheck {
     Indeterminate,
 }
 
-impl ReturnValueCheck {
+impl ErrorSpec {
     
-    pub fn opposite(self) -> ReturnValueCheck {
+    pub fn opposite(self) -> ErrorSpec {
         match self {
             Empty => All,
             LesserZero => GrEqZero,
@@ -36,7 +36,7 @@ impl ReturnValueCheck {
         bin_op: &rustc_hir::BinOp,
         comparand: &rustc_hir::Expr,
         rv_check_finder: &RVCheckFinder
-    ) -> Option<ReturnValueCheck> {
+    ) -> Option<ErrorSpec> {
 
         // is our comparand a literal?
         if let rustc_hir::ExprKind::Lit(lit) = comparand.kind {
@@ -87,7 +87,7 @@ impl ReturnValueCheck {
         }
     }
 
-    pub fn to_number_set(self) -> Option<HashSet<i8>> {
+    pub fn to_number_set(self) -> Option<HashSet<i128>> {
         let mut set = HashSet::new();
         match self {
             Self::Empty => {}
@@ -123,43 +123,32 @@ impl ReturnValueCheck {
         Some(set)
     }
 
-    pub fn from_number_set(set: HashSet<i8>) -> ReturnValueCheck {
-        match set.len() {
-            0 => Self::Empty,
-            1 => {
-                if set.iter().any(|&x| x < 0) {
-                    Self::LesserZero
-                } else if set.contains(&0) {
-                    Self::EqualZero
-                } else if set.iter().any(|&x| x > 0) {
-                    Self::GreaterZero
-                } else {
-                    Self::Indeterminate
-                }
-            }
-            2 => {
-                if set.iter().any(|&x| x < 0) && set.contains(&0) {
-                    Self::LesEqZero
-                } else if set.contains(&0) && set.iter().any(|&x| x > 0) {
-                    Self::GrEqZero
-                } else if set.iter().any(|&x| x < 0) && set.iter().any(|&x| x > 0) {
-                    Self::NotEqZero
-                } else {
-                    Self::Indeterminate
-                }
-            }
-            3 => Self::All,
-            _ => Self::Indeterminate,
+    pub fn from_number_set(set: HashSet<i128>) -> ErrorSpec {
+
+        let contains_lesser_zero: bool = set.iter().any(|&x| x < 0);
+        let contains_greater_zero: bool = set.iter().any(|&x| x > 0);
+        let contains_zero: bool = set.contains(&0);
+
+        match (contains_lesser_zero, contains_zero, contains_greater_zero) {
+            (false, false, false) => ErrorSpec::Empty,
+            (true, false, false) => ErrorSpec::LesserZero,
+            (true, true, false) => ErrorSpec::LesEqZero,
+            (false, false, true) => ErrorSpec::GreaterZero,
+            (false, true, true) => ErrorSpec::GrEqZero,
+            (true, false, true) => ErrorSpec::NotEqZero,
+            (false, true, false) => ErrorSpec::EqualZero,
+            (true, true, true) => ErrorSpec::All,
+            _ => ErrorSpec::Indeterminate
         }
     }
 
     // implementation via number sets is a bit roundabout, but easier than matching on every single possibility
-    pub fn union(self, other: ReturnValueCheck) -> ReturnValueCheck {
-        if self == ReturnValueCheck::Indeterminate || other == ReturnValueCheck::Indeterminate {
-            return ReturnValueCheck::Indeterminate;
+    pub fn union(self, other: ErrorSpec) -> ErrorSpec {
+        if self == ErrorSpec::Indeterminate || other == ErrorSpec::Indeterminate {
+            return ErrorSpec::Indeterminate;
         }
 
-        let mut as_num_set: HashSet<i8> = HashSet::new();
+        let mut as_num_set: HashSet<i128> = HashSet::new();
         if let Some(set) = self.to_number_set() {
             as_num_set.extend(set);
         }
@@ -169,12 +158,12 @@ impl ReturnValueCheck {
         Self::from_number_set(as_num_set)
     }
 
-    pub fn intersection(self, other: ReturnValueCheck) -> ReturnValueCheck {
-        if self == ReturnValueCheck::Indeterminate || other == ReturnValueCheck::Indeterminate {
-            return ReturnValueCheck::Indeterminate;
+    pub fn intersection(self, other: ErrorSpec) -> ErrorSpec {
+        if self == ErrorSpec::Indeterminate || other == ErrorSpec::Indeterminate {
+            return ErrorSpec::Indeterminate;
         }
 
-        let mut as_num_set: HashSet<i8> = HashSet::new();
+        let mut as_num_set: HashSet<i128> = HashSet::new();
         if let Some(self_set) = self.to_number_set()
             && let Some(other_set) = other.to_number_set()
         {
@@ -183,18 +172,18 @@ impl ReturnValueCheck {
         Self::from_number_set(as_num_set)
     }
 
-    pub fn without(self, other: ReturnValueCheck) -> ReturnValueCheck {
-        if self == ReturnValueCheck::Indeterminate || other == ReturnValueCheck::Indeterminate {
-            return ReturnValueCheck::Indeterminate;
+    pub fn without(self, other: ErrorSpec) -> ErrorSpec {
+        if self == ErrorSpec::Indeterminate || other == ErrorSpec::Indeterminate {
+            return ErrorSpec::Indeterminate;
         }
 
         if let Some(self_set) = self.to_number_set()
             && let Some(other_set) = other.to_number_set()
         {
-            let difference: HashSet<i8> = self_set.difference(&other_set).copied().collect();
+            let difference: HashSet<i128> = self_set.difference(&other_set).copied().collect();
             Self::from_number_set(difference)
         } else {
-            ReturnValueCheck::Indeterminate
+            ErrorSpec::Indeterminate
         }
     }
 }

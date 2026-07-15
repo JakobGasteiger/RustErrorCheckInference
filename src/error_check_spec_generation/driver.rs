@@ -7,45 +7,10 @@ use crate::error_check_spec_generation::spec_generation::find_RV_checks;
 use crate::error_check_spec_generation::wrapper_func_finder::WrapperFunction;
 use crate::error_check_spec_generation::wrapper_func_finder::find_external_functions;
 use crate::error_check_spec_generation::wrapper_func_finder::find_wrapper_functions;
-use crate::utils::ret_val_check::ReturnValueCheck;
+use crate::utils::error_spec::ErrorSpec;
 
-pub struct ExternFuncCheckCallbacks;
 
-impl rustc_driver::Callbacks for ExternFuncCheckCallbacks {
-    fn after_analysis<'tcx>(
-        &mut self,
-        _compiler: &rustc_interface::interface::Compiler,
-        tcx: rustc_middle::ty::TyCtxt<'tcx>,
-    ) -> rustc_driver::Compilation {
-        // only analyze the primary crate (so not dependencies etc)
-        if std::env::var("CARGO_PRIMARY_PACKAGE").is_err() {
-            return rustc_driver::Compilation::Continue;
-        }
-        let crate_name = tcx.crate_name(rustc_hir::def_id::LOCAL_CRATE);
-
-        println!("\n\nChecker starting; crate = {}", crate_name);
-
-        let sys_crates = find_sys_crates(tcx);
-
-        let extern_function_ids = find_external_functions(tcx, &sys_crates);
-
-        let mut wrapper_functions = find_wrapper_functions(tcx, &extern_function_ids);
-
-        let mut other_statistics = OtherStatistics::new();
-
-        for mut wrapper_function in &mut wrapper_functions {
-            find_RV_checks(tcx, &mut wrapper_function, &mut other_statistics);
-            //println!("{:?}", wrapper_function);
-        }
-
-        aggregate_and_print_error_check_statistics(&wrapper_functions);
-        other_statistics.output();
-
-        rustc_driver::Compilation::Continue
-    }
-}
-
-fn aggregate_and_print_error_check_statistics(wrapper_functions: &Vec<WrapperFunction>) {
+pub fn aggregate_and_print_error_check_statistics(wrapper_functions: &Vec<WrapperFunction>) {
     let mut total = 0;
     let mut empty = 0;
     let mut gr_eq_zero = 0;
@@ -61,15 +26,15 @@ fn aggregate_and_print_error_check_statistics(wrapper_functions: &Vec<WrapperFun
         //println!("{:?}", wrapper_function);
         total += 1;
         match wrapper_function.return_value_check {
-            Some(ReturnValueCheck::Empty) => empty += 1,
-            Some(ReturnValueCheck::GrEqZero) => gr_eq_zero += 1,
-            Some(ReturnValueCheck::LesEqZero) => les_eq_zero += 1,
-            Some(ReturnValueCheck::EqualZero) => equal_zero += 1,
-            Some(ReturnValueCheck::GreaterZero) => greater_zero += 1,
-            Some(ReturnValueCheck::LesserZero) => lesser_zero += 1,
-            Some(ReturnValueCheck::NotEqZero) => not_eq_zero += 1,
-            Some(ReturnValueCheck::All) => all += 1,
-            Some(ReturnValueCheck::Indeterminate) => indeterminate += 1,
+            Some(ErrorSpec::Empty) => empty += 1,
+            Some(ErrorSpec::GrEqZero) => gr_eq_zero += 1,
+            Some(ErrorSpec::LesEqZero) => les_eq_zero += 1,
+            Some(ErrorSpec::EqualZero) => equal_zero += 1,
+            Some(ErrorSpec::GreaterZero) => greater_zero += 1,
+            Some(ErrorSpec::LesserZero) => lesser_zero += 1,
+            Some(ErrorSpec::NotEqZero) => not_eq_zero += 1,
+            Some(ErrorSpec::All) => all += 1,
+            Some(ErrorSpec::Indeterminate) => indeterminate += 1,
             None => indeterminate += 1, // treat None as indeterminate
         }
     }
@@ -87,32 +52,7 @@ fn aggregate_and_print_error_check_statistics(wrapper_functions: &Vec<WrapperFun
     println!("Indeterminate: {}", indeterminate);
 }
 
-// sometime multiple crates are named *-sys: we look for external funcs in them all
-fn find_sys_crates<'tcx>(tcx: rustc_middle::ty::TyCtxt<'tcx>) -> Vec<rustc_span::def_id::CrateNum> {
-    let mut sys_crates = Vec::new();
 
-    for cnum in tcx.crates(()) {
-        let name = tcx.crate_name(*cnum);
-        println!("Checking crate: {}", name.as_str());
-        if name.as_str().ends_with("sys") {
-            println!("Found sys crate: {}", name.as_str());
-            sys_crates.push(cnum.clone());
-        }
-    }
-
-    // if no *-sys crate found, return own crate (actually quite useful for simplified testing)
-    if sys_crates.is_empty() {
-        println!("No sys crate found, returning local");
-        sys_crates.push(rustc_hir::def_id::LOCAL_CRATE);
-    }
-
-    println!("Sys crates:");
-    for krate in &sys_crates {
-        let name = tcx.crate_name(krate.clone());
-        println!("{}", name.as_str());
-    }
-    sys_crates
-}
 
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct OtherStatistics {
@@ -135,6 +75,28 @@ impl OtherStatistics {
             hardcoded_bool_methods_analyzed: 0,
             condition_negations:0,
         }
+    }
+
+    pub fn output(&self) {
+        println!("\nOther Statistics:");
+        println!(
+            "Boolean functions not yet supported: {}",
+            self.bool_functions_not_yet_supported
+        );
+        println!(
+            "Boolean methods not yet supported: {}",
+            self.bool_methods_not_yet_supported
+        );
+        println!(
+            "Not Result/Option return types: {}",
+            self.not_result_or_option_return_types
+        );
+        println!("Not local functions: {}", self.not_local_functions);
+        println!(
+            "Hardcoded Bool functions analyzed: {}",
+            self.hardcoded_bool_methods_analyzed
+        );
+        println!("Condition negations: {}", self.condition_negations);
     }
 }
 
@@ -163,26 +125,3 @@ impl AddAssign for OtherStatistics {
     }
 }
 
-impl OtherStatistics {
-    pub fn output(&self) {
-        println!("\nOther Statistics:");
-        println!(
-            "Boolean functions not yet supported: {}",
-            self.bool_functions_not_yet_supported
-        );
-        println!(
-            "Boolean methods not yet supported: {}",
-            self.bool_methods_not_yet_supported
-        );
-        println!(
-            "Not Result/Option return types: {}",
-            self.not_result_or_option_return_types
-        );
-        println!("Not local functions: {}", self.not_local_functions);
-        println!(
-            "Hardcoded Bool functions analyzed: {}",
-            self.hardcoded_bool_methods_analyzed
-        );
-        println!("Condition negations: {}", self.condition_negations);
-    }
-}

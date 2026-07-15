@@ -1,13 +1,13 @@
 // * responsible for finding external functions and their wrappers
 
-use crate::{rustc_hir::intravisit::Visitor, utils::ret_val_check::ReturnValueCheck};
+use crate::{rustc_hir::intravisit::Visitor, utils::error_spec::ErrorSpec};
 
 #[derive(PartialEq, Eq, Hash, Clone, Debug)]
 // TODO split into wrapperFunction, ErrorSpec ?
 pub struct WrapperFunction {
     pub wrapper_function_id: rustc_hir::def_id::DefId,
     pub wrapped_function_id: rustc_hir::def_id::DefId,
-    pub return_value_check: Option<ReturnValueCheck>,
+    pub return_value_check: Option<ErrorSpec>,
 }
 
 struct WrapperFuncFinder<'a, 'tcx> {
@@ -118,4 +118,31 @@ pub fn find_wrapper_functions(
         }
     }
     wrapper_functions
+}
+
+// sometime multiple crates are named *-sys: we look for external funcs in them all
+pub fn find_sys_crates<'tcx>(tcx: rustc_middle::ty::TyCtxt<'tcx>) -> Vec<rustc_span::def_id::CrateNum> {
+    let mut sys_crates = Vec::new();
+
+    for cnum in tcx.crates(()) {
+        let name = tcx.crate_name(*cnum);
+        println!("Checking crate: {}", name.as_str());
+        if name.as_str().ends_with("sys") {
+            println!("Found sys crate: {}", name.as_str());
+            sys_crates.push(cnum.clone());
+        }
+    }
+
+    // if no *-sys crate found, return own crate (actually quite useful for simplified testing)
+    if sys_crates.is_empty() {
+        println!("No sys crate found, returning local");
+        sys_crates.push(rustc_hir::def_id::LOCAL_CRATE);
+    }
+
+    println!("Sys crates:");
+    for krate in &sys_crates {
+        let name = tcx.crate_name(krate.clone());
+        println!("{}", name.as_str());
+    }
+    sys_crates
 }

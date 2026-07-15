@@ -6,7 +6,7 @@ use crate::{error_check_spec_generation::{
         RVCheckFinder, ReturnType
     },
     wrapper_func_finder::WrapperFunction,
-}, utils::ret_val_check::ReturnValueCheck};
+}, utils::error_spec::ErrorSpec};
 use crate::rustc_hir::intravisit::Visitor;
 
 impl<'tcx> RVCheckFinder<'tcx> {
@@ -17,7 +17,7 @@ impl<'tcx> RVCheckFinder<'tcx> {
         tcx: rustc_middle::ty::TyCtxt<'tcx>,
         error_check_function_id: rustc_hir::def_id::DefId,
         arg_index: usize,
-    ) -> Option<ReturnValueCheck> {
+    ) -> Option<ErrorSpec> {
         println!(
             "\nFor Sub Error Check Function {}",
             tcx.def_path_str(error_check_function_id)
@@ -27,17 +27,17 @@ impl<'tcx> RVCheckFinder<'tcx> {
         let Some(local_def_id) = error_check_function_id.as_local() else {
             println!("Not local!");
             self.other_statistics.not_local_functions += 1;
-            return Some(ReturnValueCheck::Indeterminate);
+            return Some(ErrorSpec::Indeterminate);
         };
         // abort if function has no body
         let Some(body) = tcx.hir_maybe_body_owned_by(local_def_id) else {
             println!("No body!");
-            return Some(ReturnValueCheck::Indeterminate);
+            return Some(ErrorSpec::Indeterminate);
         };
 
         // get the parameter at arg_index
         let Some(param) = body.params.get(arg_index) else {
-            return Some(ReturnValueCheck::Indeterminate);
+            return Some(ErrorSpec::Indeterminate);
         };
 
         // that parameter's binding hir id becomes the new tracked identity
@@ -70,7 +70,7 @@ impl<'tcx> RVCheckFinder<'tcx> {
     pub fn analyze_bool_function(
         self: &mut Self,
         func: &rustc_hir::Expr,
-    ) -> Option<ReturnValueCheck> {
+    ) -> Option<ErrorSpec> {
         println!("Boolean return type: not yet supported");
         self.other_statistics.bool_functions_not_yet_supported += 1;
 
@@ -83,19 +83,19 @@ impl<'tcx> RVCheckFinder<'tcx> {
             // if we find a recursion loop, we terminate analysis for this wrapper
             if self.already_visited_functions.contains(&function_def_id) {
                 println!("Recursion loop found, aborting!");
-                return Some(ReturnValueCheck::Indeterminate);
+                return Some(ErrorSpec::Indeterminate);
             }
         }
 
         // TODO temp, actually implement function
         // TODO possibly not really necessary? se how often actually used
-        Some(ReturnValueCheck::Indeterminate)
+        Some(ErrorSpec::Indeterminate)
     }
 
     pub fn analyze_bool_method(
         self: &mut Self,
         method_expr: &rustc_hir::Expr,
-    ) -> Option<ReturnValueCheck> {
+    ) -> Option<ErrorSpec> {
         println!("Boolean return type: not yet fully supported");
 
         if let Some(method_def_id) = self.get_method_def_id(method_expr)
@@ -109,7 +109,7 @@ impl<'tcx> RVCheckFinder<'tcx> {
             // if we find a recursion loop, we terminate analysis for this wrapper
             if self.already_visited_functions.contains(&method_def_id) {
                 println!("Recursion loop found, aborting!");
-                return Some(ReturnValueCheck::Indeterminate);
+                return Some(ErrorSpec::Indeterminate);
             }
 
             let method_name = self.tcx.def_path_str(method_def_id);
@@ -122,15 +122,15 @@ impl<'tcx> RVCheckFinder<'tcx> {
             if method_name.ends_with("is_null") {
                 self.other_statistics.hardcoded_bool_methods_analyzed += 1;
                 println!("... yes, it is!");
-                return Some(ReturnValueCheck::EqualZero);
+                return Some(ErrorSpec::EqualZero);
             } else if method_name.ends_with("is_negative") {
                 self.other_statistics.hardcoded_bool_methods_analyzed += 1;
                 println!("... yes, it is!");
-                return Some(ReturnValueCheck::LesserZero);
+                return Some(ErrorSpec::LesserZero);
             } else if method_name.ends_with("is_positive") {
                 self.other_statistics.hardcoded_bool_methods_analyzed += 1;
                 println!("... yes, it is!");
-                return Some(ReturnValueCheck::GreaterZero);
+                return Some(ErrorSpec::GreaterZero);
             }
 
             println!("... no, it isn't :(")
@@ -158,6 +158,6 @@ impl<'tcx> RVCheckFinder<'tcx> {
         // TODO probably not really necessary? see how often actually used
 
         self.other_statistics.bool_methods_not_yet_supported += 1;
-        Some(ReturnValueCheck::Indeterminate)
+        Some(ErrorSpec::Indeterminate)
     }
 }
