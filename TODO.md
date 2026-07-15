@@ -22,3 +22,7 @@ CLEANUP
 support question mark operator?
 
 ESSS execution via build.rs ?
+
+parser able to get relevant part of ESSS output itself
+
+comparison engine
