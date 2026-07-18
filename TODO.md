@@ -26,3 +26,11 @@ ESSS execution via build.rs ?
 parser able to get relevant part of ESSS output itself
 
 comparison engine
+
+github: past detectible bugs ?
+
+sinnvolles system für relativ kleinene evalutaion datensatz an libraries (diversity of downlodad count insb.)
+
+erfahrungswert: 4 wochen für ausarbeitung
+
+abgabe 15.9.
