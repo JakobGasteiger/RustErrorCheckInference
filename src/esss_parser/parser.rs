@@ -1,7 +1,7 @@
 
 
 use crate::utils::error_spec::ErrorSpec;
-use std::{collections::HashSet, io::Write};
+use std::{collections::HashSet, fmt::Debug, io::Write};
 
 
 pub struct FunctionErrorSpec {
@@ -113,57 +113,73 @@ fn parse_interval_to_range(interval_string: String) -> Result<Vec<i128>, ParseEr
 
 }
 
-fn parse_spec_string(spec_string: String) -> Result<FunctionErrorSpec, ParseError> {
+fn parse_spec_string(spec_string: String) -> FunctionErrorSpec {
 
     let split_spec_string = spec_string.lines().map(|s| s.to_string()).collect::<Vec<_>>();
 
-    let header = split_spec_string.get(0).ok_or(ParseError::Function)?.clone();
-    let spec_line = split_spec_string.get(1).ok_or(ParseError::Function).clone()?.trim().to_string();
-
     // ESSS output is formatted as Function: function_name {return index 0}, so we need to get the seconds element when splitting at spaces
-    let function_name = header.split(" ").map(|s| s.to_string()).collect::<Vec<_>>().get(1).ok_or(ParseError::Function)?.clone();
+    let function_name: String = match split_spec_string.get(0).ok_or(ParseError::Function) {
+        Ok(header) => header
+                                    .split(" ")
+                                    .map(|s| s.to_string())
+                                    .collect::<Vec<_>>()
+                                    .get(1)
+                                    .unwrap_or(&"ErrorParsingFunctionName".to_string())
+                                    .clone(),
+        Err(_) => "ErrorParsingFunctionName".to_string()
+    };
     println!("\nFunction name is: {}", function_name);
+
+    let spec_line = match split_spec_string.get(1).ok_or(ParseError::Function) {
+        Ok(spec_line) => Ok(spec_line.trim().to_string()),
+        Err(err) => Err(err)
+    };
 
     let mut error_values: Vec<i128> = Vec::new();
 
-    println!("Parsing spec line: {}", spec_line);
+    println!("Parsing spec line: {:?}", spec_line);
 
-    if spec_line == "EMPTY" {
-        println!("ErrorSpec is Empty");
-        return Ok(FunctionErrorSpec { func_name: function_name, error_spec: ErrorSpec::Empty }); 
-    }
+    if let Ok(spec_line) = spec_line {
 
-    // if the spec line is not just EMPTY, we split it into its intervals
-    let intervals = 
-        spec_line
-        .split("] U [")
-        //.filter(|s| s.starts_with("[") && s.ends_with("]"))
-        .map(|s| s.to_string())
-        .collect::<Vec<String>>();
-
-    if intervals.is_empty() {
-        println!("No Intervals found!");
-        return Ok(FunctionErrorSpec { func_name: function_name, error_spec: ErrorSpec::Indeterminate })
-    }
-
-    for interval in intervals {
-
-        if let Ok(interval_values) = parse_interval_to_range(interval) {
-            error_values.append(interval_values.clone().as_mut());
-        } else {
-            return Ok(FunctionErrorSpec { func_name: function_name, error_spec: ErrorSpec::Indeterminate });
+        if spec_line == "EMPTY" {
+            println!("ErrorSpec is Empty");
+            return FunctionErrorSpec { func_name: function_name, error_spec: ErrorSpec::Empty }; 
         }
+    
+        // if the spec line is not just EMPTY, we split it into its intervals
+        let intervals = 
+            spec_line
+            .split("] U [")
+            //.filter(|s| s.starts_with("[") && s.ends_with("]"))
+            .map(|s| s.to_string())
+            .collect::<Vec<String>>();
+    
+        if intervals.is_empty() {
+            println!("No Intervals found!");
+            return FunctionErrorSpec { func_name: function_name, error_spec: ErrorSpec::Indeterminate }
+        }
+    
+        for interval in intervals {
+    
+            if let Ok(interval_values) = parse_interval_to_range(interval) {
+                error_values.append(interval_values.clone().as_mut());
+            } else {
+                return FunctionErrorSpec { func_name: function_name, error_spec: ErrorSpec::Indeterminate };
+            }
+        }
+    
+        let error_spec = ErrorSpec::from_number_set(HashSet::from_iter(error_values));
+        println!("ErrorSpec is {:?}", error_spec);
+        return FunctionErrorSpec { func_name: function_name, error_spec };
     }
 
-    let error_spec = ErrorSpec::from_number_set(HashSet::from_iter(error_values));
-    println!("ErrorSpec is {:?}", error_spec);
-    Ok(FunctionErrorSpec { func_name: function_name, error_spec })
+    FunctionErrorSpec { func_name: function_name, error_spec: ErrorSpec::Indeterminate }
 }
 
 
-fn parse_spec_strings(spec_strings: Vec<String>) -> Vec<Result<FunctionErrorSpec, ParseError>> {
+fn parse_spec_strings(spec_strings: Vec<String>) -> Vec<FunctionErrorSpec> {
 
-    let mut specs: Vec<Result<FunctionErrorSpec, ParseError>> = Vec::new();
+    let mut specs: Vec<FunctionErrorSpec> = Vec::new();
 
     for spec_string in spec_strings {        
 
@@ -174,17 +190,15 @@ fn parse_spec_strings(spec_strings: Vec<String>) -> Vec<Result<FunctionErrorSpec
     specs
 }
 
-pub fn parse_specs() -> Vec<Result<FunctionErrorSpec, ParseError>> {
+pub fn parse_specs() -> Result<Vec<FunctionErrorSpec>, ParseError> {
 
     eprintln!("Spec parser active!");
 
     if let Ok(spec_strings) = get_function_spec_strings() {
-
         let specs = parse_spec_strings(spec_strings);
-    
-        return specs
+        return Ok(specs)
     } else {
-        return vec![Err(ParseError::WholeInput)];
+        return Err(ParseError::WholeInput);
     }
 
 }
