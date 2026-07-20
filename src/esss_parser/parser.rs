@@ -9,20 +9,13 @@ pub struct FunctionErrorSpec {
     error_spec: ErrorSpec, 
 }
 
-impl FunctionErrorSpec {
-    fn new(func_name: String, error_spec: ErrorSpec) -> Self {
-        Self {
-            func_name,
-            error_spec
-        }
-    }
-}
 
 #[derive(Clone, Copy, Debug)]
 pub enum ParseError {
     WholeInput,
     Function,
-    Interval
+    Interval,
+    NoESSSFile
 }
 
 impl std::fmt::Display for ParseError {
@@ -40,9 +33,8 @@ fn get_function_spec_strings() -> Result<Vec<String>, ParseError> {
 
     println!("\n");
 
-    // TODO temporary path
-    let path = concat!(env!("CARGO_MANIFEST_DIR"), "/esss_results.txt");
-    println!("{}", path);
+    let path = std::env::current_dir().or(Err(ParseError::NoESSSFile))?.into_string().or(Err(ParseError::NoESSSFile))? + "/esss_results.txt"; 
+    println!("ESSS Results File at {}", path);
 
     let raw_string = std::fs::read_to_string(&path).or(Err(ParseError::WholeInput))?;
     //println!("{}", raw_string);
@@ -63,9 +55,9 @@ fn get_function_spec_strings() -> Result<Vec<String>, ParseError> {
         }
     }
 
-    for str in &spec_strings {
-        println!("\n{}", str);
-    }
+    // for str in &spec_strings {
+    //     println!("\n{}", str);
+    // }
     return Ok(spec_strings);
 
 }

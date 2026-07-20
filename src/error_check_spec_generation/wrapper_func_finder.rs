@@ -70,6 +70,10 @@ pub fn find_external_functions<'tcx>(
         external_functions.extend(crate_external_functions);
     }
 
+    for ext_func in &external_functions {
+        println!("Found external function: {:?}", tcx.def_path_str(*ext_func));
+    }
+
     external_functions
 }
 

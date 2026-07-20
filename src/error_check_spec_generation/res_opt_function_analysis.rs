@@ -13,16 +13,16 @@ impl<'tcx> RVCheckFinder<'tcx> {
     pub fn analyze_sub_error_check_function(
         &mut self,
         tcx: rustc_middle::ty::TyCtxt<'tcx>,
-        error_check_function_id: rustc_hir::def_id::DefId,
+        error_check_func_def_id: rustc_hir::def_id::DefId,
         arg_index: usize,
     ) -> Option<ErrorSpec> {
         println!(
             "\nFor Sub Error Check Function {}",
-            tcx.def_path_str(error_check_function_id)
+            tcx.def_path_str(error_check_func_def_id)
         );
 
         // only works for local functions (no HIR body for external crates)
-        let Some(local_def_id) = error_check_function_id.as_local() else {
+        let Some(local_def_id) = error_check_func_def_id.as_local() else {
             println!("Not local!");
             self.other_statistics.not_local_functions += 1;
             return Some(ErrorSpec::Indeterminate);
@@ -41,13 +41,13 @@ impl<'tcx> RVCheckFinder<'tcx> {
         // that parameter's binding hir id becomes the new tracked identity
         if let rustc_hir::PatKind::Binding(_, param_hir_id, _, _) = param.pat.kind {
             let new_wrapper_function = WrapperFunction {
-                wrapper_function_id: error_check_function_id,
+                wrapper_function_id: error_check_func_def_id,
                 wrapped_function_id: self.wrapper_function.wrapped_function_id,
                 return_value_check: None,
             };
 
             let mut new_visited_function_list = self.already_visited_functions.clone();
-            new_visited_function_list.push(error_check_function_id);
+            new_visited_function_list.push(error_check_func_def_id);
 
             let mut sub_finder = RVCheckFinder {
                 tcx: self.tcx,
