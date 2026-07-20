@@ -3,6 +3,31 @@ use std::{collections::HashSet, ops::ControlFlow::Continue};
 use crate::{error_check_spec_generation::spec_generation::RVCheckFinder, utils::error_spec::ErrorSpec::*};
 
 
+// Rust side spec
+#[derive(PartialEq, Eq, Hash, Clone, Debug)]
+pub struct WrapperFunction {
+    pub wrapper_function_id: rustc_hir::def_id::DefId,
+    pub wrapped_function_id: rustc_hir::def_id::DefId,
+    pub return_value_check: Option<ErrorSpec>,
+}
+
+// C side spec
+#[derive(PartialEq, Eq, Hash, Clone, Debug)]
+pub struct FunctionErrorSpec {
+    func_name: String,
+    error_spec: ErrorSpec, 
+}
+
+impl FunctionErrorSpec {
+    pub fn new(func_name: String, error_spec: ErrorSpec) -> Self {
+        FunctionErrorSpec {
+            func_name,
+            error_spec
+        }
+    }
+}
+
+
 #[derive(PartialEq, Eq, Hash, Clone, Copy, Debug)]
 pub enum ErrorSpec {
     Empty,
@@ -12,7 +37,7 @@ pub enum ErrorSpec {
     LesEqZero,
     GrEqZero,
     EqualZero,
-    All, // should never be used, since no function should always return an error
+    All,
     Indeterminate,
 }
 

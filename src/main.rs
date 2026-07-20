@@ -35,7 +35,7 @@ impl rustc_driver::Callbacks for ExternFuncCheckCallbacks {
 
         let extern_function_ids = find_external_functions(tcx, &sys_crates);
 
-        let mut wrapper_functions = find_wrapper_functions(tcx, &extern_function_ids);
+        let mut wrapper_functions  = find_wrapper_functions(tcx, &extern_function_ids);
 
         let mut other_statistics = OtherStatistics::new();
 

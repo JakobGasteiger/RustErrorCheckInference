@@ -4,11 +4,8 @@ use std::collections::HashSet;
 use std::ops::{Add, AddAssign};
 
 use crate::error_check_spec_generation::driver::OtherStatistics;
-use crate::error_check_spec_generation::{
-    wrapper_func_finder::WrapperFunction,
-};
 use crate::rustc_hir::intravisit::Visitor;
-use crate::utils::error_spec::ErrorSpec;
+use crate::utils::error_spec::{ErrorSpec, WrapperFunction};
 
 #[derive(PartialEq, Eq, Debug, Clone, Copy, Hash)]
 pub enum ResultOrOptionVariant {
@@ -46,6 +43,7 @@ impl<'tcx> rustc_hir::intravisit::Visitor<'tcx> for RVCheckFinder<'tcx> {
     // as we go through the expressions of the body, for each expr
     // we check if it is the current holder of the return value, and if so, what happens to it ( via ehck_use_site() )
     fn visit_expr(&mut self, expr: &'tcx rustc_hir::Expr<'tcx>) {
+        
         // if we have already found a check, we do not look further
         if self.wrapper_function.return_value_check.is_some() {
             return;

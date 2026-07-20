@@ -1,14 +1,7 @@
 // * responsible for finding external functions and their wrappers
 
-use crate::{rustc_hir::intravisit::Visitor, utils::error_spec::ErrorSpec};
+use crate::{rustc_hir::intravisit::Visitor, utils::error_spec::{ErrorSpec, WrapperFunction}};
 
-#[derive(PartialEq, Eq, Hash, Clone, Debug)]
-// TODO split into wrapperFunction, ErrorSpec ?
-pub struct WrapperFunction {
-    pub wrapper_function_id: rustc_hir::def_id::DefId,
-    pub wrapped_function_id: rustc_hir::def_id::DefId,
-    pub return_value_check: Option<ErrorSpec>,
-}
 
 struct WrapperFuncFinder<'a, 'tcx> {
     tcx: rustc_middle::ty::TyCtxt<'tcx>,

@@ -1,6 +1,4 @@
 
-support bool returning subfunctions/methods 
-
 support assertions? 
 
 always output span, not just name 
@@ -15,8 +13,6 @@ support "reversed" binops
 
 LibSSH::channel.rs::554 good example of what is too complex to support fully? (result still right in this case)
 
-add support for unary ops (pretty much just negation)
-
 CLEANUP
 
 support question mark operator?
@@ -30,6 +26,12 @@ comparison engine
 github: past detectible bugs ?
 
 sinnvolles system für relativ kleinene evalutaion datensatz an libraries (diversity of downlodad count insb.)
+
+
+
+
+
+
 
 erfahrungswert: 4 wochen für ausarbeitung
 

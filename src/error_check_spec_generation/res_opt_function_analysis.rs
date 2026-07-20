@@ -3,8 +3,7 @@
 use crate::{error_check_spec_generation::{
     driver::OtherStatistics,
     spec_generation::{RVCheckFinder, ReturnType},
-    wrapper_func_finder::WrapperFunction,
-}, utils::error_spec::ErrorSpec};
+}, utils::error_spec::{ErrorSpec, WrapperFunction}};
 use crate::rustc_hir::intravisit::Visitor;
 
 impl<'tcx> RVCheckFinder<'tcx> {

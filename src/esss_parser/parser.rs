@@ -1,13 +1,7 @@
 
 
-use crate::utils::error_spec::ErrorSpec;
+use crate::utils::error_spec::{ErrorSpec, FunctionErrorSpec};
 use std::{collections::HashSet, fmt::Debug, io::Write};
-
-
-pub struct FunctionErrorSpec {
-    func_name: String,
-    error_spec: ErrorSpec, 
-}
 
 
 #[derive(Clone, Copy, Debug)]
@@ -141,7 +135,7 @@ fn parse_spec_string(spec_string: String) -> FunctionErrorSpec {
 
         if spec_line == "EMPTY" {
             println!("ErrorSpec is Empty");
-            return FunctionErrorSpec { func_name: function_name, error_spec: ErrorSpec::Empty }; 
+            return FunctionErrorSpec::new(function_name, ErrorSpec::Empty); 
         }
     
         // if the spec line is not just EMPTY, we split it into its intervals
@@ -154,7 +148,7 @@ fn parse_spec_string(spec_string: String) -> FunctionErrorSpec {
     
         if intervals.is_empty() {
             println!("No Intervals found!");
-            return FunctionErrorSpec { func_name: function_name, error_spec: ErrorSpec::Indeterminate }
+            return FunctionErrorSpec::new(function_name, ErrorSpec::Indeterminate);
         }
     
         for interval in intervals {
@@ -162,16 +156,16 @@ fn parse_spec_string(spec_string: String) -> FunctionErrorSpec {
             if let Ok(interval_values) = parse_interval_to_range(interval) {
                 error_values.append(interval_values.clone().as_mut());
             } else {
-                return FunctionErrorSpec { func_name: function_name, error_spec: ErrorSpec::Indeterminate };
+                return FunctionErrorSpec::new(function_name, ErrorSpec::Indeterminate);
             }
         }
     
         let error_spec = ErrorSpec::from_number_set(HashSet::from_iter(error_values));
         println!("ErrorSpec is {:?}", error_spec);
-        return FunctionErrorSpec { func_name: function_name, error_spec };
+        return FunctionErrorSpec::new(function_name, error_spec);
     }
 
-    FunctionErrorSpec { func_name: function_name, error_spec: ErrorSpec::Indeterminate }
+    return FunctionErrorSpec::new(function_name, ErrorSpec::Indeterminate);
 }
 
 
@@ -188,15 +182,15 @@ fn parse_spec_strings(spec_strings: Vec<String>) -> Vec<FunctionErrorSpec> {
     specs
 }
 
-pub fn parse_specs() -> Result<Vec<FunctionErrorSpec>, ParseError> {
+pub fn parse_specs() -> Vec<FunctionErrorSpec> {
 
     eprintln!("Spec parser active!");
 
     if let Ok(spec_strings) = get_function_spec_strings() {
         let specs = parse_spec_strings(spec_strings);
-        return Ok(specs)
+        return specs
     } else {
-        return Err(ParseError::WholeInput);
+        return Vec::new();
     }
 
 }

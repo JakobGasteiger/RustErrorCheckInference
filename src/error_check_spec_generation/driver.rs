@@ -4,10 +4,10 @@ use std::ops::Add;
 use std::ops::AddAssign;
 
 use crate::error_check_spec_generation::spec_generation::find_RV_checks;
-use crate::error_check_spec_generation::wrapper_func_finder::WrapperFunction;
 use crate::error_check_spec_generation::wrapper_func_finder::find_external_functions;
 use crate::error_check_spec_generation::wrapper_func_finder::find_wrapper_functions;
 use crate::utils::error_spec::ErrorSpec;
+use crate::utils::error_spec::WrapperFunction;
 
 
 pub fn aggregate_and_print_error_check_statistics(wrapper_functions: &Vec<WrapperFunction>) {
