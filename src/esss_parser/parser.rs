@@ -34,9 +34,15 @@ fn get_function_spec_strings() -> Result<Vec<String>, ParseError> {
     println!("\n");
 
     let path = std::env::current_dir().or(Err(ParseError::NoESSSFile))?.into_string().or(Err(ParseError::NoESSSFile))? + "/esss_results.txt"; 
-    println!("ESSS Results File at {}", path);
+    println!("ESSS Results File should be at {}", path);
 
-    let raw_string = std::fs::read_to_string(&path).or(Err(ParseError::WholeInput))?;
+    let raw_string = match std::fs::read_to_string(&path).or(Err(ParseError::WholeInput)) {
+        Ok(raw_string) => raw_string,
+        Err(err) => {   
+            println!("-> not found!");
+            return Err(err);
+        }
+    };
     //println!("{}", raw_string);
 
     // split into the two-line strings which denote the spec of one function
