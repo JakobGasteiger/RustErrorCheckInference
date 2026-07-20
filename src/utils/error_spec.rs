@@ -14,8 +14,8 @@ pub struct WrapperFunction {
 // C side spec
 #[derive(PartialEq, Eq, Hash, Clone, Debug)]
 pub struct FunctionErrorSpec {
-    func_name: String,
-    error_spec: ErrorSpec, 
+    pub func_name: String,
+    pub error_spec: ErrorSpec, 
 }
 
 impl FunctionErrorSpec {

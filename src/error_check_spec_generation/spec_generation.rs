@@ -3,7 +3,7 @@
 use std::collections::HashSet;
 use std::ops::{Add, AddAssign};
 
-use crate::error_check_spec_generation::driver::OtherStatistics;
+use crate::error_check_spec_generation::driver::OtherRustAnalysisStatistics;
 use crate::rustc_hir::intravisit::Visitor;
 use crate::utils::error_spec::{ErrorSpec, WrapperFunction};
 
@@ -36,7 +36,7 @@ pub struct RVCheckFinder<'tcx> {
     // functions already visited while going through sub-error-check function: for fix point analysis; if there is a loop, abort to guarantee termination
     pub already_visited_functions: Vec<rustc_hir::def_id::DefId>,
     pub mode: ReturnType, // TODO implement bool returning funcitons properly if needed
-    pub other_statistics: OtherStatistics,
+    pub other_statistics: OtherRustAnalysisStatistics,
 }
 
 impl<'tcx> rustc_hir::intravisit::Visitor<'tcx> for RVCheckFinder<'tcx> {
@@ -639,7 +639,7 @@ impl<'tcx> RVCheckFinder<'tcx> {
 pub fn find_RV_checks(
     tcx: rustc_middle::ty::TyCtxt<'_>,
     wrapper_function: &mut WrapperFunction,
-    other_statistics: &mut OtherStatistics,
+    other_statistics: &mut OtherRustAnalysisStatistics,
 ) {
     println!(
         "\nFor Wrapper Function {}",
@@ -676,7 +676,7 @@ pub fn find_RV_checks(
         wrapped_function_value_holder: None,
         already_visited_functions: Vec::new(),
         mode,
-        other_statistics: OtherStatistics::new(),
+        other_statistics: OtherRustAnalysisStatistics::new(),
     };
     finder.visit_body(body);
 

@@ -1,7 +1,7 @@
 // * contains some functions related to analyzing sub-error-check-function/methods which return Result or Option: sorted into own file for organization
 
 use crate::{error_check_spec_generation::{
-    driver::OtherStatistics,
+    driver::OtherRustAnalysisStatistics,
     spec_generation::{RVCheckFinder, ReturnType},
 }, utils::error_spec::{ErrorSpec, WrapperFunction}};
 use crate::rustc_hir::intravisit::Visitor;
@@ -54,7 +54,7 @@ impl<'tcx> RVCheckFinder<'tcx> {
                 wrapped_function_value_holder: Some(param_hir_id),
                 already_visited_functions: new_visited_function_list,
                 mode: ReturnType::ResultOrOption,
-                other_statistics: OtherStatistics::new(),
+                other_statistics: OtherRustAnalysisStatistics::new(),
             };
             sub_finder.visit_body(body);
             self.other_statistics += sub_finder.other_statistics.clone();

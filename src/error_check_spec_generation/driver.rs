@@ -55,7 +55,7 @@ pub fn aggregate_and_print_error_check_statistics(wrapper_functions: &Vec<Wrappe
 
 
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
-pub struct OtherStatistics {
+pub struct OtherRustAnalysisStatistics {
     // TODO add more statistics here
     pub bool_functions_not_yet_supported: usize,
     pub bool_methods_not_yet_supported: usize,
@@ -65,9 +65,9 @@ pub struct OtherStatistics {
     pub condition_negations: usize,
 }
 
-impl OtherStatistics {
+impl OtherRustAnalysisStatistics {
     pub fn new() -> Self {
-        OtherStatistics {
+        OtherRustAnalysisStatistics {
             bool_functions_not_yet_supported: 0,
             bool_methods_not_yet_supported: 0,
             not_result_or_option_return_types: 0,
@@ -100,11 +100,11 @@ impl OtherStatistics {
     }
 }
 
-impl Add for OtherStatistics {
+impl Add for OtherRustAnalysisStatistics {
     type Output = Self;
 
     fn add(self, other: Self) -> Self {
-        OtherStatistics {
+        OtherRustAnalysisStatistics {
             bool_functions_not_yet_supported: self.bool_functions_not_yet_supported
                 + other.bool_functions_not_yet_supported,
             bool_methods_not_yet_supported: self.bool_methods_not_yet_supported
@@ -119,7 +119,7 @@ impl Add for OtherStatistics {
     }
 }
 
-impl AddAssign for OtherStatistics {
+impl AddAssign for OtherRustAnalysisStatistics {
     fn add_assign(&mut self, other: Self) {
         *self = self.clone() + other;
     }

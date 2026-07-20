@@ -11,8 +11,9 @@ extern crate rustc_span;
 mod error_check_spec_generation;
 mod utils;
 mod esss_parser;
+mod spec_comparison;
 
-use crate::{error_check_spec_generation::{driver::*, spec_generation::find_RV_checks, wrapper_func_finder::{find_external_functions, find_sys_crates, find_wrapper_functions}}, esss_parser::parser::parse_specs};
+use crate::{error_check_spec_generation::{driver::*, spec_generation::find_RV_checks, wrapper_func_finder::{find_external_functions, find_sys_crates, find_wrapper_functions}}, esss_parser::parser::parse_specs, spec_comparison::comparer::compare_specs};
 
 
 pub struct ExternFuncCheckCallbacks;
@@ -37,7 +38,7 @@ impl rustc_driver::Callbacks for ExternFuncCheckCallbacks {
 
         let mut wrapper_functions  = find_wrapper_functions(tcx, &extern_function_ids);
 
-        let mut other_statistics = OtherStatistics::new();
+        let mut other_statistics = OtherRustAnalysisStatistics::new();
 
         for mut wrapper_function in &mut wrapper_functions {
             find_RV_checks(tcx, &mut wrapper_function, &mut other_statistics);
@@ -47,7 +48,9 @@ impl rustc_driver::Callbacks for ExternFuncCheckCallbacks {
         aggregate_and_print_error_check_statistics(&wrapper_functions);
         other_statistics.output();
 
-        let c_side_specs = parse_specs();
+        let c_side_specs = parse_specs(); // TODO statistics
+
+        compare_specs(tcx, c_side_specs, wrapper_functions); // TODO statistics
 
         rustc_driver::Compilation::Continue
     }

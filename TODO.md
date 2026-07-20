@@ -27,7 +27,7 @@ github: past detectible bugs ?
 
 sinnvolles system für relativ kleinene evalutaion datensatz an libraries (diversity of downlodad count insb.)
 
-
+stats for parser, comparer
 
 
 
