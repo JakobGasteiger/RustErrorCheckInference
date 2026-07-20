@@ -16,6 +16,12 @@ pub fn compare_specs(tcx: rustc_middle::ty::TyCtxt<'_>, c_side_specs: Vec<Functi
 
     for (c_side_spec, rust_side_spec) in find_pairs(tcx, c_side_specs, rust_side_specs) {
 
+        // ! item_name can panic, replace with opt_item name if tthis becomes an actual problem
+        let wrapped_function_name_sym = tcx.item_name(rust_side_spec.clone().wrapped_function_id); 
+        let wrapped_function_name = wrapped_function_name_sym.as_str();
+
+        println!("\nComparisong for Wrapping of {} in {}...", wrapped_function_name, tcx.def_path_str(rust_side_spec.wrapper_function_id));
+
         // if the retvalcheck was still none, we consider it indeterminate
         let rust_side_check = rust_side_spec.return_value_check.unwrap_or(ErrorSpec::Indeterminate);
         println!("Rust Side: {:?}", rust_side_check);
@@ -46,7 +52,7 @@ fn find_pairs(tcx: rustc_middle::ty::TyCtxt<'_>, c_side_specs: Vec<FunctionError
         for c_side_spec in &c_side_specs {
             if c_side_spec.func_name == wrapped_function_name {
 
-                println!("Found Wrapping of {} in {}, returning this pair for comparison.", wrapped_function_name, tcx.def_path_str(rust_side_spec.wrapper_function_id));
+                println!("Found Wrapping of {} in {}, adding this pair to Hasset for comparison. (duplicate output of pair possible at this stage)", wrapped_function_name, tcx.def_path_str(rust_side_spec.wrapper_function_id));
                 pairs.insert((c_side_spec.clone(), rust_side_spec.clone()));
             }
         }
