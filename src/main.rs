@@ -13,17 +13,18 @@ mod utils;
 mod esss_parser;
 mod spec_comparison;
 
-use crate::{error_check_spec_generation::{driver::*, spec_generation::find_RV_checks, wrapper_func_finder::{find_external_functions, find_sys_crates, find_wrapper_functions}}, esss_parser::parser::parse_specs, spec_comparison::comparer::compare_specs};
+use crate::{error_check_spec_generation::{driver::*, spec_generation::find_RV_checks, wrapper_func_finder::{find_external_functions, find_sys_crates, find_wrapper_functions}}, esss_parser::parser::{aggregate_and_print_parser_statistics, parse_specs}, spec_comparison::comparer::{aggregate_and_print_comparison_statistics, compare_specs}};
 
 
-pub struct ExternFuncCheckCallbacks;
+pub struct Callbacks;
 
-impl rustc_driver::Callbacks for ExternFuncCheckCallbacks {
+impl rustc_driver::Callbacks for Callbacks {
     fn after_analysis<'tcx>(
         &mut self,
         _compiler: &rustc_interface::interface::Compiler,
         tcx: rustc_middle::ty::TyCtxt<'tcx>,
     ) -> rustc_driver::Compilation {
+
         // only analyze the primary crate (so not dependencies etc)
         if std::env::var("CARGO_PRIMARY_PACKAGE").is_err() {
             return rustc_driver::Compilation::Continue;
@@ -45,12 +46,17 @@ impl rustc_driver::Callbacks for ExternFuncCheckCallbacks {
             //println!("{:?}", wrapper_function);
         }
 
+        println!("AAAAAAAAA");
         aggregate_and_print_error_check_statistics(&wrapper_functions);
         other_statistics.output();
 
-        let c_side_specs = parse_specs(); // TODO statistics
+        let c_side_specs = parse_specs();
+        println!("BBBBBBB");
+        aggregate_and_print_parser_statistics(&c_side_specs);
 
-        compare_specs(tcx, c_side_specs, wrapper_functions); // TODO statistics
+        let spec_comparison_results = compare_specs(tcx, c_side_specs, wrapper_functions);
+        println!("CCCCCCC");
+        aggregate_and_print_comparison_statistics(spec_comparison_results);
 
         rustc_driver::Compilation::Continue
     }
@@ -77,6 +83,6 @@ fn main() {
 
     // callback / after_analysis will hook in
     eprintln!("Wrapper is active");
-    rustc_driver::run_compiler(&args, &mut ExternFuncCheckCallbacks);
+    rustc_driver::run_compiler(&args, &mut Callbacks);
 
 }

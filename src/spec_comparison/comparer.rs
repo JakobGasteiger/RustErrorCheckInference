@@ -4,15 +4,17 @@ use std::collections::HashSet;
 use crate::{spec_comparison, utils::error_spec::{ErrorSpec, FunctionErrorSpec, WrapperFunction}};
 
 #[derive(Debug, Clone)]
-enum SpecComparisonResult {
+pub enum SpecComparisonResult {
     EqualOK,
     NotEqualPossibleBug,
     CannotCompare
 }
 
-pub fn compare_specs(tcx: rustc_middle::ty::TyCtxt<'_>, c_side_specs: Vec<FunctionErrorSpec>, rust_side_specs: Vec<WrapperFunction>) {
+pub fn compare_specs(tcx: rustc_middle::ty::TyCtxt<'_>, c_side_specs: Vec<FunctionErrorSpec>, rust_side_specs: Vec<WrapperFunction>) -> Vec<SpecComparisonResult> {
 
     println!("\n\nComparing C and rust Side Specs...");
+
+    let mut spec_comparison_results = Vec::new();
 
     for (c_side_spec, rust_side_spec) in find_pairs(tcx, c_side_specs, rust_side_specs) {
 
@@ -36,7 +38,10 @@ pub fn compare_specs(tcx: rustc_middle::ty::TyCtxt<'_>, c_side_specs: Vec<Functi
         };
 
         println!("Comparison Result: {:?}", spec_comparison_result);
+        spec_comparison_results.push(spec_comparison_result);
     }
+
+    spec_comparison_results
 }
 
 fn find_pairs(tcx: rustc_middle::ty::TyCtxt<'_>, c_side_specs: Vec<FunctionErrorSpec>, rust_side_specs: Vec<WrapperFunction>) -> HashSet<(FunctionErrorSpec, WrapperFunction)> {
@@ -59,4 +64,34 @@ fn find_pairs(tcx: rustc_middle::ty::TyCtxt<'_>, c_side_specs: Vec<FunctionError
     }
 
     pairs
+}
+
+pub fn aggregate_and_print_comparison_statistics(spec_comparison_results: Vec<SpecComparisonResult>) {
+
+    let mut total = 0;
+    let mut equal_ok = 0;
+    let mut not_equal_possible_bug = 0;
+    let mut cannot_compare = 0;
+
+    for spec_comparison_result in spec_comparison_results {
+        total += 1;
+
+        match spec_comparison_result {
+            SpecComparisonResult::EqualOK => {
+                equal_ok += 1;
+            },
+            SpecComparisonResult::NotEqualPossibleBug => {
+                not_equal_possible_bug += 1;
+            }
+            SpecComparisonResult::CannotCompare => {
+                cannot_compare += 1;
+            }
+        }
+
+        println!("\n\nComparison Statistics:");
+        println!("Total Comparisons: {}", total);
+        println!("EqualOK: {}", equal_ok);
+        println!("NotEqualPossibleBug: {}", not_equal_possible_bug);
+        println!("CannotCompare: {}", cannot_compare);
+    }
 }
