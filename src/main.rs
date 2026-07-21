@@ -10,10 +10,10 @@ extern crate rustc_span;
 
 mod error_check_spec_generation;
 mod utils;
-mod esss_parser;
+mod parser;
 mod spec_comparison;
 
-use crate::{error_check_spec_generation::{driver::*, spec_generation::find_RV_checks, wrapper_func_finder::{find_external_functions, find_sys_crates, find_wrapper_functions}}, esss_parser::parser::{aggregate_and_print_parser_statistics, parse_specs}, spec_comparison::comparer::{aggregate_and_print_comparison_statistics, compare_specs}};
+use crate::{error_check_spec_generation::{driver::*, spec_generation::find_RV_checks, wrapper_func_finder::{find_external_functions, find_sys_crates, find_wrapper_functions}}, parser::esss_parser::{aggregate_and_print_parser_statistics, parse_specs}, spec_comparison::comparer::{aggregate_and_print_comparison_statistics, compare_specs}};
 
 
 pub struct Callbacks;

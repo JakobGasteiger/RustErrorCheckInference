@@ -7,5 +7,6 @@
     "RUSTUP_TOOLCHAIN": "nightly"
   },
   "rust-analyzer.cargo.extraArgs": ["--config", "build.rustflags=[\"-C\", \"prefer-dynamic\"]"],
-  "rust-analyzer.diagnostics.disabled": ["unresolved-extern-crate"]
+  "rust-analyzer.diagnostics.disabled": ["unresolved-extern-crate"],
+  "rust-analyzer.trace.server": "verbose"
 }
