@@ -87,11 +87,11 @@ pub fn aggregate_and_print_comparison_statistics(spec_comparison_results: Vec<Sp
                 cannot_compare += 1;
             }
         }
-
-        println!("\n\nComparison Statistics:");
-        println!("Total Comparisons: {}", total);
-        println!("EqualOK: {}", equal_ok);
-        println!("NotEqualPossibleBug: {}", not_equal_possible_bug);
-        println!("CannotCompare: {}", cannot_compare);
     }
+    
+    println!("\n\nComparison Statistics:");
+    println!("Total Comparisons: {}", total);
+    println!("EqualOK: {}", equal_ok);
+    println!("NotEqualPossibleBug: {}", not_equal_possible_bug);
+    println!("CannotCompare: {}", cannot_compare);
 }

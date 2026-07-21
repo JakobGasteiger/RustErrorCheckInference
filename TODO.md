@@ -29,9 +29,6 @@ sinnvolles system für relativ kleinene evalutaion datensatz an libraries (diver
 
 fix many detected bugs in comparison -> how ???
 
-fix duplicate running of comparison statistics
-
-
 
 
 

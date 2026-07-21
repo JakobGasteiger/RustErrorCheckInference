@@ -46,16 +46,13 @@ impl rustc_driver::Callbacks for Callbacks {
             //println!("{:?}", wrapper_function);
         }
 
-        println!("AAAAAAAAA");
         aggregate_and_print_error_check_statistics(&wrapper_functions);
         other_statistics.output();
 
         let c_side_specs = parse_specs();
-        println!("BBBBBBB");
         aggregate_and_print_parser_statistics(&c_side_specs);
 
         let spec_comparison_results = compare_specs(tcx, c_side_specs, wrapper_functions);
-        println!("CCCCCCC");
         aggregate_and_print_comparison_statistics(spec_comparison_results);
 
         rustc_driver::Compilation::Continue
