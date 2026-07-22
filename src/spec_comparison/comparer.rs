@@ -14,17 +14,17 @@ pub fn compare_specs(tcx: rustc_middle::ty::TyCtxt<'_>, esss_specs: Option<Vec<F
 
     println!("\n\nComparing C and rust Side Specs...");
 
-    let c_side_specs = correlate_esss_eesi(esss_specs, eesi_specs);
+    let correlated_c_side_specs = correlate_esss_eesi(esss_specs, eesi_specs);
 
     let mut spec_comparison_results = Vec::new();
 
-    for (c_side_spec, rust_side_spec) in find_pairs(tcx, c_side_specs, rust_side_specs) {
+    for (c_side_spec, rust_side_spec) in find_pairs(tcx, correlated_c_side_specs, rust_side_specs) {
 
-        // ! item_name can panic, replace with opt_item name if tthis becomes an actual problem
+        // ! item_name can panic, replace with opt_item name if this ever becomes an actual problem
         let wrapped_function_name_sym = tcx.item_name(rust_side_spec.clone().wrapped_function_id); 
         let wrapped_function_name = wrapped_function_name_sym.as_str();
 
-        println!("\nComparisong for Wrapping of {} in {}...", wrapped_function_name, tcx.def_path_str(rust_side_spec.wrapper_function_id));
+        println!("\nComparison for Wrapping of {} in {}...", wrapped_function_name, tcx.def_path_str(rust_side_spec.wrapper_function_id));
 
         // if the retvalcheck was still none, we consider it indeterminate
         let rust_side_check = rust_side_spec.return_value_check.unwrap_or(ErrorSpec::Indeterminate);
@@ -80,10 +80,10 @@ fn correlate_esss_eesi(esss_specs: Option<Vec<FunctionErrorSpec>>, eesi_specs: O
     let mut total_matching: usize = 0;
     let mut total_not_matching: usize = 0;
 
-    for esss_spec in &esss_specs { // unwrap is safe due to check above
+    for esss_spec in &esss_specs { 
         println!("\nLooking for EESI spec for ESSS spec of function {}", esss_spec.func_name);
 
-        for eesi_spec in &eesi_specs { // unwrap is safe due to check above
+        for eesi_spec in &eesi_specs {
 
             if eesi_spec.func_name == esss_spec.func_name {
 
@@ -95,15 +95,15 @@ fn correlate_esss_eesi(esss_specs: Option<Vec<FunctionErrorSpec>>, eesi_specs: O
                     total_matching += 1;
                     correlated_specs.insert(esss_spec.clone());
                 } else {
-                     println!("They don't match (ESSS: {:?}, EESI: {:?})", esss_spec.error_spec, eesi_spec.error_spec);
-                     total_not_matching += 1;
+                    println!("They don't match (ESSS: {:?}, EESI: {:?})", esss_spec.error_spec, eesi_spec.error_spec);
+                    total_not_matching += 1;
                 }
             }
         }
     }
 
     println!("\nSpec Correlation Statistics:");
-    println!("Total Functions in common between ESS and EESI: {total_common_functions}");
+    println!("Total Functions in common between ESSS and EESI: {total_common_functions}");
     println!("Total Functions with matching specs: {total_matching}");
     println!("Total Functions with non-matching specs: {total_not_matching}");
 
@@ -111,7 +111,7 @@ fn correlate_esss_eesi(esss_specs: Option<Vec<FunctionErrorSpec>>, eesi_specs: O
 }
 
 fn find_pairs(tcx: rustc_middle::ty::TyCtxt<'_>, c_side_specs: Vec<FunctionErrorSpec>, rust_side_specs: Vec<WrapperFunction>) -> HashSet<(FunctionErrorSpec, WrapperFunction)> {
-    
+
     let mut pairs = HashSet::new();
     
     for rust_side_spec in &rust_side_specs {
@@ -138,6 +138,7 @@ pub fn print_comparison_statistics(spec_comparison_results: Vec<SpecComparisonRe
     let mut equal_ok: usize = 0;
     let mut not_equal_possible_bug: usize = 0;
     let mut cannot_compare: usize = 0;
+
 
     for spec_comparison_result in spec_comparison_results {
         total += 1;

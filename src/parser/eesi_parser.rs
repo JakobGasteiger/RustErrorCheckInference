@@ -106,7 +106,7 @@ pub fn print_eesi_statistics(results: &Option<Vec<FunctionErrorSpec>>) {
             }
         }
     
-        println!("\n\nESSS Parsing Statistics:");
+        println!("\n\nEESI Parsing Statistics:");
         println!("Total parsed functions: {}", total);
         println!("Empty: {}", empty);
         println!("GrEqZero: {}", gr_eq_zero);
