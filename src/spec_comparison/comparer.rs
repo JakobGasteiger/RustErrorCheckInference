@@ -1,5 +1,5 @@
 
-use std::collections::HashSet;
+use std::{collections::HashSet, vec};
 
 use crate::{spec_comparison, utils::error_spec::{ErrorSpec, FunctionErrorSpec, WrapperFunction}};
 
@@ -10,9 +10,11 @@ pub enum SpecComparisonResult {
     CannotCompare
 }
 
-pub fn compare_specs(tcx: rustc_middle::ty::TyCtxt<'_>, c_side_specs: Vec<FunctionErrorSpec>, rust_side_specs: Vec<WrapperFunction>) -> Vec<SpecComparisonResult> {
+pub fn compare_specs(tcx: rustc_middle::ty::TyCtxt<'_>, esss_specs: Option<Vec<FunctionErrorSpec>>, eesi_specs: Option<Vec<FunctionErrorSpec>>, rust_side_specs: Vec<WrapperFunction>) -> Vec<SpecComparisonResult> {
 
     println!("\n\nComparing C and rust Side Specs...");
+
+    let c_side_specs = correlate_esss_eesi(esss_specs, eesi_specs);
 
     let mut spec_comparison_results = Vec::new();
 
@@ -44,6 +46,70 @@ pub fn compare_specs(tcx: rustc_middle::ty::TyCtxt<'_>, c_side_specs: Vec<Functi
     spec_comparison_results
 }
 
+fn correlate_esss_eesi(esss_specs: Option<Vec<FunctionErrorSpec>>, eesi_specs: Option<Vec<FunctionErrorSpec>>) -> Vec<FunctionErrorSpec> {
+
+    println!("\n\nCorrelating ESSS and EESI specs");
+    
+    // if we have no specs at all, our correlated specs should be empty
+    if esss_specs.is_none() && eesi_specs.is_none() {
+        println!("We have no C Side Specs, returning empty set");
+        return Vec::new();
+    }
+
+    // else if we only have, esss, we return just that
+    if let Some(esss_specs) = &esss_specs
+    && eesi_specs.clone().is_none() {
+        println!("We only have ESSS, returning that");
+        return esss_specs.clone();
+    }
+
+    // else, if we only have eesi, we return just that
+    if let Some(eesi_specs) = &eesi_specs 
+    && esss_specs.clone().is_none() {
+        println!("We only have EESI, returning that");
+        return eesi_specs.clone();
+    }
+
+    // we can now safely unwrap both
+    let esss_specs = esss_specs.unwrap();
+    let eesi_specs = eesi_specs.unwrap();
+
+    let mut correlated_specs: HashSet<FunctionErrorSpec> = HashSet::new();
+
+    let mut total_common_functions: usize = 0;
+    let mut total_matching: usize = 0;
+    let mut total_not_matching: usize = 0;
+
+    for esss_spec in &esss_specs { // unwrap is safe due to check above
+        println!("\nLooking for EESI spec for ESSS spec of function {}", esss_spec.func_name);
+
+        for eesi_spec in &eesi_specs { // unwrap is safe due to check above
+
+            if eesi_spec.func_name == esss_spec.func_name {
+
+                total_common_functions += 1;
+
+                println!("Found ESSS/EESI pair for function {}, testing if specs match", esss_spec.func_name);
+                if eesi_spec.error_spec == esss_spec.error_spec {
+                    println!("They match ({:?})", esss_spec.error_spec);
+                    total_matching += 1;
+                    correlated_specs.insert(esss_spec.clone());
+                } else {
+                     println!("They don't match (ESSS: {:?}, EESI: {:?})", esss_spec.error_spec, eesi_spec.error_spec);
+                     total_not_matching += 1;
+                }
+            }
+        }
+    }
+
+    println!("\nSpec Correlation Statistics:");
+    println!("Total Functions in common between ESS and EESI: {total_common_functions}");
+    println!("Total Functions with matching specs: {total_matching}");
+    println!("Total Functions with non-matching specs: {total_not_matching}");
+
+    correlated_specs.into_iter().collect()
+}
+
 fn find_pairs(tcx: rustc_middle::ty::TyCtxt<'_>, c_side_specs: Vec<FunctionErrorSpec>, rust_side_specs: Vec<WrapperFunction>) -> HashSet<(FunctionErrorSpec, WrapperFunction)> {
     
     let mut pairs = HashSet::new();
@@ -66,12 +132,12 @@ fn find_pairs(tcx: rustc_middle::ty::TyCtxt<'_>, c_side_specs: Vec<FunctionError
     pairs
 }
 
-pub fn aggregate_and_print_comparison_statistics(spec_comparison_results: Vec<SpecComparisonResult>) {
+pub fn print_comparison_statistics(spec_comparison_results: Vec<SpecComparisonResult>) {
 
-    let mut total = 0;
-    let mut equal_ok = 0;
-    let mut not_equal_possible_bug = 0;
-    let mut cannot_compare = 0;
+    let mut total: usize = 0;
+    let mut equal_ok: usize = 0;
+    let mut not_equal_possible_bug: usize = 0;
+    let mut cannot_compare: usize = 0;
 
     for spec_comparison_result in spec_comparison_results {
         total += 1;

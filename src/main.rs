@@ -13,7 +13,7 @@ mod utils;
 mod parser;
 mod spec_comparison;
 
-use crate::{error_check_spec_generation::{driver::*, spec_generation::find_RV_checks, wrapper_func_finder::{find_external_functions, find_sys_crates, find_wrapper_functions}}, parser::{eesi_parser::parse_eesi, esss_parser::{aggregate_and_print_parser_statistics, parse_esss}}, spec_comparison::comparer::{aggregate_and_print_comparison_statistics, compare_specs}};
+use crate::{error_check_spec_generation::{driver::*, spec_generation::find_RV_checks, wrapper_func_finder::{find_external_functions, find_sys_crates, find_wrapper_functions}}, parser::{eesi_parser::{parse_eesi, print_eesi_statistics}, esss_parser::{parse_esss, print_esss_statistics}}, spec_comparison::comparer::{compare_specs, print_comparison_statistics}};
 
 
 pub struct Callbacks;
@@ -46,17 +46,17 @@ impl rustc_driver::Callbacks for Callbacks {
             //println!("{:?}", wrapper_function);
         }
 
-        aggregate_and_print_error_check_statistics(&wrapper_functions);
+        print_error_check_statistics(&wrapper_functions);
         other_statistics.output();
 
         let esss_specs = parse_esss();
-        aggregate_and_print_parser_statistics(&esss_specs);
+        print_esss_statistics(&esss_specs);
 
         let eesi_specs = parse_eesi();
-        // TODO statistics, integrate into comparison engine
+        print_eesi_statistics(&eesi_specs);
 
-        let spec_comparison_results = compare_specs(tcx, esss_specs, wrapper_functions);
-        aggregate_and_print_comparison_statistics(spec_comparison_results);
+        let spec_comparison_results = compare_specs(tcx, esss_specs, eesi_specs, wrapper_functions);
+        print_comparison_statistics(spec_comparison_results);
 
         rustc_driver::Compilation::Continue
     }

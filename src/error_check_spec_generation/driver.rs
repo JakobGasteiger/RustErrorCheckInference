@@ -10,17 +10,17 @@ use crate::utils::error_spec::ErrorSpec;
 use crate::utils::error_spec::WrapperFunction;
 
 
-pub fn aggregate_and_print_error_check_statistics(wrapper_functions: &Vec<WrapperFunction>) {
-    let mut total = 0;
-    let mut empty = 0;
-    let mut gr_eq_zero = 0;
-    let mut les_eq_zero = 0;
-    let mut equal_zero = 0;
-    let mut greater_zero = 0;
-    let mut lesser_zero = 0;
-    let mut not_eq_zero = 0;
-    let mut all = 0;
-    let mut indeterminate = 0;
+pub fn print_error_check_statistics(wrapper_functions: &Vec<WrapperFunction>) {
+    let mut total: usize = 0;
+    let mut empty: usize = 0;
+    let mut gr_eq_zero: usize = 0;
+    let mut les_eq_zero: usize = 0;
+    let mut equal_zero: usize = 0;
+    let mut greater_zero: usize = 0;
+    let mut lesser_zero: usize = 0;
+    let mut not_eq_zero: usize = 0;
+    let mut all: usize = 0;
+    let mut indeterminate: usize = 0;
 
     for wrapper_function in wrapper_functions {
         //println!("{:?}", wrapper_function);
