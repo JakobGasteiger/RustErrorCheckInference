@@ -3,24 +3,7 @@
 use crate::utils::error_spec::{ErrorSpec, FunctionErrorSpec};
 use std::{collections::HashSet, fmt::Debug, io::Write};
 
-
-#[derive(Clone, Copy, Debug)]
-pub enum ParseError {
-    WholeInput,
-    Function,
-    Interval,
-    NoESSSFile
-}
-
-impl std::fmt::Display for ParseError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            _ => write!(f, "{:?}", self),
-        }
-    }
-}
-
-impl std::error::Error for ParseError {}
+use crate::parser::common::ParseError;
 
 
 fn get_function_spec_strings() -> Result<Vec<String>, ParseError> {
@@ -182,9 +165,9 @@ fn parse_spec_strings(spec_strings: Vec<String>) -> Vec<FunctionErrorSpec> {
     specs
 }
 
-pub fn parse_specs() -> Vec<FunctionErrorSpec> {
+pub fn parse_esss() -> Vec<FunctionErrorSpec> {
 
-    eprintln!("Spec parser active!");
+    eprintln!("ESSS parser active!");
 
     if let Ok(spec_strings) = get_function_spec_strings() {
         let specs = parse_spec_strings(spec_strings);
