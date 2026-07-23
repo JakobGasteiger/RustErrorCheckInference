@@ -1,25 +1,25 @@
 use std::{collections::HashSet, ops::ControlFlow::Continue};
 
-use crate::{error_check_spec_generation::spec_generation::RVCheckFinder, utils::error_spec::ErrorSpec::*};
+use crate::{error_check_spec_generation::spec_generation::RVCheckFinder, utils::error_spec::ErrorSpecPredicate::*};
 
 
 // Rust side spec
 #[derive(PartialEq, Eq, Hash, Clone, Debug)]
-pub struct WrapperFunction {
+pub struct WrapperFunctionSpec {
     pub wrapper_function_id: rustc_hir::def_id::DefId,
     pub wrapped_function_id: rustc_hir::def_id::DefId,
-    pub return_value_check: Option<ErrorSpec>,
+    pub return_value_check: Option<ErrorSpecPredicate>,
 }
 
 // C side spec
 #[derive(PartialEq, Eq, Hash, Clone, Debug)]
 pub struct FunctionErrorSpec {
     pub func_name: String,
-    pub error_spec: ErrorSpec, 
+    pub error_spec: ErrorSpecPredicate, 
 }
 
 impl FunctionErrorSpec {
-    pub fn new(func_name: String, error_spec: ErrorSpec) -> Self {
+    pub fn new(func_name: String, error_spec: ErrorSpecPredicate) -> Self {
         FunctionErrorSpec {
             func_name,
             error_spec
@@ -29,7 +29,7 @@ impl FunctionErrorSpec {
 
 
 #[derive(PartialEq, Eq, Hash, Clone, Copy, Debug)]
-pub enum ErrorSpec {
+pub enum ErrorSpecPredicate {
     Empty,
     LesserZero,
     GreaterZero,
@@ -41,9 +41,9 @@ pub enum ErrorSpec {
     Indeterminate,
 }
 
-impl ErrorSpec {
+impl ErrorSpecPredicate {
     
-    pub fn opposite(self) -> ErrorSpec {
+    pub fn opposite(self) -> ErrorSpecPredicate {
         match self {
             Empty => All,
             LesserZero => GrEqZero,
@@ -61,7 +61,7 @@ impl ErrorSpec {
         bin_op: &rustc_hir::BinOp,
         comparand: &rustc_hir::Expr,
         rv_check_finder: &RVCheckFinder
-    ) -> Option<ErrorSpec> {
+    ) -> Option<ErrorSpecPredicate> {
 
         // is our comparand a literal?
         if let rustc_hir::ExprKind::Lit(lit) = comparand.kind {
@@ -148,29 +148,29 @@ impl ErrorSpec {
         Some(set)
     }
 
-    pub fn from_number_set(set: HashSet<i128>) -> ErrorSpec {
+    pub fn from_number_set(set: HashSet<i128>) -> ErrorSpecPredicate {
 
         let contains_lesser_zero: bool = set.iter().any(|&x| x < 0);
         let contains_greater_zero: bool = set.iter().any(|&x| x > 0);
         let contains_zero: bool = set.contains(&0);
 
         match (contains_lesser_zero, contains_zero, contains_greater_zero) {
-            (false, false, false) => ErrorSpec::Empty,
-            (true, false, false) => ErrorSpec::LesserZero,
-            (true, true, false) => ErrorSpec::LesEqZero,
-            (false, false, true) => ErrorSpec::GreaterZero,
-            (false, true, true) => ErrorSpec::GrEqZero,
-            (true, false, true) => ErrorSpec::NotEqZero,
-            (false, true, false) => ErrorSpec::EqualZero,
-            (true, true, true) => ErrorSpec::All,
-            _ => ErrorSpec::Indeterminate
+            (false, false, false) => ErrorSpecPredicate::Empty,
+            (true, false, false) => ErrorSpecPredicate::LesserZero,
+            (true, true, false) => ErrorSpecPredicate::LesEqZero,
+            (false, false, true) => ErrorSpecPredicate::GreaterZero,
+            (false, true, true) => ErrorSpecPredicate::GrEqZero,
+            (true, false, true) => ErrorSpecPredicate::NotEqZero,
+            (false, true, false) => ErrorSpecPredicate::EqualZero,
+            (true, true, true) => ErrorSpecPredicate::All,
+            _ => ErrorSpecPredicate::Indeterminate
         }
     }
 
     // implementation via number sets is a bit roundabout, but easier than matching on every single possibility
-    pub fn union(self, other: ErrorSpec) -> ErrorSpec {
-        if self == ErrorSpec::Indeterminate || other == ErrorSpec::Indeterminate {
-            return ErrorSpec::Indeterminate;
+    pub fn union(self, other: ErrorSpecPredicate) -> ErrorSpecPredicate {
+        if self == ErrorSpecPredicate::Indeterminate || other == ErrorSpecPredicate::Indeterminate {
+            return ErrorSpecPredicate::Indeterminate;
         }
 
         let mut as_num_set: HashSet<i128> = HashSet::new();
@@ -183,9 +183,9 @@ impl ErrorSpec {
         Self::from_number_set(as_num_set)
     }
 
-    pub fn intersection(self, other: ErrorSpec) -> ErrorSpec {
-        if self == ErrorSpec::Indeterminate || other == ErrorSpec::Indeterminate {
-            return ErrorSpec::Indeterminate;
+    pub fn intersection(self, other: ErrorSpecPredicate) -> ErrorSpecPredicate {
+        if self == ErrorSpecPredicate::Indeterminate || other == ErrorSpecPredicate::Indeterminate {
+            return ErrorSpecPredicate::Indeterminate;
         }
 
         let mut as_num_set: HashSet<i128> = HashSet::new();
@@ -197,9 +197,9 @@ impl ErrorSpec {
         Self::from_number_set(as_num_set)
     }
 
-    pub fn without(self, other: ErrorSpec) -> ErrorSpec {
-        if self == ErrorSpec::Indeterminate || other == ErrorSpec::Indeterminate {
-            return ErrorSpec::Indeterminate;
+    pub fn without(self, other: ErrorSpecPredicate) -> ErrorSpecPredicate {
+        if self == ErrorSpecPredicate::Indeterminate || other == ErrorSpecPredicate::Indeterminate {
+            return ErrorSpecPredicate::Indeterminate;
         }
 
         if let Some(self_set) = self.to_number_set()
@@ -208,7 +208,7 @@ impl ErrorSpec {
             let difference: HashSet<i128> = self_set.difference(&other_set).copied().collect();
             Self::from_number_set(difference)
         } else {
-            ErrorSpec::Indeterminate
+            ErrorSpecPredicate::Indeterminate
         }
     }
 }

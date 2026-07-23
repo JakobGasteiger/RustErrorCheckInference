@@ -29,6 +29,10 @@ sinnvolles system für relativ kleinene evalutaion datensatz an libraries (diver
 
 fix many detected bugs in comparison -> how ???
 
+rust analysis as source of truth? -> fow EESI bug finding, for instance?
+
+RTFM paper somehow useful?
+
 
 
 

@@ -1,4 +1,4 @@
-use crate::{parser::common::ParseError, utils::error_spec::{ErrorSpec, FunctionErrorSpec}};
+use crate::{parser::common::ParseError, utils::error_spec::{ErrorSpecPredicate, FunctionErrorSpec}};
 
 
 pub fn get_function_spec_strings() -> Result<Vec<String>, ParseError> {
@@ -43,15 +43,15 @@ pub fn parse_spec_string(spec_string: String) -> FunctionErrorSpec {
     let predicate_string = split.get(2).unwrap_or(&"ErrorParsingPredicate".to_string()).clone();
 
     let predicate = match predicate_string.as_str() {
-        "bottom" => ErrorSpec::Empty,
-        "<0" => ErrorSpec::LesserZero,
-        ">0" => ErrorSpec::GreaterZero,
-        "<=0" => ErrorSpec::LesEqZero,
-        ">=0" => ErrorSpec::GrEqZero,
-        "==0" => ErrorSpec::EqualZero,
-        "!=0" => ErrorSpec::NotEqZero,
-        "top" => ErrorSpec::All,
-        _ => ErrorSpec::Indeterminate,
+        "bottom" => ErrorSpecPredicate::Empty,
+        "<0" => ErrorSpecPredicate::LesserZero,
+        ">0" => ErrorSpecPredicate::GreaterZero,
+        "<=0" => ErrorSpecPredicate::LesEqZero,
+        ">=0" => ErrorSpecPredicate::GrEqZero,
+        "==0" => ErrorSpecPredicate::EqualZero,
+        "!=0" => ErrorSpecPredicate::NotEqZero,
+        "top" => ErrorSpecPredicate::All,
+        _ => ErrorSpecPredicate::Indeterminate,
     };
 
     println!("Predicate for {function_name} is {predicate:?}");
@@ -93,15 +93,15 @@ pub fn print_eesi_statistics(results: &Option<Vec<FunctionErrorSpec>>) {
             //println!("{:?}", wrapper_function);
             total += 1;
             match parse_result.error_spec {
-                ErrorSpec::Empty => empty += 1,
-                ErrorSpec::GrEqZero => gr_eq_zero += 1,
-                ErrorSpec::LesEqZero => les_eq_zero += 1,
-                ErrorSpec::EqualZero => equal_zero += 1,
-                ErrorSpec::GreaterZero => greater_zero += 1,
-                ErrorSpec::LesserZero => lesser_zero += 1,
-                ErrorSpec::NotEqZero => not_eq_zero += 1,
-                ErrorSpec::All => all += 1,
-                ErrorSpec::Indeterminate => indeterminate += 1,
+                ErrorSpecPredicate::Empty => empty += 1,
+                ErrorSpecPredicate::GrEqZero => gr_eq_zero += 1,
+                ErrorSpecPredicate::LesEqZero => les_eq_zero += 1,
+                ErrorSpecPredicate::EqualZero => equal_zero += 1,
+                ErrorSpecPredicate::GreaterZero => greater_zero += 1,
+                ErrorSpecPredicate::LesserZero => lesser_zero += 1,
+                ErrorSpecPredicate::NotEqZero => not_eq_zero += 1,
+                ErrorSpecPredicate::All => all += 1,
+                ErrorSpecPredicate::Indeterminate => indeterminate += 1,
                 _ => indeterminate += 1,
             }
         }

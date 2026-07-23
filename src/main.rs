@@ -12,8 +12,9 @@ mod error_check_spec_generation;
 mod utils;
 mod parser;
 mod spec_comparison;
+mod eesi_like_output;
 
-use crate::{error_check_spec_generation::{driver::*, spec_generation::find_RV_checks, wrapper_func_finder::{find_external_functions, find_sys_crates, find_wrapper_functions}}, parser::{eesi_parser::{parse_eesi, print_eesi_statistics}, esss_parser::{parse_esss, print_esss_statistics}}, spec_comparison::comparer::{compare_specs, print_comparison_statistics}};
+use crate::{eesi_like_output::eesi_like_output::print_eesi_like_output, error_check_spec_generation::{driver::*, spec_generation::find_RV_checks, wrapper_func_finder::{find_external_functions, find_sys_crates, find_wrapper_functions}}, parser::{eesi_parser::{parse_eesi, print_eesi_statistics}, esss_parser::{parse_esss, print_esss_statistics}}, spec_comparison::comparer::{compare_specs, print_comparison_statistics}};
 
 
 pub struct Callbacks;
@@ -37,16 +38,13 @@ impl rustc_driver::Callbacks for Callbacks {
 
         let extern_function_ids = find_external_functions(tcx, &sys_crates);
 
-        let mut wrapper_functions  = find_wrapper_functions(tcx, &extern_function_ids);
-
+        let mut wrapper_function_specs  = find_wrapper_functions(tcx, &extern_function_ids);
         let mut other_statistics = OtherRustAnalysisStatistics::new();
-
-        for mut wrapper_function in &mut wrapper_functions {
-            find_RV_checks(tcx, &mut wrapper_function, &mut other_statistics);
+        for mut wrapper_function_spec in &mut wrapper_function_specs {
+            find_RV_checks(tcx, &mut wrapper_function_spec, &mut other_statistics);
             //println!("{:?}", wrapper_function);
         }
-
-        print_error_check_statistics(&wrapper_functions);
+        print_error_check_statistics(&wrapper_function_specs);
         other_statistics.output();
 
         let esss_specs = parse_esss();
@@ -55,8 +53,11 @@ impl rustc_driver::Callbacks for Callbacks {
         let eesi_specs = parse_eesi();
         print_eesi_statistics(&eesi_specs);
 
-        let spec_comparison_results = compare_specs(tcx, esss_specs, eesi_specs, wrapper_functions);
+        let spec_comparison_results = compare_specs(tcx, esss_specs, eesi_specs, wrapper_function_specs.clone());
         print_comparison_statistics(spec_comparison_results);
+
+        // do this last to minimize damge if function panics
+        print_eesi_like_output(tcx, &wrapper_function_specs);
 
         rustc_driver::Compilation::Continue
     }

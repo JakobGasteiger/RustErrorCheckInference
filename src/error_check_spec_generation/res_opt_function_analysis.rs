@@ -3,7 +3,7 @@
 use crate::{error_check_spec_generation::{
     driver::OtherRustAnalysisStatistics,
     spec_generation::{RVCheckFinder, ReturnType},
-}, utils::error_spec::{ErrorSpec, WrapperFunction}};
+}, utils::error_spec::{ErrorSpecPredicate, WrapperFunctionSpec}};
 use crate::rustc_hir::intravisit::Visitor;
 
 impl<'tcx> RVCheckFinder<'tcx> {
@@ -14,7 +14,7 @@ impl<'tcx> RVCheckFinder<'tcx> {
         tcx: rustc_middle::ty::TyCtxt<'tcx>,
         error_check_func_def_id: rustc_hir::def_id::DefId,
         arg_index: usize,
-    ) -> Option<ErrorSpec> {
+    ) -> Option<ErrorSpecPredicate> {
         println!(
             "\nFor Sub Error Check Function {}",
             tcx.def_path_str(error_check_func_def_id)
@@ -24,22 +24,22 @@ impl<'tcx> RVCheckFinder<'tcx> {
         let Some(local_def_id) = error_check_func_def_id.as_local() else {
             println!("Not local!");
             self.other_statistics.not_local_functions += 1;
-            return Some(ErrorSpec::Indeterminate);
+            return Some(ErrorSpecPredicate::Indeterminate);
         };
         // abort if function has no body
         let Some(body) = tcx.hir_maybe_body_owned_by(local_def_id) else {
             println!("No body!");
-            return Some(ErrorSpec::Indeterminate);
+            return Some(ErrorSpecPredicate::Indeterminate);
         };
 
         // get the parameter at arg_index
         let Some(param) = body.params.get(arg_index) else {
-            return Some(ErrorSpec::Indeterminate);
+            return Some(ErrorSpecPredicate::Indeterminate);
         };
 
         // that parameter's binding hir id becomes the new tracked identity
         if let rustc_hir::PatKind::Binding(_, param_hir_id, _, _) = param.pat.kind {
-            let new_wrapper_function = WrapperFunction {
+            let new_wrapper_function = WrapperFunctionSpec {
                 wrapper_function_id: error_check_func_def_id,
                 wrapped_function_id: self.wrapper_function.wrapped_function_id,
                 return_value_check: None,
@@ -86,7 +86,7 @@ impl<'tcx> RVCheckFinder<'tcx> {
         func: &rustc_hir::Expr,
         args: &[rustc_hir::Expr],
         expr_being_checked: &rustc_hir::Expr,
-    ) -> Option<ErrorSpec> {
+    ) -> Option<ErrorSpecPredicate> {
         if let Some(function_def_id) = &self.get_function_def_id(func) {
             // abort if we a re analyzing a method that doesn't return result or option
             // if self.get_function_or_method_return_type(function_def_id) != ReturnType::ResultOrOption {
@@ -115,7 +115,7 @@ impl<'tcx> RVCheckFinder<'tcx> {
                 // if we find a recursion loop, we terminate analysis for this wrapper
                 if self.already_visited_functions.contains(&function_def_id) {
                     println!("Recursion loop found, aborting!");
-                    return Some(ErrorSpec::Indeterminate);
+                    return Some(ErrorSpecPredicate::Indeterminate);
                 }
 
                 return self.analyze_sub_error_check_function(
@@ -148,7 +148,7 @@ impl<'tcx> RVCheckFinder<'tcx> {
         self: &mut Self,
         method: &rustc_hir::Expr,
         expr_being_checked: &rustc_hir::Expr,
-    ) -> Option<ErrorSpec> {
+    ) -> Option<ErrorSpecPredicate> {
         // technically redundant with callsite, but it's no big deal
         if let Some(method_def_id) = self.get_method_def_id(method)
             && let rustc_hir::ExprKind::MethodCall(_method, receiver, args, ..) = method.kind
@@ -176,7 +176,7 @@ impl<'tcx> RVCheckFinder<'tcx> {
                 // if we find a recursion loop, we terminate analysis for this wrapper
                 if self.already_visited_functions.contains(&method_def_id) {
                     println!("Recursion loop found, aborting!");
-                    return Some(ErrorSpec::Indeterminate);
+                    return Some(ErrorSpecPredicate::Indeterminate);
                 }
 
                 return self.analyze_sub_error_check_function(

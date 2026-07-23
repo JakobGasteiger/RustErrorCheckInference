@@ -1,6 +1,6 @@
 
 
-use crate::utils::error_spec::{ErrorSpec, FunctionErrorSpec};
+use crate::utils::error_spec::{ErrorSpecPredicate, FunctionErrorSpec};
 use std::{collections::HashSet, fmt::Debug, io::Write};
 
 use crate::parser::common::ParseError;
@@ -118,7 +118,7 @@ fn parse_spec_string(spec_string: String) -> FunctionErrorSpec {
 
         if spec_line == "EMPTY" {
             println!("ErrorSpec is Empty");
-            return FunctionErrorSpec::new(function_name, ErrorSpec::Empty); 
+            return FunctionErrorSpec::new(function_name, ErrorSpecPredicate::Empty); 
         }
     
         // if the spec line is not just EMPTY, we split it into its intervals
@@ -131,7 +131,7 @@ fn parse_spec_string(spec_string: String) -> FunctionErrorSpec {
     
         if intervals.is_empty() {
             println!("No Intervals found!");
-            return FunctionErrorSpec::new(function_name, ErrorSpec::Indeterminate);
+            return FunctionErrorSpec::new(function_name, ErrorSpecPredicate::Indeterminate);
         }
     
         for interval in intervals {
@@ -139,16 +139,16 @@ fn parse_spec_string(spec_string: String) -> FunctionErrorSpec {
             if let Ok(interval_values) = parse_interval_to_range(interval) {
                 error_values.append(interval_values.clone().as_mut());
             } else {
-                return FunctionErrorSpec::new(function_name, ErrorSpec::Indeterminate);
+                return FunctionErrorSpec::new(function_name, ErrorSpecPredicate::Indeterminate);
             }
         }
     
-        let error_spec = ErrorSpec::from_number_set(HashSet::from_iter(error_values));
+        let error_spec = ErrorSpecPredicate::from_number_set(HashSet::from_iter(error_values));
         println!("ErrorSpec is {:?}", error_spec);
         return FunctionErrorSpec::new(function_name, error_spec);
     }
 
-    return FunctionErrorSpec::new(function_name, ErrorSpec::Indeterminate);
+    return FunctionErrorSpec::new(function_name, ErrorSpecPredicate::Indeterminate);
 }
 
 
@@ -197,15 +197,15 @@ pub fn print_esss_statistics(results: &Option<Vec<FunctionErrorSpec>>) {
             //println!("{:?}", wrapper_function);
             total += 1;
             match parse_result.error_spec {
-                ErrorSpec::Empty => empty += 1,
-                ErrorSpec::GrEqZero => gr_eq_zero += 1,
-                ErrorSpec::LesEqZero => les_eq_zero += 1,
-                ErrorSpec::EqualZero => equal_zero += 1,
-                ErrorSpec::GreaterZero => greater_zero += 1,
-                ErrorSpec::LesserZero => lesser_zero += 1,
-                ErrorSpec::NotEqZero => not_eq_zero += 1,
-                ErrorSpec::All => all += 1,
-                ErrorSpec::Indeterminate => indeterminate += 1,
+                ErrorSpecPredicate::Empty => empty += 1,
+                ErrorSpecPredicate::GrEqZero => gr_eq_zero += 1,
+                ErrorSpecPredicate::LesEqZero => les_eq_zero += 1,
+                ErrorSpecPredicate::EqualZero => equal_zero += 1,
+                ErrorSpecPredicate::GreaterZero => greater_zero += 1,
+                ErrorSpecPredicate::LesserZero => lesser_zero += 1,
+                ErrorSpecPredicate::NotEqZero => not_eq_zero += 1,
+                ErrorSpecPredicate::All => all += 1,
+                ErrorSpecPredicate::Indeterminate => indeterminate += 1,
                 _ => indeterminate += 1,
             }
         }

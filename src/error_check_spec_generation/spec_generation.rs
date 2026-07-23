@@ -5,7 +5,7 @@ use std::ops::{Add, AddAssign};
 
 use crate::error_check_spec_generation::driver::OtherRustAnalysisStatistics;
 use crate::rustc_hir::intravisit::Visitor;
-use crate::utils::error_spec::{ErrorSpec, WrapperFunction};
+use crate::utils::error_spec::{ErrorSpecPredicate, WrapperFunctionSpec};
 
 #[derive(PartialEq, Eq, Debug, Clone, Copy, Hash)]
 pub enum ResultOrOptionVariant {
@@ -25,7 +25,7 @@ pub enum ReturnType {
 // finds the checks on return values (=RV)
 pub struct RVCheckFinder<'tcx> {
     pub tcx: rustc_middle::ty::TyCtxt<'tcx>,
-    pub wrapper_function: WrapperFunction,
+    pub wrapper_function: WrapperFunctionSpec,
     // the current holder of the return value of the external function;
     // initially the extern call expression's own HirId
     // after "let result = call()"": result's binding HirId
@@ -99,8 +99,8 @@ impl<'tcx> RVCheckFinder<'tcx> {
     fn check_use_site(
         &mut self,
         expr_being_checked: &'tcx rustc_hir::Expr<'tcx>,
-    ) -> Option<ErrorSpec> {
-        let mut return_value_check: Option<ErrorSpec> = None; // will only be returned if we do not find any sort of check, as those return directly
+    ) -> Option<ErrorSpecPredicate> {
+        let mut return_value_check: Option<ErrorSpecPredicate> = None; // will only be returned if we do not find any sort of check, as those return directly
 
         let parents = self
             .tcx
@@ -128,7 +128,7 @@ impl<'tcx> RVCheckFinder<'tcx> {
                 if result_type == Some(ResultOrOptionVariant::ResultOk)
                     || result_type == Some(ResultOrOptionVariant::OptionSome)
                 {
-                    return_value_check = Some(ErrorSpec::Empty);
+                    return_value_check = Some(ErrorSpecPredicate::Empty);
                     // println!("- only temporary, continuing up chain...");
                     continue; // we continue to see if there is a check later in the parent chain, which would override this
                 }
@@ -158,7 +158,7 @@ impl<'tcx> RVCheckFinder<'tcx> {
                 rustc_hir::Node::Expr(parent_expr)
                     if let rustc_hir::ExprKind::Binary(bin_op, _ex1, ex2) = parent_expr.kind =>
                 {
-                    let mut rv_check = ErrorSpec::parse_from_bin_op(&bin_op, &ex2, &self)?;
+                    let mut rv_check = ErrorSpecPredicate::parse_from_bin_op(&bin_op, &ex2, &self)?;
 
                     // is this part of an if stmt?
                     if let Some((_, rustc_hir::Node::Expr(expr))) =
@@ -356,10 +356,10 @@ impl<'tcx> RVCheckFinder<'tcx> {
 
     fn analyze_if_stmt(
         self: &mut Self,
-        rv_check: ErrorSpec,
+        rv_check: ErrorSpecPredicate,
         then_block: &rustc_hir::Expr,
         else_block: Option<&rustc_hir::Expr>,
-    ) -> Option<ErrorSpec> {
+    ) -> Option<ErrorSpecPredicate> {
         let inner_return = self.analyze_if_stmt_inner(rv_check, then_block, else_block);
         if inner_return.0 != inner_return.1.opposite() {
             println!("Err checks not equal to opposite of OK checks")
@@ -371,12 +371,12 @@ impl<'tcx> RVCheckFinder<'tcx> {
     // we wrap this to hide some of the uglier implementation details related to recursion
     fn analyze_if_stmt_inner(
         self: &mut Self,
-        rv_check: ErrorSpec,
+        rv_check: ErrorSpecPredicate,
         then_block: &rustc_hir::Expr,
         else_block: Option<&rustc_hir::Expr>,
-    ) -> (ErrorSpec, ErrorSpec) {
-        let mut if_stmt_total_err_check = ErrorSpec::Empty;
-        let mut if_stmt_total_ok_check = ErrorSpec::Empty;
+    ) -> (ErrorSpecPredicate, ErrorSpecPredicate) {
+        let mut if_stmt_total_err_check = ErrorSpecPredicate::Empty;
+        let mut if_stmt_total_ok_check = ErrorSpecPredicate::Empty;
 
         let then_result_type = block_result_type(then_block);
 
@@ -404,10 +404,10 @@ impl<'tcx> RVCheckFinder<'tcx> {
             if let rustc_hir::ExprKind::If(else_cond, else_then_block, else_else_block) =
                 else_block.kind
             {
-                let mut else_cond_parsed = ErrorSpec::All; // temporary value 
+                let mut else_cond_parsed = ErrorSpecPredicate::All; // temporary value 
 
                 if let rustc_hir::ExprKind::Binary(bin_op, _ex1, ex2) = else_cond.kind {
-                    if let Some(check) = ErrorSpec::parse_from_bin_op(&bin_op, &ex2, &self) {
+                    if let Some(check) = ErrorSpecPredicate::parse_from_bin_op(&bin_op, &ex2, &self) {
                         println!(
                             "Else If condition is Binary Operation: {:?}; parsed as {:?}",
                             bin_op.node, check
@@ -467,10 +467,10 @@ impl<'tcx> RVCheckFinder<'tcx> {
 
     // parse any condition expression into a ReturnValueCheck
     // TODO make use of this function more widely
-    fn parse_condition(&mut self, cond: &rustc_hir::Expr) -> Option<ErrorSpec> {
+    fn parse_condition(&mut self, cond: &rustc_hir::Expr) -> Option<ErrorSpecPredicate> {
         match &cond.kind {
             rustc_hir::ExprKind::Binary(bin_op, _lhs, rhs) => {
-                ErrorSpec::parse_from_bin_op(bin_op, rhs, &self)
+                ErrorSpecPredicate::parse_from_bin_op(bin_op, rhs, &self)
             }
             rustc_hir::ExprKind::MethodCall(..) => self.analyze_bool_method(cond),
             rustc_hir::ExprKind::Call(func, ..) => self.analyze_bool_function(func),
@@ -482,24 +482,24 @@ impl<'tcx> RVCheckFinder<'tcx> {
         }
     }
 
-    fn analyze_match_stmt(self: &mut Self, arms: &[rustc_hir::Arm]) -> Option<ErrorSpec> {
-        let mut match_total_err_check: ErrorSpec = ErrorSpec::Empty;
-        let mut match_total_ok_check: ErrorSpec = ErrorSpec::Empty;
+    fn analyze_match_stmt(self: &mut Self, arms: &[rustc_hir::Arm]) -> Option<ErrorSpecPredicate> {
+        let mut match_total_err_check: ErrorSpecPredicate = ErrorSpecPredicate::Empty;
+        let mut match_total_ok_check: ErrorSpecPredicate = ErrorSpecPredicate::Empty;
 
         for arm in arms {
             println!("Analyzing arm at {:?}", arm.span);
 
-            let mut arm_pattern_check = ErrorSpec::All;
+            let mut arm_pattern_check = ErrorSpecPredicate::All;
 
             if let rustc_hir::PatKind::Expr(pat_expr) = arm.pat.kind {
                 // teest if the pat is a literal int
                 if let rustc_hir::PatExprKind::Lit { lit, .. } = &pat_expr.kind {
                     if let rustc_ast::LitKind::Int(value, _) = lit.node {
                         if value == 0 {
-                            arm_pattern_check = ErrorSpec::EqualZero;
+                            arm_pattern_check = ErrorSpecPredicate::EqualZero;
                             println!("Arm pattern is 0, patterns rv check is EqualZero");
                         } else {
-                            arm_pattern_check = ErrorSpec::Indeterminate;
+                            arm_pattern_check = ErrorSpecPredicate::Indeterminate;
                             println!("Arm pattern is Int but not 0, patterns rv check is Indeterminate");
                         }
                     }
@@ -517,10 +517,10 @@ impl<'tcx> RVCheckFinder<'tcx> {
                                 if let rustc_middle::mir::interpret::Scalar::Int(scalar_int) = scalar {
                                     let value = scalar_int.to_int(scalar_int.size());
                                     if value == 0 {
-                                        arm_pattern_check = ErrorSpec::EqualZero;
+                                        arm_pattern_check = ErrorSpecPredicate::EqualZero;
                                         println!("Arm pattern is 0, patterns rv check is EqualZero");
                                     } else {
-                                        arm_pattern_check = ErrorSpec::Indeterminate;
+                                        arm_pattern_check = ErrorSpecPredicate::Indeterminate;
                                         println!("Arm pattern is Const Int but not 0, patterns rv check is Indeterminate");
                                     }
                                 }
@@ -528,12 +528,12 @@ impl<'tcx> RVCheckFinder<'tcx> {
                         }
                     }
                 } else {
-                    arm_pattern_check = ErrorSpec::Indeterminate;
+                    arm_pattern_check = ErrorSpecPredicate::Indeterminate;
                     println!("Arm pattern is not a literal or constant, patterns rv check is Indeterminate");
                 }
             }
 
-            let mut arm_guard_check = ErrorSpec::All;
+            let mut arm_guard_check = ErrorSpecPredicate::All;
 
             if let Some(arm_guard) = arm.guard {
                 println!("Stepping into Guard...");
@@ -543,7 +543,7 @@ impl<'tcx> RVCheckFinder<'tcx> {
                     println!("Guard is Binary Expression...");
 
                     if let Some(check) =
-                        ErrorSpec::parse_from_bin_op(&arm_bin_op, &arm_bin_ex2, &self)
+                        ErrorSpecPredicate::parse_from_bin_op(&arm_bin_op, &arm_bin_ex2, &self)
                     {
                         arm_guard_check = check;
                         println!("Guard is Binary Operation: {:?}", arm_bin_op.node);
@@ -638,7 +638,7 @@ impl<'tcx> RVCheckFinder<'tcx> {
 #[allow(non_snake_case)]
 pub fn find_RV_checks(
     tcx: rustc_middle::ty::TyCtxt<'_>,
-    wrapper_function: &mut WrapperFunction,
+    wrapper_function: &mut WrapperFunctionSpec,
     other_statistics: &mut OtherRustAnalysisStatistics,
 ) {
     println!(
@@ -651,20 +651,20 @@ pub fn find_RV_checks(
         != ReturnType::ResultOrOption
     {
         other_statistics.not_result_or_option_return_types += 1;
-        wrapper_function.return_value_check = Some(ErrorSpec::Empty);
+        wrapper_function.return_value_check = Some(ErrorSpecPredicate::Empty);
         return;
     }
     // only works for local functions (no HIR body for external crates)
     let Some(owner_local_def_id) = wrapper_function.wrapper_function_id.as_local() else {
         println!("Not local!");
-        wrapper_function.return_value_check = Some(ErrorSpec::Indeterminate);
+        wrapper_function.return_value_check = Some(ErrorSpecPredicate::Indeterminate);
         other_statistics.not_local_functions += 1;
         return;
     };
     // abort if function has no body
     let Some(body) = tcx.hir_maybe_body_owned_by(owner_local_def_id) else {
         println!("No body!");
-        wrapper_function.return_value_check = Some(ErrorSpec::Indeterminate);
+        wrapper_function.return_value_check = Some(ErrorSpecPredicate::Indeterminate);
         return;
     };
 
@@ -686,7 +686,7 @@ pub fn find_RV_checks(
             "No check found for wrapper function {}, setting Indeterminate",
             tcx.def_path_str(wrapper_function.wrapper_function_id)
         );
-        finder.wrapper_function.return_value_check = Some(ErrorSpec::Indeterminate);
+        finder.wrapper_function.return_value_check = Some(ErrorSpecPredicate::Indeterminate);
     }
     *other_statistics += finder.other_statistics.clone();
     *wrapper_function = finder.wrapper_function.clone();
@@ -810,9 +810,9 @@ pub fn get_function_or_method_return_type(
 
 // merge two Option<ReturnValueCheck> by unioning them
 fn merge_optioned_checks(
-    a: Option<ErrorSpec>,
-    b: Option<ErrorSpec>,
-) -> Option<ErrorSpec> {
+    a: Option<ErrorSpecPredicate>,
+    b: Option<ErrorSpecPredicate>,
+) -> Option<ErrorSpecPredicate> {
     match (a, b) {
         (None, x) => x,
         (x, None) => x,
@@ -822,127 +822,127 @@ fn merge_optioned_checks(
 
 #[test]
 fn test_return_value_check_union() {
-    let check1 = ErrorSpec::LesserZero;
-    let check2 = ErrorSpec::GreaterZero;
+    let check1 = ErrorSpecPredicate::LesserZero;
+    let check2 = ErrorSpecPredicate::GreaterZero;
     let union_check = check1.union(check2);
-    assert_eq!(union_check, ErrorSpec::NotEqZero);
+    assert_eq!(union_check, ErrorSpecPredicate::NotEqZero);
 
-    let check3 = ErrorSpec::EqualZero;
+    let check3 = ErrorSpecPredicate::EqualZero;
     let union_check2 = check1.union(check3);
-    assert_eq!(union_check2, ErrorSpec::LesEqZero);
+    assert_eq!(union_check2, ErrorSpecPredicate::LesEqZero);
 
-    let check4 = ErrorSpec::GrEqZero;
+    let check4 = ErrorSpecPredicate::GrEqZero;
     let union_check3 = check2.union(check4);
-    assert_eq!(union_check3, ErrorSpec::GrEqZero);
+    assert_eq!(union_check3, ErrorSpecPredicate::GrEqZero);
 
-    let check5 = ErrorSpec::All;
+    let check5 = ErrorSpecPredicate::All;
     let union_check4 = check1.union(check5);
-    assert_eq!(union_check4, ErrorSpec::All);
+    assert_eq!(union_check4, ErrorSpecPredicate::All);
 }
 
 #[test]
 fn test_return_value_check_intersection() {
-    let check1 = ErrorSpec::LesserZero;
-    let check2 = ErrorSpec::GreaterZero;
+    let check1 = ErrorSpecPredicate::LesserZero;
+    let check2 = ErrorSpecPredicate::GreaterZero;
     let intersection_check = check1.intersection(check2);
-    assert_eq!(intersection_check, ErrorSpec::Empty);
+    assert_eq!(intersection_check, ErrorSpecPredicate::Empty);
 
-    let check3 = ErrorSpec::EqualZero;
+    let check3 = ErrorSpecPredicate::EqualZero;
     let intersection_check2 = check1.intersection(check3);
-    assert_eq!(intersection_check2, ErrorSpec::Empty);
+    assert_eq!(intersection_check2, ErrorSpecPredicate::Empty);
 
-    let check4 = ErrorSpec::GrEqZero;
+    let check4 = ErrorSpecPredicate::GrEqZero;
     let intersection_check3 = check2.intersection(check4);
-    assert_eq!(intersection_check3, ErrorSpec::GreaterZero);
+    assert_eq!(intersection_check3, ErrorSpecPredicate::GreaterZero);
 
-    let check5 = ErrorSpec::All;
+    let check5 = ErrorSpecPredicate::All;
     let intersection_check4 = check1.intersection(check5);
-    assert_eq!(intersection_check4, ErrorSpec::LesserZero);
+    assert_eq!(intersection_check4, ErrorSpecPredicate::LesserZero);
 }
 
 #[test]
 fn test_without() {
     // LesEqZero - EqualZero = LesserZero
     assert_eq!(
-        ErrorSpec::LesEqZero.without(ErrorSpec::EqualZero),
-        ErrorSpec::LesserZero
+        ErrorSpecPredicate::LesEqZero.without(ErrorSpecPredicate::EqualZero),
+        ErrorSpecPredicate::LesserZero
     );
 
     // LesEqZero - LesserZero = EqualZero
     assert_eq!(
-        ErrorSpec::LesEqZero.without(ErrorSpec::LesserZero),
-        ErrorSpec::EqualZero
+        ErrorSpecPredicate::LesEqZero.without(ErrorSpecPredicate::LesserZero),
+        ErrorSpecPredicate::EqualZero
     );
 
     // GrEqZero - EqualZero = GreaterZero
     assert_eq!(
-        ErrorSpec::GrEqZero.without(ErrorSpec::EqualZero),
-        ErrorSpec::GreaterZero
+        ErrorSpecPredicate::GrEqZero.without(ErrorSpecPredicate::EqualZero),
+        ErrorSpecPredicate::GreaterZero
     );
 
     // NotEqZero - LesserZero = GreaterZero
     assert_eq!(
-        ErrorSpec::NotEqZero.without(ErrorSpec::LesserZero),
-        ErrorSpec::GreaterZero
+        ErrorSpecPredicate::NotEqZero.without(ErrorSpecPredicate::LesserZero),
+        ErrorSpecPredicate::GreaterZero
     );
 
     // NotEqZero - GreaterZero = LesserZero
     assert_eq!(
-        ErrorSpec::NotEqZero.without(ErrorSpec::GreaterZero),
-        ErrorSpec::LesserZero
+        ErrorSpecPredicate::NotEqZero.without(ErrorSpecPredicate::GreaterZero),
+        ErrorSpecPredicate::LesserZero
     );
 
     // All - LesserZero = GrEqZero
     assert_eq!(
-        ErrorSpec::All.without(ErrorSpec::LesserZero),
-        ErrorSpec::GrEqZero
+        ErrorSpecPredicate::All.without(ErrorSpecPredicate::LesserZero),
+        ErrorSpecPredicate::GrEqZero
     );
 
     // All - EqualZero = NotEqZero
     assert_eq!(
-        ErrorSpec::All.without(ErrorSpec::EqualZero),
-        ErrorSpec::NotEqZero
+        ErrorSpecPredicate::All.without(ErrorSpecPredicate::EqualZero),
+        ErrorSpecPredicate::NotEqZero
     );
 
     // anything without itself = Empty
     assert_eq!(
-        ErrorSpec::LesserZero.without(ErrorSpec::LesserZero),
-        ErrorSpec::Empty
+        ErrorSpecPredicate::LesserZero.without(ErrorSpecPredicate::LesserZero),
+        ErrorSpecPredicate::Empty
     );
     assert_eq!(
-        ErrorSpec::GrEqZero.without(ErrorSpec::GrEqZero),
-        ErrorSpec::Empty
+        ErrorSpecPredicate::GrEqZero.without(ErrorSpecPredicate::GrEqZero),
+        ErrorSpecPredicate::Empty
     );
 
     // anything without Empty = itself
     assert_eq!(
-        ErrorSpec::LesserZero.without(ErrorSpec::Empty),
-        ErrorSpec::LesserZero
+        ErrorSpecPredicate::LesserZero.without(ErrorSpecPredicate::Empty),
+        ErrorSpecPredicate::LesserZero
     );
 
     // Empty without anything = Empty
     assert_eq!(
-        ErrorSpec::Empty.without(ErrorSpec::LesserZero),
-        ErrorSpec::Empty
+        ErrorSpecPredicate::Empty.without(ErrorSpecPredicate::LesserZero),
+        ErrorSpecPredicate::Empty
     );
 
     // no overlap — result is self unchanged
     assert_eq!(
-        ErrorSpec::LesserZero.without(ErrorSpec::GreaterZero),
-        ErrorSpec::LesserZero
+        ErrorSpecPredicate::LesserZero.without(ErrorSpecPredicate::GreaterZero),
+        ErrorSpecPredicate::LesserZero
     );
     assert_eq!(
-        ErrorSpec::EqualZero.without(ErrorSpec::LesserZero),
-        ErrorSpec::EqualZero
+        ErrorSpecPredicate::EqualZero.without(ErrorSpecPredicate::LesserZero),
+        ErrorSpecPredicate::EqualZero
     );
 
     // Indeterminate propagates
     assert_eq!(
-        ErrorSpec::LesserZero.without(ErrorSpec::Indeterminate),
-        ErrorSpec::Indeterminate
+        ErrorSpecPredicate::LesserZero.without(ErrorSpecPredicate::Indeterminate),
+        ErrorSpecPredicate::Indeterminate
     );
     assert_eq!(
-        ErrorSpec::Indeterminate.without(ErrorSpec::LesserZero),
-        ErrorSpec::Indeterminate
+        ErrorSpecPredicate::Indeterminate.without(ErrorSpecPredicate::LesserZero),
+        ErrorSpecPredicate::Indeterminate
     );
 }

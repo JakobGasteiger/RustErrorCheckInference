@@ -6,11 +6,11 @@ use std::ops::AddAssign;
 use crate::error_check_spec_generation::spec_generation::find_RV_checks;
 use crate::error_check_spec_generation::wrapper_func_finder::find_external_functions;
 use crate::error_check_spec_generation::wrapper_func_finder::find_wrapper_functions;
-use crate::utils::error_spec::ErrorSpec;
-use crate::utils::error_spec::WrapperFunction;
+use crate::utils::error_spec::ErrorSpecPredicate;
+use crate::utils::error_spec::WrapperFunctionSpec;
 
 
-pub fn print_error_check_statistics(wrapper_functions: &Vec<WrapperFunction>) {
+pub fn print_error_check_statistics(wrapper_functions: &Vec<WrapperFunctionSpec>) {
     let mut total: usize = 0;
     let mut empty: usize = 0;
     let mut gr_eq_zero: usize = 0;
@@ -26,15 +26,15 @@ pub fn print_error_check_statistics(wrapper_functions: &Vec<WrapperFunction>) {
         //println!("{:?}", wrapper_function);
         total += 1;
         match wrapper_function.return_value_check {
-            Some(ErrorSpec::Empty) => empty += 1,
-            Some(ErrorSpec::GrEqZero) => gr_eq_zero += 1,
-            Some(ErrorSpec::LesEqZero) => les_eq_zero += 1,
-            Some(ErrorSpec::EqualZero) => equal_zero += 1,
-            Some(ErrorSpec::GreaterZero) => greater_zero += 1,
-            Some(ErrorSpec::LesserZero) => lesser_zero += 1,
-            Some(ErrorSpec::NotEqZero) => not_eq_zero += 1,
-            Some(ErrorSpec::All) => all += 1,
-            Some(ErrorSpec::Indeterminate) => indeterminate += 1,
+            Some(ErrorSpecPredicate::Empty) => empty += 1,
+            Some(ErrorSpecPredicate::GrEqZero) => gr_eq_zero += 1,
+            Some(ErrorSpecPredicate::LesEqZero) => les_eq_zero += 1,
+            Some(ErrorSpecPredicate::EqualZero) => equal_zero += 1,
+            Some(ErrorSpecPredicate::GreaterZero) => greater_zero += 1,
+            Some(ErrorSpecPredicate::LesserZero) => lesser_zero += 1,
+            Some(ErrorSpecPredicate::NotEqZero) => not_eq_zero += 1,
+            Some(ErrorSpecPredicate::All) => all += 1,
+            Some(ErrorSpecPredicate::Indeterminate) => indeterminate += 1,
             None => indeterminate += 1, // treat None as indeterminate
         }
     }

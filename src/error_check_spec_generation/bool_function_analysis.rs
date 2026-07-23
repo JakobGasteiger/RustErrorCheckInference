@@ -5,7 +5,7 @@ use crate::{error_check_spec_generation::{
     spec_generation::{
         RVCheckFinder, ReturnType
     },
-}, utils::error_spec::{ErrorSpec, WrapperFunction}};
+}, utils::error_spec::{ErrorSpecPredicate, WrapperFunctionSpec}};
 use crate::rustc_hir::intravisit::Visitor;
 
 impl<'tcx> RVCheckFinder<'tcx> {
@@ -16,7 +16,7 @@ impl<'tcx> RVCheckFinder<'tcx> {
         tcx: rustc_middle::ty::TyCtxt<'tcx>,
         error_check_function_id: rustc_hir::def_id::DefId,
         arg_index: usize,
-    ) -> Option<ErrorSpec> {
+    ) -> Option<ErrorSpecPredicate> {
         println!(
             "\nFor Sub Error Check Function {}",
             tcx.def_path_str(error_check_function_id)
@@ -26,22 +26,22 @@ impl<'tcx> RVCheckFinder<'tcx> {
         let Some(local_def_id) = error_check_function_id.as_local() else {
             println!("Not local!");
             self.other_statistics.not_local_functions += 1;
-            return Some(ErrorSpec::Indeterminate);
+            return Some(ErrorSpecPredicate::Indeterminate);
         };
         // abort if function has no body
         let Some(body) = tcx.hir_maybe_body_owned_by(local_def_id) else {
             println!("No body!");
-            return Some(ErrorSpec::Indeterminate);
+            return Some(ErrorSpecPredicate::Indeterminate);
         };
 
         // get the parameter at arg_index
         let Some(param) = body.params.get(arg_index) else {
-            return Some(ErrorSpec::Indeterminate);
+            return Some(ErrorSpecPredicate::Indeterminate);
         };
 
         // that parameter's binding hir id becomes the new tracked identity
         if let rustc_hir::PatKind::Binding(_, param_hir_id, _, _) = param.pat.kind {
-            let new_wrapper_function = WrapperFunction {
+            let new_wrapper_function = WrapperFunctionSpec {
                 wrapper_function_id: error_check_function_id,
                 wrapped_function_id: self.wrapper_function.wrapped_function_id,
                 return_value_check: None,
@@ -69,7 +69,7 @@ impl<'tcx> RVCheckFinder<'tcx> {
     pub fn analyze_bool_function(
         self: &mut Self,
         func: &rustc_hir::Expr,
-    ) -> Option<ErrorSpec> {
+    ) -> Option<ErrorSpecPredicate> {
         println!("Boolean return type: not yet supported");
         self.other_statistics.bool_functions_not_yet_supported += 1;
 
@@ -82,19 +82,19 @@ impl<'tcx> RVCheckFinder<'tcx> {
             // if we find a recursion loop, we terminate analysis for this wrapper
             if self.already_visited_functions.contains(&function_def_id) {
                 println!("Recursion loop found, aborting!");
-                return Some(ErrorSpec::Indeterminate);
+                return Some(ErrorSpecPredicate::Indeterminate);
             }
         }
 
         // TODO temp, actually implement function
         // TODO possibly not really necessary? se how often actually used
-        Some(ErrorSpec::Indeterminate)
+        Some(ErrorSpecPredicate::Indeterminate)
     }
 
     pub fn analyze_bool_method(
         self: &mut Self,
         method_expr: &rustc_hir::Expr,
-    ) -> Option<ErrorSpec> {
+    ) -> Option<ErrorSpecPredicate> {
         println!("Boolean return type: not yet fully supported");
 
         if let Some(method_def_id) = self.get_method_def_id(method_expr)
@@ -108,7 +108,7 @@ impl<'tcx> RVCheckFinder<'tcx> {
             // if we find a recursion loop, we terminate analysis for this wrapper
             if self.already_visited_functions.contains(&method_def_id) {
                 println!("Recursion loop found, aborting!");
-                return Some(ErrorSpec::Indeterminate);
+                return Some(ErrorSpecPredicate::Indeterminate);
             }
 
             let method_name = self.tcx.def_path_str(method_def_id);
@@ -121,15 +121,15 @@ impl<'tcx> RVCheckFinder<'tcx> {
             if method_name.ends_with("is_null") {
                 self.other_statistics.hardcoded_bool_methods_analyzed += 1;
                 println!("... yes, it is!");
-                return Some(ErrorSpec::EqualZero);
+                return Some(ErrorSpecPredicate::EqualZero);
             } else if method_name.ends_with("is_negative") {
                 self.other_statistics.hardcoded_bool_methods_analyzed += 1;
                 println!("... yes, it is!");
-                return Some(ErrorSpec::LesserZero);
+                return Some(ErrorSpecPredicate::LesserZero);
             } else if method_name.ends_with("is_positive") {
                 self.other_statistics.hardcoded_bool_methods_analyzed += 1;
                 println!("... yes, it is!");
-                return Some(ErrorSpec::GreaterZero);
+                return Some(ErrorSpecPredicate::GreaterZero);
             }
 
             println!("... no, it isn't :(")
@@ -157,6 +157,6 @@ impl<'tcx> RVCheckFinder<'tcx> {
         // TODO probably not really necessary? see how often actually used
 
         self.other_statistics.bool_methods_not_yet_supported += 1;
-        Some(ErrorSpec::Indeterminate)
+        Some(ErrorSpecPredicate::Indeterminate)
     }
 }

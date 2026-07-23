@@ -1,13 +1,13 @@
 // * responsible for finding external functions and their wrappers
 
-use crate::{rustc_hir::intravisit::Visitor, utils::error_spec::{ErrorSpec, WrapperFunction}};
+use crate::{rustc_hir::intravisit::Visitor, utils::error_spec::{ErrorSpecPredicate, WrapperFunctionSpec}};
 
 
 struct WrapperFuncFinder<'a, 'tcx> {
     tcx: rustc_middle::ty::TyCtxt<'tcx>,
     extern_function_ids: &'a Vec<rustc_hir::def_id::DefId>,
     owner_def_id: rustc_hir::def_id::DefId,
-    wrapper_functions: Vec<WrapperFunction>,
+    wrapper_functions: Vec<WrapperFunctionSpec>,
 }
 
 impl<'a, 'tcx> rustc_hir::intravisit::Visitor<'tcx> for WrapperFuncFinder<'a, 'tcx> {
@@ -27,7 +27,7 @@ impl<'a, 'tcx> rustc_hir::intravisit::Visitor<'tcx> for WrapperFuncFinder<'a, 't
                             self.tcx.def_path_str(callee_def_id),
                             self.tcx.def_path_str(self.owner_def_id)
                         );
-                        self.wrapper_functions.push(WrapperFunction {
+                        self.wrapper_functions.push(WrapperFunctionSpec {
                             wrapper_function_id: self.owner_def_id,
                             wrapped_function_id: callee_def_id,
                             // until we find a specific check in the RV check finder step, we assume nothing is an error
@@ -73,8 +73,8 @@ pub fn find_external_functions<'tcx>(
 pub fn find_wrapper_functions(
     tcx: rustc_middle::ty::TyCtxt<'_>,
     extern_function_ids: &Vec<rustc_hir::def_id::DefId>,
-) -> Vec<WrapperFunction> {
-    let mut wrapper_functions: Vec<WrapperFunction> = Vec::new();
+) -> Vec<WrapperFunctionSpec> {
+    let mut wrapper_functions: Vec<WrapperFunctionSpec> = Vec::new();
 
     // go through all functions incl those in impl blocks, use visit_expr() to go through all expression and see if they are calls to an extern function
     for item in tcx.hir_free_items().map(|id| tcx.hir_item(id)) {
