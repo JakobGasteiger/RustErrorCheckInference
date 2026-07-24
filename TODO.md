@@ -21,13 +21,13 @@ ESSS execution via build.rs ?
 
 parser able to get relevant part of ESSS output itself
 
-comparison engine
-
 github: past detectible bugs ?
 
 sinnvolles system für relativ kleinene evalutaion datensatz an libraries (diversity of downlodad count insb.)
 
 fix many detected bugs in comparison -> how ???
+
+support assertions
 
 rust analysis as source of truth? -> fow EESI bug finding, for instance?
 

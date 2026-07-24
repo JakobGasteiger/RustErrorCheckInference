@@ -12,9 +12,9 @@ mod error_check_spec_generation;
 mod utils;
 mod parser;
 mod spec_comparison;
-mod eesi_like_output;
+mod output;
 
-use crate::{eesi_like_output::eesi_like_output::print_eesi_like_output, error_check_spec_generation::{driver::*, spec_generation::find_RV_checks, wrapper_func_finder::{find_external_functions, find_sys_crates, find_wrapper_functions}}, parser::{eesi_parser::{parse_eesi, print_eesi_statistics}, esss_parser::{parse_esss, print_esss_statistics}}, spec_comparison::comparer::{compare_specs, print_comparison_statistics}};
+use crate::{error_check_spec_generation::{driver::*, spec_generation::find_RV_checks, wrapper_func_finder::{find_external_functions, find_sys_crates, find_wrapper_functions}}, output::{eesi_like_output::print_eesi_like_output, ext_func_list_for_ai::print_ext_func_list_for_ai}, parser::{eesi_parser::{parse_eesi, print_eesi_statistics}, esss_parser::{parse_esss, print_esss_statistics}}, spec_comparison::comparer::{compare_specs, print_comparison_statistics}};
 
 
 pub struct Callbacks;
@@ -37,6 +37,7 @@ impl rustc_driver::Callbacks for Callbacks {
         let sys_crates = find_sys_crates(tcx);
 
         let extern_function_ids = find_external_functions(tcx, &sys_crates);
+        print_ext_func_list_for_ai(tcx, &extern_function_ids);
 
         let mut wrapper_function_specs  = find_wrapper_functions(tcx, &extern_function_ids);
         let mut other_statistics = OtherRustAnalysisStatistics::new();
