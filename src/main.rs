@@ -14,7 +14,7 @@ mod parser;
 mod spec_comparison;
 mod output;
 
-use crate::{error_check_spec_generation::{driver::*, spec_generation::find_RV_checks, wrapper_func_finder::{find_external_functions, find_sys_crates, find_wrapper_functions}}, output::{eesi_like_output::print_eesi_like_output, ext_func_list_for_ai::print_ext_func_list_for_ai}, parser::{eesi_parser::{parse_eesi, print_eesi_statistics}, esss_parser::{parse_esss, print_esss_statistics}}, spec_comparison::comparer::{compare_specs, print_comparison_statistics}};
+use crate::{error_check_spec_generation::{driver::*, spec_generation::find_RV_checks, wrapper_func_finder::{find_external_functions, find_sys_crates, find_wrapper_functions}}, output::{eesi_like_output::print_eesi_like_output, ext_func_list_for_ai::print_ext_func_list_for_ai}, parser::{ai_analysis_parser::{parse_ai, print_ai_statistics}, eesi_parser::{parse_eesi, print_eesi_statistics}, esss_parser::{parse_esss, print_esss_statistics}}, spec_comparison::comparer::{compare_specs, print_comparison_statistics}};
 
 
 pub struct Callbacks;
@@ -54,7 +54,10 @@ impl rustc_driver::Callbacks for Callbacks {
         let eesi_specs = parse_eesi();
         print_eesi_statistics(&eesi_specs);
 
-        let spec_comparison_results = compare_specs(tcx, esss_specs, eesi_specs, wrapper_function_specs.clone());
+        let ai_specs = parse_ai();
+        print_ai_statistics(&ai_specs);
+
+        let spec_comparison_results = compare_specs(tcx, esss_specs, eesi_specs, ai_specs, wrapper_function_specs.clone());
         print_comparison_statistics(spec_comparison_results);
 
         // do this last to minimize damge if function panics

@@ -40,7 +40,7 @@ pub fn parse_spec_string(spec_string: String) -> FunctionErrorSpec {
         .unwrap_or(&"ErrorParsingFunctionName".to_string())
         .clone();
 
-    let predicate_string = split.get(2).unwrap_or(&"ErrorParsingPredicate".to_string()).clone();
+    let predicate_string = split.get(1).unwrap_or(&"ErrorParsingPredicate".to_string()).clone();
 
     let predicate = match predicate_string.as_str() {
         "empty" => ErrorSpecPredicate::Empty,
