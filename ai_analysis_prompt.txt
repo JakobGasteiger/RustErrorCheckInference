@@ -1,4 +1,6 @@
-In the file ~/Bachelor/Libraries/LibGit/git2-rs/ext_func_list_for_ai.txt, you will find a list of functions from ~/Bachelor/Libraries/LibGit/libgit2 which are wrapped by the ~/Bachelor/Libraries/LibGit/git2-rs Rust wrapper. For each of them, analyze the code in ~/Bachelor/Libraries/LibGit/libgit2 to infer there Error Specification.
+In the file <path_to_rust_wrapper>/ext_func_list_for_ai.txt, you will find a list of functions from <path-to_c_lib>,
+which are wrapped by the <path_to_rust_wrapper> Rust wrapper. For each of them, 
+analyze the code in <path_to_c_lib> to infer there Error Specification.
 
 The Error Specification is the set of return values that a function uses that an error has occorred, expressed as a predicate relative to 0 (<0, >0, <=0, >=0, !=0, ==0, as well as all and empty for if every return value or no return value signify an error, respectively). For example, the function 
 
@@ -12,7 +14,7 @@ int example_function() {
 
 would have an Error Specification of <0.
 
-Output your results to the file ~/Bachelor/Libraries/LibGit/git2-rs/results_ai_analysis.txt. Format them exactly as 
+Output your results to the file <path_to_rust_wrapper>/results_ai_analysis.txt. Format them exactly as 
 
 <function_name>: <error_specification_predicate>
 <function_name_2>: <error_specification_predicate_2>
@@ -21,4 +23,8 @@ For example, for the function above, the output line would be
 
 example_function: <0
 
- Do not under any circumstances use the contents of ~/Bachelor/Libraries/LibGit/git2-rs to infer functions Error Specifications.
+If a functions true error specification cannot be categorized by such a simple predicate, mark it as 'indeterminate'. For example
+
+example_function_2: indeterminate
+
+Do not under any circumstances use the contents of <path_to_rust_wrapper> to infer functions Error Specifications.
