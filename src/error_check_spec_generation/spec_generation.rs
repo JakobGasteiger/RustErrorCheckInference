@@ -652,6 +652,10 @@ pub fn find_RV_checks(
     {
         other_statistics.not_result_or_option_return_types += 1;
         wrapper_function.return_value_check = Some(ErrorSpecPredicate::Empty);
+        println!(
+            "Wrapper function {} does not return Result or Option, setting check to Empty",
+            tcx.def_path_str(wrapper_function.wrapper_function_id)
+        );
         return;
     }
     // only works for local functions (no HIR body for external crates)
