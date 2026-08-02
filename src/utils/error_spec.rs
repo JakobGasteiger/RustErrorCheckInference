@@ -183,6 +183,17 @@ impl ErrorSpecPredicate {
         Self::from_number_set(as_num_set)
     }
 
+    pub fn union_overwrite_indeterminate(self, other: ErrorSpecPredicate) -> ErrorSpecPredicate {
+        if self == ErrorSpecPredicate::Indeterminate {
+            return other;
+        }
+        if other == ErrorSpecPredicate::Indeterminate {
+            return self;
+        }
+
+        self.union(other)
+    }
+
     pub fn intersection(self, other: ErrorSpecPredicate) -> ErrorSpecPredicate {
         if self == ErrorSpecPredicate::Indeterminate || other == ErrorSpecPredicate::Indeterminate {
             return ErrorSpecPredicate::Indeterminate;

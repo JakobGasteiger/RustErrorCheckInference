@@ -364,8 +364,13 @@ impl<'tcx> RVCheckFinder<'tcx> {
         if inner_return.0 != inner_return.1.opposite() {
             println!("Err checks not equal to opposite of OK checks")
         }
-        println!("Total Err Condition is {:?}", inner_return.0);
-        Some(inner_return.0)
+        if inner_return.0 != ErrorSpecPredicate::Indeterminate {
+            println!("Total Err Condition is {:?}", inner_return.0);
+            Some(inner_return.0)
+        } else {
+            println!("Total Err Condition is Indeterminate, returning {:?}, which is the opposite of OK condition {:?} as Fallback", inner_return.1.opposite(), inner_return.1);
+            Some(inner_return.1.opposite())
+        }
     }
 
     // we wrap this to hide some of the uglier implementation details related to recursion
@@ -375,8 +380,8 @@ impl<'tcx> RVCheckFinder<'tcx> {
         then_block: &rustc_hir::Expr,
         else_block: Option<&rustc_hir::Expr>,
     ) -> (ErrorSpecPredicate, ErrorSpecPredicate) {
-        let mut if_stmt_total_err_check = ErrorSpecPredicate::Empty;
-        let mut if_stmt_total_ok_check = ErrorSpecPredicate::Empty;
+        let mut if_stmt_total_err_check = ErrorSpecPredicate::Indeterminate;
+        let mut if_stmt_total_ok_check = ErrorSpecPredicate::Indeterminate;
 
         let then_result_type = block_result_type(then_block);
 
@@ -386,13 +391,13 @@ impl<'tcx> RVCheckFinder<'tcx> {
                 || matches!(then_result_type, ResultOrOptionVariant::OptionNone)
             {
                 println!("Block Error Condition is {:?}", rv_check);
-                if_stmt_total_err_check = if_stmt_total_err_check.union(rv_check);
+                if_stmt_total_err_check = if_stmt_total_err_check.union_overwrite_indeterminate(rv_check);
             //if we are checking for non-error (and thus returning ok), the opposite of the check is our error
             } else if matches!(then_result_type, ResultOrOptionVariant::ResultOk)
                 || matches!(then_result_type, ResultOrOptionVariant::OptionSome)
             {
                 println!("Block Ok Condition is {:?}", rv_check.clone());
-                if_stmt_total_ok_check = if_stmt_total_ok_check.union(rv_check);
+                if_stmt_total_ok_check = if_stmt_total_ok_check.union_overwrite_indeterminate(rv_check);
             } else {
                 println!("Neither Error nor Normal Block");
             }
@@ -428,11 +433,13 @@ impl<'tcx> RVCheckFinder<'tcx> {
 
                 let else_if_rv_check =
                     self.analyze_if_stmt_inner(else_cond_parsed, else_then_block, else_else_block);
+
                 if_stmt_total_err_check = if_stmt_total_err_check
-                    .union(else_if_rv_check.0)
+                    .union_overwrite_indeterminate(else_if_rv_check.0)
                     .without(if_stmt_total_ok_check);
+
                 if_stmt_total_ok_check = if_stmt_total_ok_check
-                    .union(else_if_rv_check.1)
+                    .union_overwrite_indeterminate(else_if_rv_check.1)
                     .without(if_stmt_total_err_check);
             } else {
                 let else_result_type = block_result_type(else_block);
@@ -443,12 +450,12 @@ impl<'tcx> RVCheckFinder<'tcx> {
                         || matches!(else_result_type, ResultOrOptionVariant::OptionNone)
                     {
                         if_stmt_total_err_check =
-                            if_stmt_total_err_check.union(rv_check.opposite());
+                            if_stmt_total_err_check.union_overwrite_indeterminate(rv_check.opposite());
                     //if we are checking for non-error (and thus returning ok), the opposite of the check is our error
                     } else if matches!(else_result_type, ResultOrOptionVariant::ResultOk)
                         || matches!(else_result_type, ResultOrOptionVariant::OptionSome)
                     {
-                        if_stmt_total_ok_check = if_stmt_total_ok_check.union(rv_check.opposite());
+                        if_stmt_total_ok_check = if_stmt_total_ok_check.union_overwrite_indeterminate(rv_check.opposite());
                     } else {
                         println!("Else is Neither Error nor Normal Block");
                     }
