@@ -10,6 +10,19 @@ use crate::utils::error_spec::ErrorSpecPredicate;
 use crate::utils::error_spec::WrapperFunctionSpec;
 
 
+pub fn print_error_check_results<'tcx>(tcx: rustc_middle::ty::TyCtxt<'tcx>, wrapper_functions: &Vec<WrapperFunctionSpec>) {
+    println!("\n\nError Check Results:");
+    for wrapper_function in wrapper_functions {
+        let wrapper_function_name = tcx.def_path_str(wrapper_function.wrapper_function_id);
+        let wrapped_function_name = tcx.def_path_str(wrapper_function.wrapped_function_id);
+        let return_value_check = match &wrapper_function.return_value_check {
+            Some(check) => format!("{:?}", check),
+            None => "None".to_string(),
+        };
+        println!("Function {} wrapping {} has Return Value Check: {}", wrapper_function_name, wrapped_function_name, return_value_check);
+    }
+}
+
 pub fn print_error_check_statistics(wrapper_functions: &Vec<WrapperFunctionSpec>) {
     let mut total: usize = 0;
     let mut empty: usize = 0;

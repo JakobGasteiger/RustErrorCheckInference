@@ -45,6 +45,7 @@ impl rustc_driver::Callbacks for Callbacks {
             find_RV_checks(tcx, &mut wrapper_function_spec, &mut other_statistics);
             //println!("{:?}", wrapper_function);
         }
+        print_error_check_results(tcx, &wrapper_function_specs);
         print_error_check_statistics(&wrapper_function_specs);
         other_statistics.output();
 
