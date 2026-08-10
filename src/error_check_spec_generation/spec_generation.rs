@@ -472,23 +472,6 @@ impl<'tcx> RVCheckFinder<'tcx> {
         (if_stmt_total_err_check, if_stmt_total_ok_check)
     }
 
-    // parse any condition expression into a ReturnValueCheck
-    // TODO make use of this function more widely
-    fn parse_condition(&mut self, cond: &rustc_hir::Expr) -> Option<ErrorSpecPredicate> {
-        match &cond.kind {
-            rustc_hir::ExprKind::Binary(bin_op, _lhs, rhs) => {
-                ErrorSpecPredicate::parse_from_bin_op(bin_op, rhs, &self)
-            }
-            rustc_hir::ExprKind::MethodCall(..) => self.analyze_bool_method(cond),
-            rustc_hir::ExprKind::Call(func, ..) => self.analyze_bool_function(func),
-            rustc_hir::ExprKind::Unary(rustc_hir::UnOp::Not, inner) => {
-                // negated condition -> opposite of the inner check
-                self.parse_condition(inner).map(|c| c.opposite())
-            }
-            _ => None,
-        }
-    }
-
     fn analyze_match_stmt(self: &mut Self, arms: &[rustc_hir::Arm]) -> Option<ErrorSpecPredicate> {
         let mut match_total_err_check: ErrorSpecPredicate = ErrorSpecPredicate::Empty;
         let mut match_total_ok_check: ErrorSpecPredicate = ErrorSpecPredicate::Empty;
@@ -500,14 +483,21 @@ impl<'tcx> RVCheckFinder<'tcx> {
 
             if let rustc_hir::PatKind::Expr(pat_expr) = arm.pat.kind {
                 // teest if the pat is a literal int
-                if let rustc_hir::PatExprKind::Lit { lit, .. } = &pat_expr.kind {
+                if let rustc_hir::PatExprKind::Lit { lit, negated } = &pat_expr.kind {
                     if let rustc_ast::LitKind::Int(value, _) = lit.node {
-                        if value == 0 {
+                        let val = match negated {
+                            true => -(value.get() as i128),
+                            false => value.get() as i128,
+                        };
+                        if val == 0 {
                             arm_pattern_check = ErrorSpecPredicate::EqualZero;
                             println!("Arm pattern is 0, patterns rv check is EqualZero");
+                        } else if val < 0 {
+                            arm_pattern_check = ErrorSpecPredicate::LesserZero;
+                            println!("Arm pattern is negative literal {}, patterns rv check is LesserZero", val);
                         } else {
-                            arm_pattern_check = ErrorSpecPredicate::Indeterminate;
-                            println!("Arm pattern is Int but not 0, patterns rv check is Indeterminate");
+                            arm_pattern_check = ErrorSpecPredicate::GreaterZero;
+                            println!("Arm pattern is positive literal {}, patterns rv check is GreaterZero", val);
                         }
                     }
                 // test if the pat is a constant
@@ -526,9 +516,12 @@ impl<'tcx> RVCheckFinder<'tcx> {
                                     if value == 0 {
                                         arm_pattern_check = ErrorSpecPredicate::EqualZero;
                                         println!("Arm pattern is 0, patterns rv check is EqualZero");
+                                    } else if value < 0 {
+                                        arm_pattern_check = ErrorSpecPredicate::LesserZero;
+                                        println!("Arm pattern is negative const {}, patterns rv check is LesserZero", value);
                                     } else {
-                                        arm_pattern_check = ErrorSpecPredicate::Indeterminate;
-                                        println!("Arm pattern is Const Int but not 0, patterns rv check is Indeterminate");
+                                        arm_pattern_check = ErrorSpecPredicate::GreaterZero;
+                                        println!("Arm pattern is positive const {}, patterns rv check is GreaterZero", value);
                                     }
                                 }
                             }

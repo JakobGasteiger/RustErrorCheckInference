@@ -63,15 +63,64 @@ impl ErrorSpecPredicate {
         rv_check_finder: &RVCheckFinder
     ) -> Option<ErrorSpecPredicate> {
 
+        // Helper function to determine the predicate based on the comparison value
+        fn determine_predicate_for_value(
+            value: i128,
+            bin_op_kind: rustc_hir::BinOpKind,
+        ) -> Option<ErrorSpecPredicate> {
+            if value == 0 {
+                // Existing logic for zero comparisons
+                match bin_op_kind {
+                    rustc_hir::BinOpKind::Eq => Some(EqualZero),
+                    rustc_hir::BinOpKind::Lt => Some(LesserZero),
+                    rustc_hir::BinOpKind::Le => Some(LesEqZero),
+                    rustc_hir::BinOpKind::Ne => Some(NotEqZero),
+                    rustc_hir::BinOpKind::Ge => Some(GrEqZero),
+                    rustc_hir::BinOpKind::Gt => Some(GreaterZero),
+                    _ => None,
+                }
+            } else if value < 0 {
+                // Negative number: <, <=, == all imply LesserZero
+                match bin_op_kind {
+                    rustc_hir::BinOpKind::Lt | rustc_hir::BinOpKind::Le | rustc_hir::BinOpKind::Eq => {
+                        println!("Comparand is negative literal/const {}, with op {:?}, patterns rv check is LesserZero", value, bin_op_kind);
+                        Some(LesserZero)
+                    }
+                    _ => {
+                        println!("Comparand is negative literal/const {}, with unsupported op {:?}, patterns rv check is Indeterminate", value, bin_op_kind);
+                        Some(Indeterminate)
+                    }
+                }
+            } else {
+                // Positive number: >, >=, == all imply GreaterZero
+                match bin_op_kind {
+                    rustc_hir::BinOpKind::Gt | rustc_hir::BinOpKind::Ge | rustc_hir::BinOpKind::Eq => {
+                        println!("Comparand is positive literal/const {}, with op {:?}, patterns rv check is GreaterZero", value, bin_op_kind);
+                        Some(GreaterZero)
+                    }
+                    _ => {
+                        println!("Comparand is positive literal/const {}, with unsupported op {:?}, patterns rv check is Indeterminate", value, bin_op_kind);
+                        Some(Indeterminate)
+                    }
+                }
+            }
+        }
+
         // is our comparand a literal?
         if let rustc_hir::ExprKind::Lit(lit) = comparand.kind {
             // an int literal?
             if let rustc_ast::LitKind::Int(val, _) = lit.node {
-                // is it 0?
-                if val.get() != 0 {
-                    // if not, abort, we only support predicates relative to zero
-                    // TODO change this limitation?
-                    return Some(Self::Indeterminate);
+                let value = val.get() as i128;
+                return determine_predicate_for_value(value, bin_op.node);
+            }
+        //else, is it a negated literal?
+        } else if let rustc_hir::ExprKind::Unary(op, unary_inner_expr) = &comparand.kind {
+            if let rustc_hir::UnOp::Neg = op {
+                if let rustc_hir::ExprKind::Lit(lit) = &unary_inner_expr.kind {
+                    if let rustc_ast::LitKind::Int(val, _) = lit.node {
+                        let value = -(val.get() as i128);
+                        return determine_predicate_for_value(value, bin_op.node);
+                    }
                 }
             }
         // else, is it a constant?
@@ -81,35 +130,26 @@ impl ErrorSpecPredicate {
             let res = typeck_results.qpath_res(qpath, comparand.hir_id);
             if let rustc_hir::def::Res::Def(rustc_hir::def::DefKind::Const{..}, def_id) = res {
                 // evaluate the constant
-                if let rustc_middle::mir::interpret::EvalToConstValueResult::Ok(const_val) = rv_check_finder.tcx.const_eval_poly(def_id) {
+                if let rustc_middle::mir::interpret::EvalToConstValueResult::Ok(const_val) = 
+                    rv_check_finder.tcx.const_eval_poly(def_id)
+                {
                     // extract the scalar value
                     // for integer constants:
                     if let rustc_middle::mir::ConstValue::Scalar(scalar) = const_val {
                         if let rustc_middle::mir::interpret::Scalar::Int(scalar_int) = scalar {
                             let value = scalar_int.to_int(scalar_int.size());
-                            if value != 0 {
-                                println!("Comparand is Const Int but not 0, patterns rv check is Indeterminate");
-                                return Some(Self::Indeterminate);
-                            }
+                            return determine_predicate_for_value(value, bin_op.node);
                         }
                     }
                 }
             }
         } else {
-            println!("Comparand is not a literal or constant, patterns rv check is Indeterminate");
+            println!("Comparand is not a literal, naegated literal, or constant, patterns rv check is Indeterminate");
             return Some(Self::Indeterminate);
         }
 
-        // if coparand is 0, parse
-        match bin_op.node {
-            rustc_hir::BinOpKind::Eq => Some(Self::EqualZero),
-            rustc_hir::BinOpKind::Lt => Some(Self::LesserZero),
-            rustc_hir::BinOpKind::Le => Some(Self::LesEqZero),
-            rustc_hir::BinOpKind::Ne => Some(Self::NotEqZero),
-            rustc_hir::BinOpKind::Ge => Some(Self::GrEqZero),
-            rustc_hir::BinOpKind::Gt => Some(Self::GreaterZero),
-            _ => None,
-        }
+        // Default case: if we couldn't extract a value, return Indeterminate
+        Some(Self::Indeterminate)
     }
 
     pub fn to_number_set(self) -> Option<HashSet<i128>> {

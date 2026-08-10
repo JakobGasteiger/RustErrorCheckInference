@@ -76,22 +76,22 @@ fn correlate_all_three(esss_specs: Option<Vec<FunctionErrorSpec>>, eesi_specs: O
             }
         }
         2 => {
-            // Two sources present, correlate them
+            // Two sources present, correlate them with new lenient logic
             if !has_ai {
                 println!("No AI specs, using ESSS/EESI correlation");
-                correlate_two(esss_specs, eesi_specs)
+                correlate_two_lenient(esss_specs, eesi_specs)
             } else if !has_eesi {
                 println!("No EESI specs, using ESSS/AI correlation");
-                correlate_two(esss_specs, ai_specs)
+                correlate_two_lenient(esss_specs, ai_specs)
             } else {
                 println!("No ESSS specs, using EESI/AI correlation");
-                correlate_two(eesi_specs, ai_specs)
+                correlate_two_lenient(eesi_specs, ai_specs)
             }
         }
         3 => {
-            // All three sources present, correlate all three
+            // All three sources present, correlate all three with lenient logic
             println!("All three sources present, correlating ESSS, EESI, and AI");
-            correlate_all_three_present(esss_specs.unwrap(), eesi_specs.unwrap(), ai_specs.unwrap())
+            correlate_all_three_lenient(esss_specs.unwrap(), eesi_specs.unwrap(), ai_specs.unwrap())
         }
         _ => {
             println!("Unexpected number of sources, returning empty");
@@ -100,98 +100,173 @@ fn correlate_all_three(esss_specs: Option<Vec<FunctionErrorSpec>>, eesi_specs: O
     }
 }
 
-fn correlate_two(specs_a: Option<Vec<FunctionErrorSpec>>, specs_b: Option<Vec<FunctionErrorSpec>>) -> Vec<FunctionErrorSpec> {
-    println!("\nCorrelating two spec sources");
+/// Collects all specs from a source into a HashMap for easy lookup
+fn specs_to_map(specs: &[FunctionErrorSpec]) -> std::collections::HashMap<String, ErrorSpecPredicate> {
+    let mut map = std::collections::HashMap::new();
+    for spec in specs {
+        map.insert(spec.func_name.clone(), spec.error_spec);
+    }
+    map
+}
+
+/// Resolves a spec from multiple sources. Returns Some if no two sources disagree,
+/// None if there is a disagreement between any two non-Indeterminate sources.
+/// Priority: prefers non-Indeterminate specs, with AI as tiebreaker when all are Indeterminate.
+fn resolve_spec(
+    esss_spec: Option<ErrorSpecPredicate>,
+    eesi_spec: Option<ErrorSpecPredicate>,
+    ai_spec: Option<ErrorSpecPredicate>,
+    func_name: &str,
+) -> Option<ErrorSpecPredicate> {
+    // Collect all non-Indeterminate specs
+    let non_indeterminate: Vec<ErrorSpecPredicate> = vec![esss_spec, eesi_spec, ai_spec]
+        .into_iter()
+        .flatten()
+        .filter(|s| !matches!(s, ErrorSpecPredicate::Indeterminate))
+        .collect();
+    
+    // If we have multiple non-Indeterminate specs, check if they all agree
+    if non_indeterminate.len() > 1 {
+        let first = non_indeterminate[0];
+        if non_indeterminate.iter().all(|s| *s == first) {
+            // All non-Indeterminate specs agree
+            println!("  Non-Indeterminate specs agree on {:?} for {}", first, func_name);
+            return Some(first);
+        } else {
+            // Disagreement between non-Indeterminate specs
+            println!("  DISAGREEMENT between non-Indeterminate specs for {}: {:?}", func_name, non_indeterminate);
+            return None;
+        }
+    }
+    
+    // If we have exactly one non-Indeterminate spec, use it
+    if non_indeterminate.len() == 1 {
+        println!("  Using single non-Indeterminate spec {:?} for {}", non_indeterminate[0], func_name);
+        return Some(non_indeterminate[0]);
+    }
+    
+    // All are Indeterminate or missing - prefer AI, then EESI, then ESSS
+    if let Some(ai) = ai_spec {
+        println!("  All Indeterminate/missing, using AI spec {:?} for {}", ai, func_name);
+        return Some(ai);
+    }
+    if let Some(eesi) = eesi_spec {
+        println!("  All Indeterminate/missing, using EESI spec {:?} for {}", eesi, func_name);
+        return Some(eesi);
+    }
+    if let Some(esss) = esss_spec {
+        println!("  All Indeterminate/missing, using ESSS spec {:?} for {}", esss, func_name);
+        return Some(esss);
+    }
+    
+    // No specs at all
+    println!("  No specs available for {}", func_name);
+    None
+}
+
+fn correlate_two_lenient(
+    specs_a: Option<Vec<FunctionErrorSpec>>,
+    specs_b: Option<Vec<FunctionErrorSpec>>,
+) -> Vec<FunctionErrorSpec> {
+    println!("\nCorrelating two spec sources with lenient logic");
     
     let specs_a = specs_a.unwrap_or_default();
     let specs_b = specs_b.unwrap_or_default();
     
-    let mut correlated_specs: HashSet<FunctionErrorSpec> = HashSet::new();
-    let mut total_common_functions: usize = 0;
-    let mut total_matching: usize = 0;
-    let mut total_not_matching: usize = 0;
+    let map_a = specs_to_map(&specs_a);
+    let map_b = specs_to_map(&specs_b);
     
-    for spec_a in &specs_a {
-        println!("\nLooking for matching spec for function {}", spec_a.func_name);
+    let mut correlated_specs: HashSet<FunctionErrorSpec> = HashSet::new();
+    let mut total_functions: usize = 0;
+    let mut included: usize = 0;
+    let mut excluded: usize = 0;
+    
+    // Collect all unique function names from both sources
+    let mut all_funcs: HashSet<String> = HashSet::new();
+    for spec in &specs_a {
+        all_funcs.insert(spec.func_name.clone());
+    }
+    for spec in &specs_b {
+        all_funcs.insert(spec.func_name.clone());
+    }
+    
+    for func_name in &all_funcs {
+        total_functions += 1;
+        println!("\nProcessing function {}", func_name);
         
-        for spec_b in &specs_b {
-            if spec_b.func_name == spec_a.func_name {
-                total_common_functions += 1;
-                
-                if spec_b.error_spec == spec_a.error_spec {
-                    println!("They match ({:?})", spec_a.error_spec);
-                    total_matching += 1;
-                    correlated_specs.insert(spec_a.clone());
-                } else {
-                    println!("They don't match ({:?} vs {:?})", spec_a.error_spec, spec_b.error_spec);
-                    total_not_matching += 1;
-                }
-            }
+        let spec_a = map_a.get(func_name).cloned();
+        let spec_b = map_b.get(func_name).cloned();
+        
+        if let Some(resolved) = resolve_spec(spec_a, spec_b, None, func_name) {
+            correlated_specs.insert(FunctionErrorSpec {
+                func_name: func_name.clone(),
+                error_spec: resolved,
+            });
+            included += 1;
+        } else {
+            excluded += 1;
         }
     }
     
-    println!("\nTwo-source Correlation Statistics:");
-    println!("Total Functions in common: {}", total_common_functions);
-    println!("Total Functions with matching specs: {}", total_matching);
-    println!("Total Functions with non-matching specs: {}", total_not_matching);
+    println!("\nTwo-source Lenient Correlation Statistics:");
+    println!("Total Functions: {}", total_functions);
+    println!("Included (no disagreement): {}", included);
+    println!("Excluded (disagreement): {}", excluded);
     
     correlated_specs.into_iter().collect()
 }
 
-fn correlate_all_three_present(esss_specs: Vec<FunctionErrorSpec>, eesi_specs: Vec<FunctionErrorSpec>, ai_specs: Vec<FunctionErrorSpec>) -> Vec<FunctionErrorSpec> {
-    println!("\nCorrelating all three spec sources");
+fn correlate_all_three_lenient(
+    esss_specs: Vec<FunctionErrorSpec>,
+    eesi_specs: Vec<FunctionErrorSpec>,
+    ai_specs: Vec<FunctionErrorSpec>,
+) -> Vec<FunctionErrorSpec> {
+    println!("\nCorrelating all three spec sources with lenient logic");
+    
+    let map_esss = specs_to_map(&esss_specs);
+    let map_eesi = specs_to_map(&eesi_specs);
+    let map_ai = specs_to_map(&ai_specs);
     
     let mut correlated_specs: HashSet<FunctionErrorSpec> = HashSet::new();
-    let mut total_common_functions: usize = 0;
-    let mut total_matching: usize = 0;
-    let mut total_not_matching: usize = 0;
+    let mut total_functions: usize = 0;
+    let mut included: usize = 0;
+    let mut excluded: usize = 0;
     
-    for esss_spec in &esss_specs {
-        println!("\nLooking for EESI and AI spec for ESSS spec of function {}", esss_spec.func_name);
+    // Collect all unique function names from all sources
+    let mut all_funcs: HashSet<String> = HashSet::new();
+    for spec in &esss_specs {
+        all_funcs.insert(spec.func_name.clone());
+    }
+    for spec in &eesi_specs {
+        all_funcs.insert(spec.func_name.clone());
+    }
+    for spec in &ai_specs {
+        all_funcs.insert(spec.func_name.clone());
+    }
+    
+    for func_name in &all_funcs {
+        total_functions += 1;
+        println!("\nProcessing function {}", func_name);
         
-        let mut eesi_match: Option<&FunctionErrorSpec> = None;
-        let mut ai_match: Option<&FunctionErrorSpec> = None;
+        let spec_esss = map_esss.get(func_name).cloned();
+        let spec_eesi = map_eesi.get(func_name).cloned();
+        let spec_ai = map_ai.get(func_name).cloned();
         
-        // find matching EESI spec
-        for eesi_spec in &eesi_specs {
-            if eesi_spec.func_name == esss_spec.func_name {
-                eesi_match = Some(eesi_spec);
-                break;
-            }
-        }
-        
-        // find matching AI spec
-        for ai_spec in &ai_specs {
-            if ai_spec.func_name == esss_spec.func_name {
-                ai_match = Some(ai_spec);
-                break;
-            }
-        }
-        
-        match (eesi_match, ai_match) {
-            (Some(eesi_spec), Some(ai_spec)) => {
-                total_common_functions += 1;
-                
-                println!("Found ESSS/EESI/AI triplet for function {}, testing if all specs match", esss_spec.func_name);
-                if eesi_spec.error_spec == esss_spec.error_spec && ai_spec.error_spec == esss_spec.error_spec {
-                    println!("All three match ({:?})", esss_spec.error_spec);
-                    total_matching += 1;
-                    correlated_specs.insert(esss_spec.clone());
-                } else {
-                    println!("They don't all match (ESSS: {:?}, EESI: {:?}, AI: {:?})", esss_spec.error_spec, eesi_spec.error_spec, ai_spec.error_spec);
-                    total_not_matching += 1;
-                }
-            }
-            _ => {
-                println!("Missing EESI or AI spec for function {}", esss_spec.func_name);
-            }
+        if let Some(resolved) = resolve_spec(spec_esss, spec_eesi, spec_ai, func_name) {
+            correlated_specs.insert(FunctionErrorSpec {
+                func_name: func_name.clone(),
+                error_spec: resolved,
+            });
+            included += 1;
+        } else {
+            excluded += 1;
         }
     }
     
-    println!("\nThree-source Correlation Statistics:");
-    println!("Total Functions in common across all three: {}", total_common_functions);
-    println!("Total Functions with matching specs: {}", total_matching);
-    println!("Total Functions with non-matching specs: {}", total_not_matching);
+    println!("\nThree-source Lenient Correlation Statistics:");
+    println!("Total Functions: {}", total_functions);
+    println!("Included (no disagreement): {}", included);
+    println!("Excluded (disagreement): {}", excluded);
     
     correlated_specs.into_iter().collect()
 }
